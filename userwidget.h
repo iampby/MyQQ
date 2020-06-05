@@ -1,0 +1,34 @@
+#ifndef USERWIDGET_H
+#define USERWIDGET_H
+
+#include <QObject>
+#include<qwidget.h>
+class QPushButton;
+class QLabel;
+class Label;
+class UserWidget : public QWidget
+{
+    Q_OBJECT
+public:
+    explicit UserWidget(QWidget *parent = nullptr);
+void setPixmap(const QPixmap &img);
+void setPrimitivePixmap(QPixmap *img);
+void setName(const QString&name);
+void setAgeAndCountry(const QString &ageAndCountry);
+void setAgeAndCountry(QPixmap &img);
+QPixmap *pixmapToRound(QPixmap *img)const;
+QPixmap& drawRoundOnPixmap(QPixmap&img)const;
+bool eventFilter(QObject *watched, QEvent *event);
+signals:
+    void imgClicked();
+    void nameClicked();
+    void addButtonClicked();
+private:
+    QPixmap*primitivePixmap;
+    Label*pixLabel;
+    QLabel*ageAndCountryLabel;
+    QPushButton*nameBtn;
+    QPushButton*addBtn;
+};
+
+#endif // USERWIDGET_H
