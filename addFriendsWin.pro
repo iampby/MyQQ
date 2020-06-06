@@ -3,7 +3,7 @@
 # Project created by QtCreator 2019-09-25T10:40:42
 #
 #-------------------------------------------------
-RC_FILE=appInfo.rc
+RC_FILE=appinfo_resource.rc
 CONFIG += resources_big
 QT       += core gui \
     quick network
@@ -65,5 +65,5 @@ RESOURCES += \
     images.qrc
 
 DISTFILES += \
-    images/person.png \
-    images/x.png
+    build-addFriendsWin-Desktop_Qt_5_12_8_MSVC2017_64bit-Debug/debug/appInfo.res \
+    images/person.png

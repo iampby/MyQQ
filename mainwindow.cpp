@@ -44,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->frame->setGraphicsEffect(shadow);
 
     setWindowTitle(QStringLiteral("≤È’“"));
+    setWindowIcon(QIcon(":./MyQQ.ico"));
     titlebar=new titleBar(ui->bodyWidget);//±ÍÃ‚¿∏
     connect(titlebar,SIGNAL(minBtnClicked()),this,SLOT(minBtnClicked()));
     connect(titlebar,SIGNAL(closeBtnClicked()),this,SLOT(closeBtnClicked()));

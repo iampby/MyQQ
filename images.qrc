@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>images/MyQQ.ico</file>
         <file>images/QQTray.png</file>
         <file>images/winIco.png</file>
         <file>images/close.png</file>
@@ -14,5 +13,6 @@
         <file>images/searchImg.png</file>
         <file>images/findPersonPage3.png</file>
         <file>images/person.png</file>
+        <file>MyQQ.ico</file>
     </qresource>
 </RCC>
