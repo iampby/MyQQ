@@ -50,9 +50,9 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
                 if(sucessful){
                     qDebug()<<QStringLiteral("×¢²á³É¹¦£¡qq:")<<myqq<<endl;
                     if(myqq!=0){
-                        QDir dir("../");
-                        dir.mkpath(QString("userData/%1/historyHeadImg").arg(myqq));
-                        QString headPath=dir.absoluteFilePath(QString("userData/%1/historyHeadImg").arg(myqq)+"/01.png");
+                        QDir dir;
+                        dir.mkpath(QString("../userData/%1/historyHeadImg").arg(myqq));
+                        QString headPath=dir.relativeFilePath(QString("../userData/%1/historyHeadImg").arg(myqq)+"/01.png");
                         QImage img(":/img/init.png");
                         if(img.save(headPath,nullptr,0)){
                             qDebug()<<"IMG is saved£¡";
@@ -61,9 +61,9 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
                             query.bindValue(1,QVariant(myqq));
                             if(query.exec()){
                                 qDebug()<<"updating the headImgPath of myqq sucessfully,myqq equal to "+QString("%1").arg( myqq);
-                                dir.mkpath(QString("userData/%1/friendsInfo").arg(myqq));
-                                dir.mkpath(QString("userData/%1/groupsInfo").arg(myqq));
-                                QFile infoFile(dir.absoluteFilePath(QString("userData/%1/info.xml").arg(myqq)));
+                                dir.mkpath(QString("../userData/%1/friendsInfo").arg(myqq));
+                                dir.mkpath(QString("../userData/%1/groupsInfo").arg(myqq));
+                                QFile infoFile(dir.relativeFilePath(QString("../userData/%1/info.xml").arg(myqq)));
                                 if(infoFile.open(QIODevice::WriteOnly)){
                                     qDebug()<<"creating info.xml file sucessfully";
                                     QDomDocument doc;
@@ -187,7 +187,7 @@ void MyQQRegisterServer::read(QTcpSocket *tcpsock,QThread*t)
                 QDataStream out(&rigSuc,QIODevice::WriteOnly);
                 out.setVersion(QDataStream::Qt_4_0);
                 QString temp,myqqStr;
-                myqqStr.setNum((qlonglong)myqq);
+                myqqStr.setNum(myqq);
                 temp=QString("true "+myqqStr);
                 out.writeRawData(temp.toUtf8(),temp.length());
                 qDebug()<<"rigsuc"<<rigSuc.data();

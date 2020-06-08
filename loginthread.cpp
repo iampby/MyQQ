@@ -101,7 +101,6 @@ void LoginThread::readD()
     query.setForwardOnly(true);//设置只进游标
     connect(this,&LoginThread::loopStop,&loop,&QEventLoop::quit);//一旦写入完成结束事件循环
     if(!readJson.isEmpty()){
-        qDebug()<<"readText->"<<readJson.toJson().data();
         if(readJson.isObject()){
             QJsonObject obj=readJson.object();
             if(!obj.isEmpty()){
@@ -115,7 +114,7 @@ void LoginThread::readD()
                     QString ip=obj.value("ip").toString();
                     if(!(myqq.isEmpty()|passwd.isEmpty()|hostname.isEmpty()|ip.isEmpty())){
                         qDebug()<<QStringLiteral("not empty")<<myqq.toLongLong()<<endl;
-                        query.prepare(" select myqq,passwd, signLog from userInfo where myqq=? ");
+                        query.prepare(" select myqq,passwd,signLog from userInfo where myqq=? ");
                         query.bindValue(0,myqq.toLongLong());
                         if(query.exec()){
                             qDebug()<<QStringLiteral("execution is successful")<<endl;
@@ -129,7 +128,12 @@ void LoginThread::readD()
                                     writeObj.insert("instruct",QJsonValue("10"));
                                     writeObj.insert("result",QJsonValue(2));
                                     writeJson.setObject(writeObj);
-                                    tcpsocket->write(writeJson.toBinaryData());
+                                    quint8  s=writeJson.toJson().size();
+                                    QByteArray size;//写入数据头
+                                    QDataStream stream(&size,QIODevice::WriteOnly);
+                                    stream.setVersion(QDataStream::Qt_4_0);
+                                    stream<<s;
+                                    tcpsocket->write(size+writeJson.toJson());
                                     tcpsocket->waitForBytesWritten(2000);
                                     return;
                                 }
@@ -144,18 +148,20 @@ void LoginThread::readD()
                                 }
 
                                 //获取基本信息，如name,personalizedSignature,activeDays
-                                query.prepare("  select myqqName,headImgPath ,personalizedSignature,activeDays ,myqqGrade from userInfo where myqq=? ");
+                                query.prepare("  select myqqName,sex,headImgPath ,personalizedSignature,activeDays ,myqqGrade from userInfo where myqq=? ");
                                 query.bindValue(0,QVariant(myqq.toLongLong()));
                                 if(query.exec()){
                                     query.next();
                                     if(query.isValid()){
                                         qDebug()<<QStringLiteral("读取MyQQ(")+myqq+QStringLiteral(")基本信息成功");
                                         QString name=query.value(0).toString();
-                                        QString headPath=query.value(1).toString();
-                                        QString signature=query.value(2).toString();
-                                        qint64 days=query.value(3).toLongLong();
-                                        qint8 grade=query.value(4).toInt();
+                                        QString sex=query.value(1).toString();
+                                        QString headPath=query.value(2).toString();
+                                        QString signature=query.value(3).toString();
+                                        qint64 days=query.value(4).toLongLong();
+                                        quint8 grade=query.value(5).toInt();
                                         //传头像 png
+                                        qDebug()<<headPath;
                                         QFile  headImg(headPath);
                                         if(!headImg.exists()){
                                             qDebug()<<"a error is occured beacuse headImg file doesn't exisit and myqq is "+myqq;
@@ -170,15 +176,20 @@ void LoginThread::readD()
                                             img.resize(byteSize);
                                             //QByteArray 会在写入时复制而不是引用，如此必须设定大小
                                             qint64 imgSize=headImg.read(img.data(),byteSize);
-
                                             headImg.close();
                                             if(imgSize!=-1){
                                                 qDebug()<<"read headImg is successful";
                                                 QJsonObject imgobj;
                                                 imgobj.insert("instruct",QJsonValue("11"));//头像传输指令
+                                                imgobj.insert("size",QJsonValue(imgSize));
                                                 QJsonDocument imgjson(imgobj);
-                                                tcpsocket->write(imgjson.toBinaryData());
-                                                loop.exec();
+                                                quint8 s=imgjson.toJson().size();
+                                                QByteArray size;//数据头大小
+                                                QDataStream stream(&size,QIODevice::WriteOnly);
+                                                stream.setVersion(QDataStream::Qt_4_0);
+                                                stream<<s;
+                                                tcpsocket->write(size+imgjson.toJson());
+                                                loop.exec();//等待写入
                                                 tcpsocket->write(img);
                                                 loop.exec();
                                                 //读取信息文件 如好友 群
@@ -189,13 +200,19 @@ void LoginThread::readD()
                                                 QFile infoFile(infoDir.absoluteFilePath("info.xml"));
                                                 if(infoFile.open(QIODevice::ReadOnly)){
                                                     qDebug()<<"successfully opened info.xml file ";
+                                                    byteSize=infoFile.size();
                                                     QJsonDocument infojson;
                                                     QJsonObject infoobj;
-                                                    byteSize=infoFile.size();
                                                     qDebug()<<"infoFile size:"<<byteSize;
                                                     infoobj.insert("instruct",QJsonValue("12"));
+                                                    infoobj.insert("size",QJsonValue(byteSize));
                                                     infojson.setObject(infoobj);
-                                                    tcpsocket->write(infojson.toBinaryData());
+                                                    s=infojson.toJson().size();
+                                                    QByteArray size2;//重写一个size头 不能复用size，每写入一次都会膨胀
+                                                    QDataStream stream2(&size2,QIODevice::WriteOnly);
+                                                    stream2.setVersion(QDataStream::Qt_4_0);
+                                                    stream2<<s;
+                                                    tcpsocket->write(size2+infojson.toJson());
                                                     loop.exec();
                                                     QByteArray info;
                                                     info.resize(byteSize);
@@ -203,18 +220,24 @@ void LoginThread::readD()
                                                     infoFile.close();
                                                     if(infoSize!=-1){
                                                         qDebug()<<"read info.xml successfully";
-                                                        tcpsocket->write(info);
+                                                        tcpsocket->write(info.data(),infoSize);
                                                         loop.exec();
                                                         //完成登录
                                                         qDebug()<<QStringLiteral("finished");
                                                         writeObj.insert("instruct",QJsonValue("10"));
                                                         writeObj.insert("result",QJsonValue(0));
                                                         writeObj.insert("name",QJsonValue(name));
+                                                        writeObj.insert("sex",QJsonValue(sex));
                                                         writeObj.insert("signature",QJsonValue(signature));
                                                         writeObj.insert("days",QJsonValue(days));
                                                         writeObj.insert("grade",QJsonValue(grade));
                                                         writeJson.setObject(writeObj);
-                                                        tcpsocket->write(writeJson.toBinaryData());
+                                                        s=writeJson.toJson().size();
+                                                        QByteArray size3;//重写一个size头 不能复用size，每写入一次都会膨胀
+                                                        QDataStream stream3(&size3,QIODevice::WriteOnly);
+                                                        stream3.setVersion(QDataStream::Qt_4_0);
+                                                        stream3<<s;
+                                                        tcpsocket->write(size3+writeJson.toJson());
                                                         loop.exec();
                                                         return;
                                                     }
@@ -229,7 +252,12 @@ void LoginThread::readD()
                                 writeObj.insert("instruct",QJsonValue("10"));
                                 writeObj.insert("result",QJsonValue(1));
                                 writeJson.setObject(writeObj);
-                                tcpsocket->write(writeJson.toBinaryData());
+                                quint8 s=writeJson.toJson().size();
+                                QByteArray size;
+                                QDataStream stream(&size,QIODevice::WriteOnly);
+                                stream.setVersion(QDataStream::Qt_4_0);
+                                stream<<s;
+                                tcpsocket->write(size+writeJson.toJson());
                                 tcpsocket->waitForBytesWritten(2000);
                                 return;
                             }
@@ -240,7 +268,12 @@ void LoginThread::readD()
                     writeObj.insert("instruct",QJsonValue("1"));
                     writeObj.insert("result",QJsonValue(3));
                     writeJson.setObject(writeObj);
-                    tcpsocket->write(writeJson.toJson());
+                    quint8 s=writeJson.toJson().size();
+                    QByteArray size;
+                    QDataStream stream(&size,QIODevice::WriteOnly);
+                    stream.setVersion(QDataStream::Qt_4_0);
+                    stream<<s;
+                    tcpsocket->write(size+writeJson.toJson());
                     tcpsocket->waitForBytesWritten(2000);
                     return;
                 }else if(in.toString()=="2"){//传头像
@@ -271,16 +304,14 @@ void LoginThread::readD()
                             imgObj.insert("instruct",QJsonValue("20"));
                             imgObj.insert("result",QJsonValue("writing"));
                             imgJson.setObject(imgObj);
-                            tcpsocket->write(imgJson.toBinaryData());
+                            quint8 s=imgJson.toJson().size();
+                            QByteArray size;
+                            QDataStream stream(&size,QIODevice::WriteOnly);
+                            stream.setVersion(QDataStream::Qt_4_0);
+                            stream<<s;
+                            tcpsocket->write(size+imgJson.toJson());
                             loop.exec();
                             foreach (QString v, list.keys()) {
-                                QJsonDocument tempJson;
-                                QJsonObject tempObj;
-                                tempObj.insert("name",QJsonValue(v+"1"));
-                                tempJson.setObject(tempObj);
-                                tcpsocket->write(tempJson.toBinaryData());
-                                loop.exec();
-                                qDebug()<<v<<list.value(v);
                                 QFile img(list.value(v));
                                 if(img.open(QIODevice::ReadOnly)){
                                     byteSize=img.size();
@@ -289,6 +320,21 @@ void LoginThread::readD()
                                     if(img.read(imgData.data(),byteSize)==-1){
                                         qDebug()<<"read "<<writeObj.value("name").toString()+".png had failed";
                                     }
+                                    QJsonDocument tempJson;
+                                    QJsonObject tempObj;
+                                    tempObj.insert("name",QJsonValue(v+"1"));
+                                    tempObj.insert("size",QJsonValue(byteSize));
+                                    tempJson.setObject(tempObj);
+                                    s=tempJson.toJson().size();
+                                    QByteArray tempSize;
+                                    QDataStream tempStream(&tempSize,QIODevice::WriteOnly);
+                                    tempStream.setVersion(QDataStream::Qt_4_0);
+                                    tempStream<<s;
+
+                                    tcpsocket->write(tempSize+tempJson.toJson());
+                                    loop.exec();
+
+                                    qDebug()<<v<<list.value(v);
                                     tcpsocket->write(imgData);
                                     loop.exec();
                                     img.close();
@@ -296,7 +342,12 @@ void LoginThread::readD()
                                     writeObj.insert("result",QJsonValue("false"));
                                     writeObj.insert("instruct",QJsonValue("20"));
                                     writeJson.setObject(writeObj);
-                                    tcpsocket->write(writeJson.toBinaryData());
+                                    quint8 s1=writeJson.toJson().size();
+                                    QByteArray size1;
+                                    QDataStream stream1(&size1,QIODevice::WriteOnly);
+                                    stream1.setVersion(QDataStream::Qt_4_0);
+                                    stream1<<s1;
+                                    tcpsocket->write(size1+writeJson.toJson());
                                     loop.exec();
                                     return;
                                 }
@@ -304,9 +355,13 @@ void LoginThread::readD()
                             writeObj.insert("instruct",QJsonValue("20"));
                             writeObj.insert("result",QJsonValue("true"));
                             writeJson.setObject(writeObj);
-                            tcpsocket->write(writeJson.toBinaryData());
+                            quint8 s2=writeJson.toJson().size();
+                            QByteArray size2;
+                            QDataStream stream2(&size2,QIODevice::WriteOnly);
+                            stream2.setVersion(QDataStream::Qt_4_0);
+                            stream2<<s2;
+                            tcpsocket->write(size2+writeJson.toJson());
                             loop.exec();
-                            qDebug()<<writeObj;
                             info.close();//关闭文件
                             return;
                         }
@@ -314,7 +369,12 @@ void LoginThread::readD()
                     writeObj.insert("result",QJsonValue("false"));
                     writeObj.insert("instruct",QJsonValue("20"));
                     writeJson.setObject(writeObj);
-                    tcpsocket->write(writeJson.toBinaryData());
+                    quint8 s=writeJson.toJson().size();
+                    QByteArray size;
+                    QDataStream stream(&size,QIODevice::WriteOnly);
+                    stream.setVersion(QDataStream::Qt_4_0);
+                    stream<<s;
+                    tcpsocket->write(size+writeJson.toJson());
                     loop.exec();
                     return;
                     //好友添加界面打开，传城市数据
@@ -372,7 +432,7 @@ void LoginThread::readD()
                                     //字节个数而不是字符个数
                                     cityObj.insert("size",QJsonValue(data.toUtf8().size()));
                                     cityJson.setObject(cityObj);
-                                    qint8 s=cityJson.toJson().size();//仅仅标记json数据<256 bytes
+                                    quint8 s=cityJson.toJson().size();//仅仅标记json数据<256 bytes
                                     QByteArray size;
                                     QDataStream stream(&size,QIODevice::WriteOnly);
                                     stream.setVersion(QDataStream::Qt_4_0);
@@ -403,7 +463,7 @@ void LoginThread::readD()
                         writeObj.insert("content",QJsonValue("city-data"));
                         writeObj.insert("result",QJsonValue("false"));
                         writeJson.setObject(writeObj);
-                        qint8 s=writeJson.toJson().size();
+                        quint8 s=writeJson.toJson().size();
                         QByteArray size;
                         QDataStream stream(&size,QIODevice::WriteOnly);
                         stream.setVersion(QDataStream::Qt_4_0);
@@ -576,7 +636,7 @@ table1_1.name as location1,table1_2.name as location2,table1_3.name as location3
                             userObj.insert("size",QJsonValue(doc.toJson().size()));
                             userObj.insert("begin-id",QJsonValue(QString("%1").arg(beginId)));//转为字符串 因为qjsonvalue不支持int64
                             userJson.setObject(userObj);
-                            qint8 s=userJson.toJson().size();//仅仅标记json数据<256 bytes
+                            quint8 s=userJson.toJson().size();//仅仅标记json数据<256 bytes
                             QByteArray size;
                             QDataStream stream(&size,QIODevice::WriteOnly);
                             stream.setVersion(QDataStream::Qt_4_0);
@@ -638,7 +698,7 @@ table1_1.name as location1,table1_2.name as location2,table1_3.name as location3
                         writeObj.insert("content",QJsonValue("find-person"));
                         writeObj.insert("result",QJsonValue("false"));
                         writeJson.setObject(writeObj);
-                        qint8 s=writeJson.toJson().size();
+                        quint8 s=writeJson.toJson().size();
                         QByteArray size;
                         QDataStream stream(&size,QIODevice::WriteOnly);
                         stream.setVersion(QDataStream::Qt_4_0);

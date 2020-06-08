@@ -12,9 +12,9 @@
         <我的设备 set="none"></我的设备>
         <我的好友 set="none">
             <friend myqq="10005">
-                <昵称>pby</昵称>
+                <昵称>as噶</昵称>
                 <个性签名></个性签名>
-                <头像路径>D:/QTpractice/MyQQServer/userData/10005/historyHeadImg/01.png</头像路径>
+                <头像路径>../userData/10005/historyHeadImg/01.png</头像路径>
                 <备注></备注>
                 <等级>0</等级>
                 <状态>0</状态>
