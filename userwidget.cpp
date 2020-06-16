@@ -6,9 +6,11 @@
 #include <qstyleoption.h>
 #include<qdebug.h>
 #include <QEvent>
+
 UserWidget::UserWidget(QWidget *parent) : QWidget(parent)
 {
     resize(190,80);
+    m_index=QModelIndex();
     pixLabel=new Label(this);
     pixLabel->resize(60,60);
 pixLabel->move(0,10);
@@ -104,6 +106,16 @@ void UserWidget::setAgeAndCountry( QPixmap &img)
     p.drawRoundedRect(0,0,img.width(),img.height(),img.width()/2,img.height()/2);
     img.setMask(mask);
     ageAndCountryLabel->setPixmap(img);
+}
+
+const QModelIndex UserWidget::index() const
+{
+    return m_index;
+}
+
+void UserWidget::setIndex(const QModelIndex &index)
+{
+    m_index=index;
 }
 
 QPixmap *UserWidget::pixmapToRound(QPixmap*img) const

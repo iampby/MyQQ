@@ -1824,6 +1824,16 @@ image:url(:/images/up-arrow.png)
          <bool>true</bool>
         </property>
        </widget>
+       <widget class="QTextBrowser" name="textBrowser">
+        <property name="geometry">
+         <rect>
+          <x>510</x>
+          <y>60</y>
+          <width>81</width>
+          <height>61</height>
+         </rect>
+        </property>
+       </widget>
        <zorder>findPersonEdit</zorder>
        <zorder>liveCBox</zorder>
        <zorder>whereCBox</zorder>
@@ -1840,6 +1850,7 @@ image:url(:/images/up-arrow.png)
        <zorder>cityPop2</zorder>
        <zorder>comboBox</zorder>
        <zorder>sexLabel</zorder>
+       <zorder>textBrowser</zorder>
       </widget>
       <widget class="QWidget" name="findGroup_">
        <widget class="QLineEdit" name="lineEdit">

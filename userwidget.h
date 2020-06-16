@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include<qwidget.h>
+#include<QModelIndex>
 class QPushButton;
 class QLabel;
 class Label;
@@ -16,6 +17,8 @@ void setPrimitivePixmap(QPixmap *img);
 void setName(const QString&name);
 void setAgeAndCountry(const QString &ageAndCountry);
 void setAgeAndCountry(QPixmap &img);
+const  QModelIndex index()const;
+void setIndex(const QModelIndex &);
 QPixmap *pixmapToRound(QPixmap *img)const;
 QPixmap& drawRoundOnPixmap(QPixmap&img)const;
 bool eventFilter(QObject *watched, QEvent *event);
@@ -29,6 +32,7 @@ private:
     QLabel*ageAndCountryLabel;
     QPushButton*nameBtn;
     QPushButton*addBtn;
+    QModelIndex m_index;
 };
 
 #endif // USERWIDGET_H

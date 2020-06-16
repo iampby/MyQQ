@@ -1,4 +1,5 @@
 #include"tcpsocket.h"
+#include <QDir>
 #include<qimage.h>
 QString TcpSocket::m_myqq=QString();
 QString TcpSocket::m_beginId=QString();
@@ -15,6 +16,9 @@ TcpSocket::TcpSocket(QObject *parent)//构造函数初始化
 bool TcpSocket::writeImg(const QByteArray &content, const QString &filepath, const char *format)
 {
 QImage img;
+QString str=filepath.left(filepath.lastIndexOf("/"));
+QDir dir;
+dir.mkpath(str);
 if(!img.loadFromData(content,format))
     return false;
     qDebug()<<" a image was constructed successfully";
@@ -61,7 +65,7 @@ void TcpSocket::readD()
             QByteArray data=this->read(1);
             QDataStream stream(&data,QIODevice::ReadOnly);
             stream.setVersion(QDataStream::Qt_4_0);
-            qint8 l;
+            quint8 l;
            stream>>l;
            if(l<=0){
                return;

@@ -172,6 +172,7 @@ void UserView::setModel(FindUserModel *m)
             *pix=QPixmap::fromImage(img);
             w->setPrimitivePixmap(pix);
             w->setName(model->data(index,FindUserModel::NameRole).toString());
+            w->setIndex(index);
             QString country=model->data(index,FindUserModel::AgeRole).toString();
             QString province= model->data(index,FindUserModel::FirstLevelRegionRole).toString();
             if(country.isEmpty()||province.isEmpty()){
@@ -188,7 +189,7 @@ void UserView::setModel(FindUserModel *m)
             QString myqq=model->data(index,FindUserModel::MyqqRole).toString();
             count++;
             connect(w,&UserWidget::imgClicked,this,[=](){
-                emit imgClicked(myqq);
+
             });
             connect(w,&UserWidget::nameClicked,this,[=](){
                 emit nameClicked(myqq);
@@ -302,6 +303,7 @@ void UserView::inserted(const int &row, const int &column, const int&count)
         UserWidget*w=new UserWidget(frame);
         w->hide();//ÏÈÒþ²Ø
         QModelIndex index=model->index(cr,cc);
+        w->setIndex(index);
         QImage img=QImage::fromData(model->data(index,FindUserModel::HeadImgRole).toByteArray(),"png");
         QPixmap* pix=new QPixmap();
         *pix=QPixmap::fromImage(img);

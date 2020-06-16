@@ -1,11 +1,13 @@
 #include "mainwindow.h"
 #include <QApplication>
 #include<qdebug.h>
-
+#include<qmessagebox.h>
+#include<QDir>
 int main(int argc, char *argv[])
 {
+    QApplication a(argc, argv);
     if(argc>1){
-        QApplication a(argc, argv);
+        setvbuf(stdout,nullptr,_IONBF,0);
         QJsonDocument info=QJsonDocument::fromJson(QString::fromUtf8(argv[1]).toUtf8());
         if(info.isObject()){
             MainWindow w;
@@ -15,7 +17,10 @@ int main(int argc, char *argv[])
             return a.exec();
         }
     }else{
-        return -1;
+        QMessageBox::information(nullptr,"test",QDir::currentPath());
+        MainWindow w;
+        w.setFixedSize(846,614);
+        w.show();
+        return a.exec();
     }
-
 }

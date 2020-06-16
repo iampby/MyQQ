@@ -6,7 +6,6 @@
 #include"titlebar.h"
 #include"findbtn.h"
 #include"tcpsocket.h"
-
 class UserView;
 class FindUserModel;
 namespace Ui {

@@ -13,17 +13,21 @@
 #include <QGraphicsDropShadowEffect>
 #include <qlistwidget.h>
 #include<qtimer.h>
+#include<qsocketnotifier.h>
+using namespace std ;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    qDebug()<<"addFriendsWin.exe would is execuated";
     setWindowFlags(Qt::FramelessWindowHint|Qt::Window|Qt::WindowStaysOnTopHint);
     this->setAttribute(Qt::WA_TranslucentBackground);//设置透明背景
     TcpSocket::setBeginId("0");
     where=QStringLiteral("不限");
     hometown=QStringLiteral("不限");
-    sex=QStringLiteral("男");
+    sex=QStringLiteral("");
     host="127.0.0.1",port=5567;
     ui->userListStackWindget->setCurrentIndex(0);
     userView=new UserView(ui->userListStackWindget->currentWidget());
@@ -109,6 +113,9 @@ void MainWindow::setMyQQInfo(const QJsonDocument &json)
     sex=obj.value("sex").toString();
     where=obj.value(QStringLiteral("所在地")).toString();
     hometown=obj.value(QStringLiteral("故乡")).toString();
+    if(where.isEmpty())where=QStringLiteral("不限");
+    if(hometown.isEmpty())hometown=QStringLiteral("不限");
+    ui->textBrowser->setText(myqq+"\n"+sex+"\n"+where+"\n"+hometown);
 }
 
 
@@ -164,6 +171,8 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
     }
     return QMainWindow::eventFilter(watched,event);
 }
+
+
 
 
 void MainWindow::closeBtnClicked()
@@ -815,7 +824,7 @@ void MainWindow::on_friendBtn_clicked()
     ui->userListStackWindget->setCurrentIndex(1);
     QTimer* timer=new QTimer(this);
     timer->setInterval(50);
-     timer->setSingleShot(true);
+    timer->setSingleShot(true);
     connect(timer,&QTimer::timeout,this,&MainWindow::handleFriendButton);
     connect(timer,&QTimer::timeout,timer,&QTimer::deleteLater);
     timer->start();
@@ -825,12 +834,12 @@ void MainWindow::on_townsmanBtn_clicked()
 {
     ui->findPersonStackedWidget->setCurrentIndex(1);
     ui->userListStackWindget->setCurrentIndex(1);
-  QTimer* timer=new QTimer(this);
-  timer->setInterval(50);
-   timer->setSingleShot(true);
-   connect(timer,&QTimer::timeout,this,&MainWindow::handleTownsmanButton);
-   connect(timer,&QTimer::timeout,timer,&QTimer::deleteLater);
-   timer->start();
+    QTimer* timer=new QTimer(this);
+    timer->setInterval(50);
+    timer->setSingleShot(true);
+    connect(timer,&QTimer::timeout,this,&MainWindow::handleTownsmanButton);
+    connect(timer,&QTimer::timeout,timer,&QTimer::deleteLater);
+    timer->start();
 }
 
 void MainWindow::handleTownsmanButton()
@@ -859,8 +868,8 @@ void MainWindow::handleTownsmanButton()
     }
     QStringList list2=hometown.split(",",QString::SkipEmptyParts);
 
-        ui->hometownSub1->setCurrentText(list2.at(0));
-        on_hometownSub1_activated(list2.at(0));
+    ui->hometownSub1->setCurrentText(list2.at(0));
+    on_hometownSub1_activated(list2.at(0));
     int count2=list2.count();
     if(count2>1){
         if(ui->hometownSub2->currentText()!=list2.at(1)){

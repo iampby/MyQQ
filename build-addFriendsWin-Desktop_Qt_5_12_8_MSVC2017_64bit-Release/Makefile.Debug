@@ -2129,7 +2129,12 @@ debug\main.obj: ..\main.cpp ..\mainwindow.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qeventloop.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qdesktopwidget.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qguiapplication.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qinputmethod.h
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qinputmethod.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qmessagebox.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qdialog.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QDir \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdir.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfileinfo.h
 
 debug\mainwindow.obj: ..\mainwindow.cpp ..\mainwindow.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QMainWindow \
@@ -2262,18 +2267,18 @@ debug\mainwindow.obj: ..\mainwindow.cpp ..\mainwindow.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QJsonDocument \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsondocument.h \
 		ui_mainwindow.h \
-		..\userview.h \
-		..\findusermodel.h \
-		..\userwidget.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qscrollarea.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qabstractscrollarea.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qframe.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qstackedwidget.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\QColor \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QListView \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qlistview.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qabstractitemview.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qitemselectionmodel.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QVariant \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QApplication \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qapplication.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcoreapplication.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qeventloop.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qdesktopwidget.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qguiapplication.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qinputmethod.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QCheckBox \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qcheckbox.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QComboBox \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qcombobox.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qabstractitemdelegate.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qstyleoption.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qabstractspinbox.h \
@@ -2284,6 +2289,36 @@ debug\mainwindow.obj: ..\mainwindow.cpp ..\mainwindow.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qstyle.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qtabbar.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qrubberband.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qframe.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QFrame \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QLabel \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qlabel.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QLineEdit \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qlineedit.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtextcursor.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtextformat.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtextoption.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QStackedWidget \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qstackedwidget.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QTextBrowser \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qtextbrowser.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qtextedit.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qabstractscrollarea.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtextdocument.h \
+		..\label.h \
+		..\combobox.h \
+		..\subcombobox.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qlistview.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qabstractitemview.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qitemselectionmodel.h \
+		..\placemodel.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QAbstractListModel \
+		..\userview.h \
+		..\findusermodel.h \
+		..\userwidget.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qscrollarea.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\QColor \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QListView \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qlayout.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qlayoutitem.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qboxlayout.h \
@@ -2295,7 +2330,8 @@ debug\mainwindow.obj: ..\mainwindow.cpp ..\mainwindow.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qgraphicseffect.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qlistwidget.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtimer.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbasictimer.h
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbasictimer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsocketnotifier.h
 
 debug\placemodel.obj: ..\placemodel.cpp ..\placemodel.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QObject \
@@ -2568,6 +2604,11 @@ debug\tcpsocket.obj: ..\tcpsocket.cpp ..\tcpsocket.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonvalue.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QJsonDocument \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsondocument.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QDir \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdir.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfileinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfile.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfiledevice.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qimage.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtguiglobal.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtgui-config.h \
@@ -3185,7 +3226,8 @@ debug\userwidget.obj: ..\userwidget.cpp ..\userwidget.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qtabwidget.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qrubberband.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qabstractitemmodel.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QEvent
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QEvent \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QModelIndex
 
 debug\moc_combobox.obj: debug\moc_combobox.cpp 
 

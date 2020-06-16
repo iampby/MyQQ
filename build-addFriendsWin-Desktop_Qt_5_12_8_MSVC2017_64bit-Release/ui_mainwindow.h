@@ -19,6 +19,7 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QStackedWidget>
+#include <QtWidgets/QTextBrowser>
 #include <QtWidgets/QWidget>
 #include <label.h>
 #include "combobox.h"
@@ -71,6 +72,7 @@ public:
     SubComboBox *hometownSub4;
     SubComboBox *hometownSub1;
     QComboBox *comboBox;
+    QTextBrowser *textBrowser;
     QWidget *findGroup_;
     QLineEdit *lineEdit;
     QPushButton *pushButton;
@@ -783,6 +785,9 @@ public:
         comboBox->setObjectName(QString::fromUtf8("comboBox"));
         comboBox->setGeometry(QRect(640, 90, 69, 22));
         comboBox->setEditable(true);
+        textBrowser = new QTextBrowser(findPerson);
+        textBrowser->setObjectName(QString::fromUtf8("textBrowser"));
+        textBrowser->setGeometry(QRect(510, 60, 81, 61));
         mainStackedWidget->addWidget(findPerson);
         findPersonEdit->raise();
         liveCBox->raise();
@@ -800,6 +805,7 @@ public:
         cityPop2->raise();
         comboBox->raise();
         sexLabel->raise();
+        textBrowser->raise();
         findGroup_ = new QWidget();
         findGroup_->setObjectName(QString::fromUtf8("findGroup_"));
         lineEdit = new QLineEdit(findGroup_);
