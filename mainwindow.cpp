@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     qDebug()<<"addFriendsWin.exe would is execuated";
-    setWindowFlags(Qt::FramelessWindowHint|Qt::Window|Qt::WindowStaysOnTopHint);
+    setWindowFlags(Qt::FramelessWindowHint|Qt::Window);
     this->setAttribute(Qt::WA_TranslucentBackground);//设置透明背景
     TcpSocket::setBeginId("0");
     where=QStringLiteral("不限");
