@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/QWidget/headImgAcw.png</file>
+        <file>images/QWidget/headImgAddition.png</file>
+        <file>images/QWidget/headImgCw.png</file>
+        <file>images/QWidget/headImgSubtraction.png</file>
+    </qresource>
+</RCC>
