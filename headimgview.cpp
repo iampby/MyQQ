@@ -158,11 +158,13 @@ void HeadImgView::valueChanged(int value)
 void HeadImgView::zoomOutClicked()
 {
     qDebug()<<"zoomout clicked";
+    if(!slider->isEnabled())return;
     slider->setValue(slider->value()-slider->tickInterval());
 }
 
 void HeadImgView::zoomInClicked()
 {
+    if(!slider->isEnabled())return;
     qDebug()<<"zoomit clicked";
     slider->setValue(slider->value()+slider->tickInterval());
 }
@@ -209,5 +211,4 @@ void HeadImgView::acwClicked()
         qDebug()<<"excepted a error";
         return;
     }
-
 }

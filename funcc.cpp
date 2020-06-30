@@ -382,6 +382,8 @@ void FuncC::setIp(const QString &address)
     ip=address;
 }
 
+
+
 bool FuncC::saveStringToTxt(const QString &str,const QString& title,const QString&dir)
 {
     QString r=QFileDialog::getSaveFileName(nullptr,title,dir,"Text (*.txt);;All Files (*.*)");
@@ -535,7 +537,7 @@ void FuncC::openTempMesWin() const
     tipWin->show();
 }
 
-void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y)const
+void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap)const
 {
     HeadImgWidget*widget=new HeadImgWidget;
     widget->setWindowFlag(Qt::FramelessWindowHint,true);//必须去除标题栏，设置parent不会自动去除标题
@@ -546,11 +548,13 @@ void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y)const
         temp->setParent(w);
         temp->setGeometry(x,y,widget->width(),widget->height());
         connect(this,&FuncC::emitOpenFile,widget,&HeadImgWidget::openFile);
+        connect(this,&FuncC::emitOKClicked,widget,&HeadImgWidget::okClicked);
         connect(widget,&HeadImgWidget::destroyed,[=](){qDebug()<<"des hi";});
         connect(this,&FuncC::emitCloseHead,widget,[=](){
             qDebug()<<"deletelater";
           widget->deleteLater();//延迟删除
         });
+        widget->setHeadImg(pixmap);
         temp->show();
     }else{
         qDebug()<<"widget is null";
@@ -567,6 +571,11 @@ void FuncC::openFile( QString filename)
 void FuncC::closeWidget()
 {
     emit emitCloseHead();//关闭信号
+}
+
+void FuncC::okClicked()
+{
+    emit emitOKClicked();
 }
 
 void FuncC::startAddFriendsProcess(QQuickWindow*arg,QMap<QString, QVariant>obj)

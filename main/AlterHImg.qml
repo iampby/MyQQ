@@ -8,6 +8,7 @@ import "../"
 
 //头像悬浮时弹出的界面
 Window {
+    signal okClicked()
     id: win
     width: 386
     height: 618
@@ -127,6 +128,61 @@ Window {
             }
         }
     }
+    Label {
+        x: 18
+        y: win.height - 126
+        text: qsTr("我使用过的头像：")
+    }
+    //底部
+    Frame {
+        id: bottomFrame
+        padding: 6
+        x: 1
+        y: win.height - 37
+        background: Rectangle {
+            implicitHeight: 35
+            implicitWidth: win.width - 2
+            color: "#e5eff7"
+        }
+        RowLayout {
+            x: bottomFrame.width / 2 + 4
+            spacing: 15
+            Layout.alignment: Qt.AlignTop
+            Button {
+                id: okBtn
+                text: "确认"
+                onClicked: {
+funcc.emitOKClicked();//fa发送信号给头像视图区
+                }
+                background: Rectangle {
+                    implicitWidth: 72
+                    implicitHeight: 22
+                    color: okBtn.hovered ? (okBtn.pressed ? Qt.darker(
+                                                                "#12b7f5",
+                                                                1.25) : Qt.darker(
+                                                                "#12b7f5",
+                                                                1.10)) : "#12b7f5"
+                }
+            }
+            Button {
+                id: cancelBtn
+                text: "取消"
+                onClicked: {
+
+                }
+                background: Rectangle {
+                    implicitWidth: 72
+                    implicitHeight: 22
+                    color: cancelBtn.hovered ? (cancelBtn.pressed ? Qt.darker(
+                                                                        "#12b7f5",
+                                                                        1.25) : Qt.darker(
+                                                                        "#12b7f5",
+                                                                        1.10)) : "#12b7f5"
+                }
+            }
+        }
+    }
+    //文件打开框，因为Qtc++的静态调用文件对话框不会自动释放资源，应该是里面有指针实现部分，我用这个可是异常延迟一天爆发
     FileDialog {
         id: fDlog
         title: "打开"

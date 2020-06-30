@@ -51,6 +51,7 @@ public:
     void setIp(const QString&address);
 
 
+
     //注意，对Qml数据类型的引用，除指针外，其他的必须为常量级引用，不能为变量引用，猜测是转换通过复制实现，即不能对实际指向的地址数据做出修改，所以常量引用、指针和常数才能通过
 
 
@@ -67,9 +68,10 @@ public:
 
     Q_INVOKABLE void setMyCursor(const int &direct, QWindow*w)const;//设置鼠标类型 用于窗口拉伸
     Q_INVOKABLE void openTempMesWin()const;//打开一个升级提示框
-    Q_INVOKABLE void addHeadWidget(QWindow *w,const int&x,const int&y)const;//更改头像框打开时添加一个QWidget控件到qml控件w
-    Q_INVOKABLE void openFile(QString filename);
-    Q_INVOKABLE void closeWidget();
+    Q_INVOKABLE void addHeadWidget(QWindow *w, const int&x, const int&y, QPixmap pixmap)const;//更改头像框打开时添加一个QWidget控件到qml控件w
+    Q_INVOKABLE void openFile(QString filename);//打开更改头像界面
+    Q_INVOKABLE void closeWidget();//发送信号删除widget控件
+    Q_INVOKABLE void okClicked();//发送更改头像 ok 信号
 
     Q_INVOKABLE void startAddFriendsProcess(QQuickWindow*arg, QMap<QString, QVariant> obj);
     unsigned short addFriendsProcessCount()const;
@@ -94,20 +96,14 @@ public:
     int getArrayLenth(T&array){
         return sizeof (array)/sizeof (array[0]);
     }
-public Q_SLOTS:
+public Q_SLOTS://使用第三方源码解析时相当有用 这里用来给qml传递信号比较好
     void setSourceIco(const QString &arg);
     void setWin(QQuickWindow *arg);
     void setLocalCity(const QString&arg);
     void setLocalUrl(const QString&arg);
     void setMyQQ(const QString&);
     void setPasswd(const QString&);
-private slots:
-    void analysisWh(QString totalGeoAddr);//解析本地IP获取地理位置及Url
-    void handleProcessStarted();
-    void GetInternetConnectState();
-    void registerFinished();
-    void registerConnectFailed();
-Q_SIGNALS:
+Q_SIGNALS://使用第三方源码解析时相当有用 这里用来给qml传递信号比较好
     void winChanged();
     void sourceIcoChanged();
     void myQQChanged();
@@ -127,6 +123,13 @@ Q_SIGNALS:
 signals:
     void emitOpenFile(const QString& filename);//更改头像界面打开一个文件
     void emitCloseHead();//释放更改头像界面
+    void emitOKClicked();//更改头像界面点击
+private slots:
+    void analysisWh(QString totalGeoAddr);//解析本地IP获取地理位置及Url
+    void handleProcessStarted();
+    void GetInternetConnectState();
+    void registerFinished();
+    void registerConnectFailed();
 private:
     QQuickWindow *m_win;
 

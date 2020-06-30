@@ -29,15 +29,17 @@ ApplicationWindow {
     // signal dpChanged 无需定义，属性自动生成槽函数与信号
     signal adjustCoordination
     //获得所有的设置信息  过渡信号
-    flags: Qt.FramelessWindowHint  | Qt.WindowStaysOnTopHint //取消窗口边缘框架 topmost（任务栏之上）
+    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint //取消窗口边缘框架 topmost（任务栏之上）
     //property alias actions: actions
     width: 495
     height: 470 //透明主界面大小
     color: "#00000000"
-onClosing: {
- console.log("main close")
-    funcc.closeWidget()
-}
+
+    onClosing: {
+        console.log("main close")
+        // funcc.closeWidget()
+
+    }
     title: qsTr("MyQQ")
     onDpChanged: func.mainWinDpChanged()
     Func {

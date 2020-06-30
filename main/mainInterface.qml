@@ -44,7 +44,6 @@ ApplicationWindow {
     property int grade: -1
     property string signature: ""
     property string status: "1"
-    property string headUrl: ""
     property string where: ""
     property string townmans: ""
     //用于鼠标拉伸
@@ -62,6 +61,7 @@ ApplicationWindow {
     signal runGetFriendInfoFunction(var obj, int pos)
     //获取设置信息
     signal runGetSetInfoFunction(var obj)
+
 
     id: qqMainWin
     visible: true
@@ -94,7 +94,7 @@ ApplicationWindow {
         console.log("onRunGetUserInfo")
         //信息： name（昵称） sex（性别） signature（个性签名） days（活跃天数） grade（等级) status(状态） 所在地 故乡
         name = obj["name"]
-        headUrl = "file:///" + obj["headUrl"]
+        images.setPixmap(qqMainWin.myqq + "1", obj["headUrl"]) //好友号码+1
         sex = obj["sex"]
         signature = obj["signature"]
         activeDays = obj["days"]
@@ -279,6 +279,17 @@ FriendModel{ }'), qqMainWin, "dynamic_friend_model")
             }
         }
     }
+  //qimage图片接收
+    Connections {
+        target: images
+        onImagesChanged: {
+            var url= myqq + "1"
+            if(id===url)
+            console.log("images changed", id)
+            imgHead.source = "image://qc/" + url//设置qimage源
+        }
+    }
+
     //实体
     Rectangle {
         id: bodyRec
@@ -596,10 +607,10 @@ FriendModel{ }'), qqMainWin, "dynamic_friend_model")
 
                 Image {
                     id: imgHead
+                    asynchronous: true
                     fillMode: Image.PreserveAspectCrop
                     visible: false
                     sourceSize: Qt.size(parent.size, parent.size)
-                    source: headUrl
                 }
                 //遮罩
                 OpacityMask {

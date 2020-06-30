@@ -5,13 +5,13 @@
 #include<qdebug.h>
 #include <qpushbutton.h>
 #include<QApplication>
+#include<qlabel.h>
 //#pragma comment(lib,"qtquickcontrols2plugind.dll")//载入qml插件库
 
-//qpoint的外联函数 用于qhash
-inline uint qHash(const QPoint &key, uint seed)
+//qpoint的静态qhash本地方法 用于qhash
+static uint qHash(const QPoint &key, uint seed)
 {
-    return qHash(key.x(),seed)*qHash(key.y(),seed);
-
+    return pow(qHash(key.x(),seed),2)*qHash(key.y(),seed);//注意防止冲突，如果发现图片颜色不理想，那一定时哈希表产生冲突过多
 }
 
 
@@ -148,39 +148,20 @@ zoomout->installEventFilter(this);
 cw->installEventFilter(this);
 acw->installEventFilter(this);
 
+
 view->setSlider(slider);
+slider->setEnabled(false);
 connect(zoomout,&QPushButton::clicked,view,&HeadImgView::zoomOutClicked);
 connect(zoomin,&QPushButton::clicked,view,&HeadImgView::zoomInClicked);
 connect(cw,&QPushButton::clicked,view,&HeadImgView::cwClicked);
 connect(acw,&QPushButton::clicked,view,&HeadImgView::acwClicked);
 }
 
-HeadImgWidget::~HeadImgWidget()
+
+void HeadImgWidget::setHeadImg(QPixmap &head)
 {
-    if(slider){
-        delete slider,slider=nullptr;
-        qDebug()<<"slider delete";
-    }
-    if(view){
-        delete view,view=nullptr;
-        qDebug()<<"view delete";
-    }
-    if(zoomin){
-        delete zoomin,zoomin=nullptr;
-        qDebug()<<"zoomin delete";
-    }
-    if(zoomout){
-        delete zoomout,zoomout=nullptr;
-        qDebug()<<"zoomout delete";
-    }
-    if(cw){
-        delete cw,cw=nullptr;
-        qDebug()<<"cw delete";
-    }
-    if(acw){
-        delete acw,acw=nullptr;
-        qDebug()<<"acw delete";
-    }
+    qDebug()<<"image of head is loaded";
+    view->setImage(head);
 }
 
 
@@ -193,8 +174,12 @@ void HeadImgWidget::openFile(const QString &filename)
     view->setImage(img);
 }
 
-
-
+void HeadImgWidget::okClicked()
+{
+  QPixmap newHeadImg= view->grab(QRect(QPoint(1,1),QSize(348,348)));
+  qDebug()<<"new image has been  got";
+  view->setImage(newHeadImg);
+}
 
 
 bool HeadImgWidget::eventFilter(QObject *watched, QEvent *event)

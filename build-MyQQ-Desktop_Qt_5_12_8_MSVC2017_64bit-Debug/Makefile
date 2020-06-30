@@ -243,6 +243,7 @@ Makefile: ..\MyQQ.pro ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\win32-msvc
 		..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\qt_config.prf \
 		..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\win32-msvc\qmake.conf \
 		..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\spec_post.prf \
+		.qmake.stash \
 		..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\exclusive_builds.prf \
 		..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\common\msvc-version.conf \
 		..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\toolchain.prf \
@@ -443,6 +444,7 @@ Makefile: ..\MyQQ.pro ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\win32-msvc
 ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\qt_config.prf:
 ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\win32-msvc\qmake.conf:
 ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\spec_post.prf:
+.qmake.stash:
 ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\exclusive_builds.prf:
 ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\common\msvc-version.conf:
 ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\toolchain.prf:

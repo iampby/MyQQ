@@ -21,9 +21,11 @@ SOURCES += \
     friendmodel.cpp \
     headimgview.cpp \
     headimgwidget.cpp \
+    images.cpp \
     loginsocket.cpp \
         main.cpp \
     funcc.cpp \
+    qmlimageprovider.cpp \
     weatherhandle.cpp \
     registersocket.cpp
 
@@ -51,6 +53,8 @@ HEADERS += \
     funcc.h \
     headimgview.h \
     headimgwidget.h \
+    images.h \
     loginsocket.h \
+    qmlimageprovider.h \
     weatherhandle.h \
     registersocket.h
