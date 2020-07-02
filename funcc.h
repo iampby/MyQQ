@@ -18,11 +18,12 @@
 #include <QHostAddress>
 #include<QTcpSocket>
 #include<qvector.h>
+#include<qdatetime.h>
+class Images;
 class QXmlStreamReader;
 class LoginSocket;
 class QProcess;
 class RegisterSocket;
-//class BigFileSocket;
 #include"headimgwidget.h"
 class FuncC:public QObject
 {
@@ -68,12 +69,13 @@ public:
 
     Q_INVOKABLE void setMyCursor(const int &direct, QWindow*w)const;//设置鼠标类型 用于窗口拉伸
     Q_INVOKABLE void openTempMesWin()const;//打开一个升级提示框
-    Q_INVOKABLE void addHeadWidget(QWindow *w, const int&x, const int&y, QPixmap pixmap)const;//更改头像框打开时添加一个QWidget控件到qml控件w
+    Q_INVOKABLE void addHeadWidget(QWindow *w, const int&x, const int&y, QPixmap pixmap, const QString&myqq, const bool isgot)const;//更改头像框打开时添加一个QWidget控件到qml控件w
     Q_INVOKABLE void openFile(QString filename);//打开更改头像界面
     Q_INVOKABLE void closeWidget();//发送信号删除widget控件
     Q_INVOKABLE void okClicked();//发送更改头像 ok 信号
+    Q_INVOKABLE void getHistoryHeadImg(const QString&myqq)const;//获取历史头像 this常量调用
 
-    Q_INVOKABLE void startAddFriendsProcess(QQuickWindow*arg, QMap<QString, QVariant> obj);
+    Q_INVOKABLE void startAddFriendsProcess(QQuickWindow*arg, QMap<QString, QVariant> obj);//添加好友进程
     unsigned short addFriendsProcessCount()const;
     Q_INVOKABLE void crawWeatherUrl(const QString&url);//获取天气数据并进行处理
     Q_INVOKABLE QString _3daysdata(const int& r,const int& c);//返回day3Weather指定索引处的数据
@@ -124,6 +126,7 @@ signals:
     void emitOpenFile(const QString& filename);//更改头像界面打开一个文件
     void emitCloseHead();//释放更改头像界面
     void emitOKClicked();//更改头像界面点击
+    void emitReadHistory(int code)const;//更改头像界面点击
 private slots:
     void analysisWh(QString totalGeoAddr);//解析本地IP获取地理位置及Url
     void handleProcessStarted();

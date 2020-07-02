@@ -1,4 +1,5 @@
 #include "headimgwidget.h"
+#include"images.h"
 #include <QEvent>
 #include<QHBoxLayout>
 #include <QSlider>
@@ -19,6 +20,7 @@ HeadImgWidget::HeadImgWidget(QWidget *parent) : QWidget(parent)
 {
     qDebug()<<"init headimgwidget";
     //³õÊ¼»¯Í¼Æ¬
+    isread=false;
     imgOut.load(":/images/QWidget/headImgSubtraction.png","png");
     imgIn.load(":/images/QWidget/headImgAddition.png","png");
     imgCw.load(":/images/QWidget/headImgCw.png","png");
@@ -164,6 +166,18 @@ void HeadImgWidget::setHeadImg(QPixmap &head)
     view->setImage(head);
 }
 
+void HeadImgWidget::read(Images &images)
+{
+
+}
+
+
+
+HeadImgWidget::~HeadImgWidget()
+{
+    qDebug()<<"delete view";
+}
+
 
 
 void HeadImgWidget::openFile(const QString &filename)
@@ -180,6 +194,8 @@ void HeadImgWidget::okClicked()
   qDebug()<<"new image has been  got";
   view->setImage(newHeadImg);
 }
+
+
 
 
 bool HeadImgWidget::eventFilter(QObject *watched, QEvent *event)

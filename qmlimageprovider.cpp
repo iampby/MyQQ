@@ -15,7 +15,9 @@ const QPixmap &QmlImageProvider::valueOf(const QString &id)
 
 QPixmap QmlImageProvider::requestPixmap(const QString &id, QSize *size, const QSize &requestedSize)
 {
-    qDebug()<<"id:"<<id<<*size<<requestedSize;
-        return images.value(id);
+    QPixmap pix=images.value(id);
+    if(pix.isNull())qDebug()<<"image is null:"<<id;
+
+        return pix;
 }
 

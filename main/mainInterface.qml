@@ -20,6 +20,7 @@ ApplicationWindow {
     property alias cityWeatherModel: cityWeatherModel
     property int weatherCanShow: 0 //2表示准备好
     property alias friendGroupModel: friendGroupModel
+    property alias histroyImgModel: histroyImgModel //历史头像model
     property alias viewFriend: viewFriend
     property var friendsModel: [] //保存好友模型，用来过渡且便于使用
     //好友代理数，由于代理动态加载，在friendGroupModel添加数据过程中一直处于线程忙碌，无法直接构造，所以标记是否构造完用来加载好友模型
@@ -62,7 +63,6 @@ ApplicationWindow {
     //获取设置信息
     signal runGetSetInfoFunction(var obj)
 
-
     id: qqMainWin
     visible: true
     x: func.qqMainX() //初始化窗口位置于贴右，或者右贴任务栏
@@ -89,12 +89,19 @@ ApplicationWindow {
             qqMainWin.y += movedCoordinate.y
         }
     }
+    //传myqq到image
+    onMyqqChanged: {
+        console.log("dispatched myqq to images")
+        images.setMyQQ(myqq)
+    }
+
     //利用元对象信号槽通信机制，把参数从Qtc++->qml 获取user信息
     onRunGetUserInfo: {
         console.log("onRunGetUserInfo")
         //信息： name（昵称） sex（性别） signature（个性签名） days（活跃天数） grade（等级) status(状态） 所在地 故乡
         name = obj["name"]
-        images.setPixmap(qqMainWin.myqq + "1", obj["headUrl"]) //好友号码+1
+        console.log("qMainWin.myqq + \"1\", obj[\"headUrl\"]",
+                    qqMainWin.myqq + "1" + obj["headUrl"])
         sex = obj["sex"]
         signature = obj["signature"]
         activeDays = obj["days"]
@@ -102,6 +109,12 @@ ApplicationWindow {
         status = obj["status"]
         where = obj["所在地"]
         townmans = obj["故乡"]
+        var tag = qqMainWin.myqq + "101"
+        images.setPixmap(tag, obj["headUrl"]) //好友号码+1
+        histroyImgModel.append({
+                                   "url": "image://qc/"+ tag,
+                                   "index":0
+                               })
     }
     //利用元对象信号槽通信机制，把参数从Qtc++->qml 获取好友信息
     onRunGetFriendInfoFunction: {
@@ -136,6 +149,11 @@ ApplicationWindow {
         }
         funcc.mkDir(("../user/" + mainWin.myqq + "/weather"))
         funcc.writeWeatherFile("../user/" + mainWin.myqq + "/weather/city")
+        images.removeHistory()
+        if (loaderForAlterHImg.status == Loader.Ready) {
+            loaderForAlterHImg.item.close()
+        }
+
         Qt.quit()
     }
     onWeatherCanShowChanged: {
@@ -277,16 +295,6 @@ FriendModel{ }'), qqMainWin, "dynamic_friend_model")
                     break
                 }
             }
-        }
-    }
-  //qimage图片接收
-    Connections {
-        target: images
-        onImagesChanged: {
-            var url= myqq + "1"
-            if(id===url)
-            console.log("images changed", id)
-            imgHead.source = "image://qc/" + url//设置qimage源
         }
     }
 
@@ -1703,6 +1711,15 @@ FriendModel{ }'), qqMainWin, "dynamic_friend_model")
     Component {
         id: compFriend
         FriendModel {}
+    }
+    //模型数据 历史头像
+    ListModel {
+        property bool isgot: false
+        id: histroyImgModel
+        onCountChanged: {
+            console.log("historymodel count changed")
+                imgHead.source = "image://qc/" + myqq + "101" //设置头像 qimage源
+        }
     }
     //时钟
     //延迟关闭提示

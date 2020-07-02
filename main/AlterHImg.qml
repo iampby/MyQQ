@@ -8,7 +8,7 @@ import "../"
 
 //头像悬浮时弹出的界面
 Window {
-    signal okClicked()
+    signal okClicked
     id: win
     width: 386
     height: 618
@@ -17,12 +17,39 @@ Window {
     visible: true
     //移动鼠标
     title: "更换头像"
+    function midFunc() {
+        console.log("midfunc invocations")
+        inCenterLoader.item.histroyImgModel.isgot = true
+        func.addHeadUrl()
+    }
+    Connections {
+        target: images
+        onReadHistoryHeadImg: {
+            console.log("fileList", fileList)
+            var arr = fileList.split(".")
+            console.log("arr", arr)
+            var obj = []
+            for (var i = 0; i < arr.length - 1; ++i) {
+                obj[i] = {
+                    "url": arr[i],
+                    "index": i + 1
+                }
+                console.log("i+1:", i + 1)
+                console.log(obj[i].url)
+            }
+            inCenterLoader.item.histroyImgModel.append(obj)
+        }
+    }
+
     onClosing: {
         hide()
-        console.log("close")
+        console.log(" clear")
         funcc.closeWidget() //释放widget资源 必须在loader释放之前
+        console.log("clear 2")
         loaderForAlterHImg.source = "" //相当于deletelater
+        console.log("clear end")
     }
+
     MouseCustomForWindow {
         onSendPos: {
             win.x += movedCoordinate.x
@@ -129,10 +156,153 @@ Window {
         }
     }
     Label {
+        id: label
         x: 18
         y: win.height - 126
         text: qsTr("我使用过的头像：")
     }
+
+    //历史头像列表
+    Button {
+        id: leftBtn
+        x: 3
+        y: label.y + label.height + 5
+        height: 58
+        width: 12
+        onClicked: {
+            var index = historyList.currentIndex
+            index -= 6
+            if (index < 0)
+                index = 0
+            historyList.positionViewAtIndex(index, ListView.Beginning)
+            historyList.currentIndex = index
+            console.log("current index", historyList.currentIndex)
+        }
+
+        background: Rectangle {
+            implicitHeight: 58
+            implicitWidth: 12
+            color: leftBtn.hovered ? leftBtn.pressed ? Qt.darker(
+                                                           "#e5e5e5") : "#e5e5e5" : "transparent"
+            Text {
+                anchors.centerIn: parent
+                font.pointSize: 13
+                text: qsTr("<")
+                color: "gray"
+            }
+        }
+    }
+    ListView {
+        property int selectIndex: -1
+        id: historyList
+        visible: true
+        width: 353
+        height: 58
+        contentHeight: 58
+        contentWidth: 0
+        x: 18
+        y: label.y + label.height + 5
+        spacing: 1
+        snapMode: ListView.SnapToItem
+        highlightRangeMode: ListView.ApplyRange
+        clip: true
+        currentIndex: 0
+        orientation: ListView.Horizontal
+        onCountChanged: {
+            var length = count / 6
+            if (count % 6 != 0)
+                length += 1
+            contentWidth = length * 353
+        }
+
+        model: inCenterLoader.item.histroyImgModel
+        delegate: Rectangle {
+            id: rec
+            property alias label: clabel.visible
+            implicitHeight: 58
+            implicitWidth: 58
+            border.color: cbtn.hovered ? "#12b7f5" : "transparent"
+            border.width: 2
+            Button {
+                id: cbtn
+                x: 1
+                y: 1
+                width: 56
+                height: 56
+                onClicked: {
+                    console.log("index:", index)
+                    historyList.selectIndex = index
+                }
+
+                background: Image {
+                    sourceSize: Qt.size(56, 56)
+                    asynchronous: true
+                    source: url
+                }
+            }
+            Connections {
+                target: historyList
+                onSelectIndexChanged: {
+                    console.log("my index is ", index)
+                    if (historyList.selectIndex == index) {
+                        clabel.visible = true
+                    } else
+                        clabel.visible = false
+                }
+            }
+
+            //选中状态小圆圈
+            Label {
+                id: clabel
+                visible: false
+                width: 16
+                height: 16
+                text: "√"
+                x: 36
+                y: 36
+                color: "white"
+                font.pointSize: 12
+                background: Rectangle {
+                    implicitHeight: 16
+                    implicitWidth: 16
+                    color: "#12b7f5"
+                    radius: 90
+                }
+            }
+        }
+    }
+
+    Button {
+        id: rightBtn
+        height: 58
+        width: 12
+        x: win.width - 15
+        y: label.y + label.height + 5
+        onClicked: {
+            var index = historyList.currentIndex, count = historyList.count
+            index += 6
+            console.log("??", index, count, historyList.count)
+            if (index >= count)
+                return
+            historyList.positionViewAtIndex(index, ListView.Beginning)
+            historyList.currentIndex = index
+        }
+
+        background: Rectangle {
+            implicitHeight: 58
+            implicitWidth: 12
+            color: rightBtn.hovered ? rightBtn.pressed ? Qt.darker(
+                                                             "#e5e5e5",
+                                                             1.15) : "#e5e5e5" : "transparent"
+            Text {
+                anchors.centerIn: parent
+                font.pointSize: 13
+                text: qsTr(">")
+                color: "gray"
+            }
+        }
+    }
+
     //底部
     Frame {
         id: bottomFrame
@@ -152,7 +322,7 @@ Window {
                 id: okBtn
                 text: "确认"
                 onClicked: {
-funcc.emitOKClicked();//fa发送信号给头像视图区
+                    funcc.emitOKClicked() //fa发送信号给头像视图区
                 }
                 background: Rectangle {
                     implicitWidth: 72

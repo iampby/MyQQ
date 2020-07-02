@@ -3,6 +3,7 @@
 #include"loginsocket.h"
 #include"bigfilesocket.h"
 #include"headimgwidget.h"
+#include"images.h"
 #include<QDebug>
 #include<qprocess.h>
 #include<qthread.h>
@@ -537,7 +538,7 @@ void FuncC::openTempMesWin() const
     tipWin->show();
 }
 
-void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap)const
+void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,const QString&myqq,const bool isgot)const
 {
     HeadImgWidget*widget=new HeadImgWidget;
     widget->setWindowFlag(Qt::FramelessWindowHint,true);//必须去除标题栏，设置parent不会自动去除标题
@@ -546,13 +547,25 @@ void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap)cons
     QWindow*temp=widget->windowHandle();
     if(temp){
         temp->setParent(w);
+        QDir dir("../user/"+myqq+"/historyHeadImg/");
+        if(!dir.exists()||!isgot){
+             qDebug()<< dir.mkpath("")<<"create dir result";
+            connect(this,&FuncC::emitReadHistory,widget,[=](){
+                qDebug()<<"received emitReadHistroy";
+                QMetaObject::invokeMethod(w,"midFunc",Qt::QueuedConnection) ;
+            });//读取头像
+        }
+
+
+        getHistoryHeadImg(myqq);
         temp->setGeometry(x,y,widget->width(),widget->height());
-        connect(this,&FuncC::emitOpenFile,widget,&HeadImgWidget::openFile);
-        connect(this,&FuncC::emitOKClicked,widget,&HeadImgWidget::okClicked);
-        connect(widget,&HeadImgWidget::destroyed,[=](){qDebug()<<"des hi";});
+        connect(this,&FuncC::emitOpenFile,widget,&HeadImgWidget::openFile);//打开文件
+        connect(this,&FuncC::emitOKClicked,widget,&HeadImgWidget::okClicked);//ok处理
+        connect(widget,&HeadImgWidget::destroyed,[=](){qDebug()<<"destoryed qmlWin";});
         connect(this,&FuncC::emitCloseHead,widget,[=](){
-            qDebug()<<"deletelater";
-          widget->deleteLater();//延迟删除
+            qDebug()<<"deletelater pre";
+            widget->deleteLater();//延迟删除
+            qDebug()<<"deletelater aft";
         });
         widget->setHeadImg(pixmap);
         temp->show();
@@ -576,6 +589,30 @@ void FuncC::closeWidget()
 void FuncC::okClicked()
 {
     emit emitOKClicked();
+}
+
+
+void FuncC::getHistoryHeadImg(const QString&myqq)const
+{
+    QString instructDescription="4 historyHeadImg "+myqq;
+    BigFileSocket*historyImgSock=new BigFileSocket();//子线程不能有父类
+    historyImgSock->setInstruct(instructDescription);
+    historyImgSock->setIp(ip);
+    historyImgSock->setPort(loginPort);
+    QThread*thread=new QThread();
+    historyImgSock->moveToThread(thread);
+    thread->start();
+    emit historyImgSock->start();//转移到新线程去post host
+    connect(thread,&QThread::finished,historyImgSock,&BigFileSocket::deleteLater);
+    //删除线程
+    connect(thread,&QThread::finished,thread,&QThread::deleteLater);
+    //获取文件结果收尾处理
+    connect( historyImgSock,&BigFileSocket::finished, historyImgSock,[=](int code){
+        qDebug()<<"code"<<code;
+        thread->exit(0);
+        thread->quit();
+        emit emitReadHistory(code);
+    });
 }
 
 void FuncC::startAddFriendsProcess(QQuickWindow*arg,QMap<QString, QVariant>obj)

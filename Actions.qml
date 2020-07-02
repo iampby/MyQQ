@@ -408,7 +408,8 @@ Rectangle {
                     console.log("opened the AlterHImg")
                     loader.item.x = (mainWin.desktopAvailableWidth - loader.item.width) / 2
                     loader.item.y = (mainWin.desktopAvailableHeight - loader.item.height) / 2
-                    funcc.addHeadWidget(loader.item, 19, 84, images.findPixmap(inCenterLoader.item.myqq+"1"))
+                    funcc.addHeadWidget(loader.item, 19, 84, images.findPixmap(inCenterLoader.item.myqq+"1"),
+                                        inCenterLoader.item.myqq, inCenterLoader.item.histroyImgModel.isgot)
                     loader.item.show()
                     break
                 } else if (loader.status === Loader.Error) {

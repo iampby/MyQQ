@@ -1,7 +1,7 @@
 ﻿import QtQuick 2.11
 
 Item {
-    //注意，含有函数的部件属性容易异常,即最好不要设置任何属性
+    //注意，不知道是loader原因还是什么的  含有函数的部件属性容易异常,即最好不要设置任何属性
     signal makeRequestFinished
     signal sizeChanged(int w, int h, point delta, int directX, int directY)
     function mainWinReSize(x, y, width, height) {
@@ -238,5 +238,9 @@ Item {
       }
     }
     return bytesCount;
+    }
+    function addHeadUrl(){
+        console.log("addhandlehead")
+        images.readHistory()
     }
 }

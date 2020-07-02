@@ -13,7 +13,7 @@ BigFileSocket::BigFileSocket(QObject *parent)
     connect(this,SIGNAL(readyRead()),this ,SLOT(readD()));
     connect(this,SIGNAL(connected()),this ,SLOT(writeD()));
     connect(this,SIGNAL(start()),this ,SLOT(post()));
-    connect(this,SIGNAL(result(int)),this ,SLOT(resultSlot(int)));
+    connect(this,SIGNAL(result(int,QString,QString)),this ,SLOT(resultSlot(int,QString,QString)));
 
     //初始化temp，用来保存分批到来的数据
     temp=QByteArray();
@@ -24,9 +24,17 @@ void BigFileSocket::setInstruct(const QString &arg)
 {
     QStringList l=arg.split(" ",QString::SkipEmptyParts);
     QJsonObject o;
-    o.insert("instruct",QJsonValue(l.at(0)));
-    o.insert("content",QJsonValue(l.at(1)));
-    o.insert("myqq",QJsonValue(l.at(2)));
+    try{
+        if(l.length()>3)throw -1;
+        else if(l.length()<=2)throw -2;
+        o.insert("instruct",QJsonValue(l.at(0)));
+        o.insert("content",QJsonValue(l.at(1)));
+        o.insert("myqq",QJsonValue(l.at(2)));
+    }catch(int &except){
+        qDebug()<<"this list is overflow,code:"<<except;
+    }catch(...){
+        qDebug()<<"unkown exception in:32row:bigfilesocket";
+    }
     myqq=l.at(2);
     //建立目录
     QDir mk;
@@ -54,10 +62,9 @@ bool BigFileSocket::writeImg(const QByteArray &content, const QString &filepath,
 {
 
     QImage img;
-    qDebug()<<"content";
+    qDebug()<<filepath;
     if(!img.loadFromData(content,format))
         return false;
-    qDebug()<<"content1";
     if(!img.save(filepath,nullptr,0))
         return false;
     return true;
@@ -79,7 +86,7 @@ void BigFileSocket::readD()
             }
         }
         QByteArray data=this->read(size);
-        qDebug()<<data.data();
+        //qDebug()<<data.data();
         QJsonDocument doc=QJsonDocument::fromJson(data);
         if(doc.isObject()){
             QJsonObject obj=doc.object();
@@ -87,21 +94,38 @@ void BigFileSocket::readD()
             if(obj.value("instruct").toString()=="20"){
                 qDebug()<<"obj"<<obj.value("result").toString();
                 if(obj.value("result").toString()=="writing"){ //写头像
-                    m_write=HeadImg;
+                    m_write=Img;
                     size=0;
                     qDebug()<<"writing"<<m_write<<size;
                     continue;
                 }else if(obj.value("result").toString()=="true"){ //写头像成功
                     m_write=NoFile;//初始化标记枚举
                     size=0;
-                    emit result(0);
+                    emit result(0,"../user/"+myqq+"/friends/","png");
                     return;
                 }else if(obj.value("result").toString()=="false"){ //写头像失败
                     m_write=NoFile;
                     emit result(-1);
                     return;
                 }
-            }else if(m_write==HeadImg){
+            }else if(obj.value("instruct").toString()=="40"){
+                qDebug()<<"obj"<<obj.value("result").toString();
+                if(obj.value("result").toString()=="writing"){ //写头像
+                    m_write=Img;
+                    size=0;
+                    qDebug()<<"writing"<<m_write<<size;
+                    continue;
+                }else if(obj.value("result").toString()=="true"){ //写头像成功
+                    m_write=NoFile;//初始化标记枚举
+                    size=0;
+                    emit result(0,"../user/"+myqq+"/historyHeadImg/","png");
+                    return;
+                }else if(obj.value("result").toString()=="false"){ //写头像失败
+                    m_write=NoFile;
+                    emit result(-1);
+                    return;
+                }
+            }else if(m_write==Img){
                 imgName=obj.value("name").toString();
                 qDebug()<<"img "<<imgName;
                 size=obj.value("size").toVariant().toLongLong();
@@ -113,8 +137,8 @@ void BigFileSocket::readD()
             }
         }
         switch (m_write) {
-        case HeadImg://传IMG
-             img.insert(imgName,data);
+        case Img://传IMG
+            img.insert(imgName,data);
             size=0,imgName="";
             break;
         default:
@@ -159,19 +183,27 @@ void BigFileSocket::post()
     this->connectToHost(ip,port);
 }
 
-void BigFileSocket::resultSlot(int code)
+void BigFileSocket::resultSlot(int code, const QString& folder, const QString& type)
 {
 
     if(code==-1){
         emit finished(-1);
         return;
     }
+    qDebug()<<"result slot viaed";
     foreach(QString key,img.keys()){
         QByteArray data=img.value(key);
-        qDebug()<<data;
+        qDebug()<<data.data();
         if(!data.isEmpty()){
-            qDebug()<<key;
-            writeImg(data,"../user/"+myqq+"/friends/"+key+".png","PNG");
+            qDebug()<<key<<folder<<type;
+            try{
+          if(!writeImg(data,folder+key,type.toUtf8().data()))throw false;
+            }catch(bool&b){
+                qDebug()<<"saved file is of failure,code:"<<b;
+            }catch(...){
+                qDebug()<<"curred a unkown exception";
+               return;
+            }
         }
     }
     emit finished(code);
