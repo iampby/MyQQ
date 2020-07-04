@@ -3,7 +3,6 @@
 #include"loginsocket.h"
 #include"bigfilesocket.h"
 #include"headimgwidget.h"
-#include"images.h"
 #include<QDebug>
 #include<qprocess.h>
 #include<qthread.h>
@@ -18,6 +17,7 @@
 #include<QXmlStreamReader>
 #include <QQuickItem>
 #include <qlabel.h>
+#include <QBuffer>
 
 
 typedef bool (*TestConnection)(int*flags,int reserved);
@@ -549,18 +549,61 @@ void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,cons
         temp->setParent(w);
         QDir dir("../user/"+myqq+"/historyHeadImg/");
         if(!dir.exists()||!isgot){
-             qDebug()<< dir.mkpath("")<<"create dir result";
+            qDebug()<< dir.mkpath("")<<"create dir result";
+            getHistoryHeadImg(myqq);
             connect(this,&FuncC::emitReadHistory,widget,[=](){
                 qDebug()<<"received emitReadHistroy";
                 QMetaObject::invokeMethod(w,"midFunc",Qt::QueuedConnection) ;
             });//读取头像
         }
 
-
-        getHistoryHeadImg(myqq);
+        widget->setHeadImg(pixmap);//添加当前头像
         temp->setGeometry(x,y,widget->width(),widget->height());
         connect(this,&FuncC::emitOpenFile,widget,&HeadImgWidget::openFile);//打开文件
         connect(this,&FuncC::emitOKClicked,widget,&HeadImgWidget::okClicked);//ok处理
+        //更新远程头像
+      /*
+        connect(widget,&HeadImgWidget::updateRemoteHeadImg,this,[=](const QPixmap&pix){
+            qDebug()<<"updateRemoteHeadImg signal had sent";
+            disconnect(widget,SIGNAL(updateRemoteHeadImg(QPixmap)));//先断开连接，这个通信只调用一次
+            QString instructDescription="4 historyHeadImg "+myqq;
+            BigFileSocket*updateImgSock=new BigFileSocket();//子线程不能有父类
+            updateImgSock->setInstruct(instructDescription);
+            updateImgSock->setIp(ip);
+            updateImgSock->setPort(loginPort);
+            QThread*thread=new QThread();
+            updateImgSock->moveToThread(thread);
+            thread->start();
+            emit updateImgSock->start();//转移到新线程去post host
+            connect(thread,&QThread::finished,updateImgSock,&BigFileSocket::deleteLater);
+            //删除线程
+            connect(thread,&QThread::finished,thread,&QThread::deleteLater);
+            //获取文件结果收尾处理
+           connect(updateImgSock,&BigFileSocket::writtenInstruction, updateImgSock,[=](){
+                qDebug()<<"writtenInstruction";
+                QBuffer buffer;
+                buffer.open(QIODevice::WriteOnly);//pixmap不能为空，必须先将图片加载到pixmap中
+                pix.save(&buffer,"png");
+                QByteArray pixArray;
+                pixArray.append(buffer.data());
+                updateImgSock->write(pixArray);
+                updateImgSock->l
+                thread->exit(0);
+                thread->quit();
+                qDebug()<"updating headimg thread had exited";
+            });
+        });
+        */
+        //关闭历史头像标签
+        connect(widget,&HeadImgWidget::getFocus,[=](){
+            qDebug()<<"QMetaObject::invokeMethod(w,\"alterSelectedIndex\",Qt::QueuedConnection)";
+            QMetaObject::invokeMethod(w,"alterSelectedIndex",Qt::QueuedConnection) ;
+        });
+        //添加选中的头像
+        connect(this,&FuncC::emitSelectedImg,widget,[=](QPixmap&pix){
+            qDebug()<<"handle selected img ";
+            widget->setHeadImg(pix);
+        });
         connect(widget,&HeadImgWidget::destroyed,[=](){qDebug()<<"destoryed qmlWin";});
         connect(this,&FuncC::emitCloseHead,widget,[=](){
             qDebug()<<"deletelater pre";
@@ -586,9 +629,9 @@ void FuncC::closeWidget()
     emit emitCloseHead();//关闭信号
 }
 
-void FuncC::okClicked()
+void FuncC::okClicked(Images*images)
 {
-    emit emitOKClicked();
+    emit emitOKClicked(images);
 }
 
 
@@ -613,6 +656,11 @@ void FuncC::getHistoryHeadImg(const QString&myqq)const
         thread->quit();
         emit emitReadHistory(code);
     });
+}
+
+void FuncC::selectedImg(QPixmap  pixmap) const
+{
+    emitSelectedImg(pixmap);
 }
 
 void FuncC::startAddFriendsProcess(QQuickWindow*arg,QMap<QString, QVariant>obj)

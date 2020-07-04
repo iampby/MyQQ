@@ -8,20 +8,26 @@ import "../"
 
 //头像悬浮时弹出的界面
 Window {
-    signal okClicked
     id: win
     width: 386
     height: 618
     flags: Qt.FramelessWindowHint | Qt.Window //显示任务栏
     color: "lightgray" //边界颜色
     visible: true
-    //移动鼠标
     title: "更换头像"
     function midFunc() {
         console.log("midfunc invocations")
         inCenterLoader.item.histroyImgModel.isgot = true
         func.addHeadUrl()
     }
+    //widget获得焦点 重置
+    function alterSelectedIndex() {
+        console.log("alterSelectedIndex invocations")
+        historyList.selectedIndex = -1 //重置
+        historyList.selectedUrl = "-1"
+    }
+
+
     Connections {
         target: images
         onReadHistoryHeadImg: {
@@ -38,9 +44,12 @@ Window {
                 console.log(obj[i].url)
             }
             inCenterLoader.item.histroyImgModel.append(obj)
+            inCenterLoader.item.histroyImgModel.isgot = true
         }
     }
 
+
+    //关闭处理
     onClosing: {
         hide()
         console.log(" clear")
@@ -50,6 +59,7 @@ Window {
         console.log("clear end")
     }
 
+    //移动鼠标
     MouseCustomForWindow {
         onSendPos: {
             win.x += movedCoordinate.x
@@ -104,7 +114,6 @@ Window {
                     width: 28
                     height: 30
                     onClicked: {
-                        console.log("???")
                         close()
                     }
 
@@ -193,7 +202,9 @@ Window {
         }
     }
     ListView {
-        property int selectIndex: -1
+        property int selectedIndex: -1
+        property string selectedUrl: "-1"
+
         id: historyList
         visible: true
         width: 353
@@ -214,7 +225,13 @@ Window {
                 length += 1
             contentWidth = length * 353
         }
-
+        onSelectedIndexChanged: {
+            if (selectedIndex != -1) {
+                var str = selectedUrl
+                str = str.substring(str.lastIndexOf("/") + 1, str.length)
+                funcc.selectedImg(images.findPixmap(str))
+            }
+        }
         model: inCenterLoader.item.histroyImgModel
         delegate: Rectangle {
             id: rec
@@ -230,8 +247,9 @@ Window {
                 width: 56
                 height: 56
                 onClicked: {
-                    console.log("index:", index)
-                    historyList.selectIndex = index
+                    console.log("index:", index, url)
+                    historyList.selectedUrl = url
+                    historyList.selectedIndex = index
                 }
 
                 background: Image {
@@ -240,21 +258,11 @@ Window {
                     source: url
                 }
             }
-            Connections {
-                target: historyList
-                onSelectIndexChanged: {
-                    console.log("my index is ", index)
-                    if (historyList.selectIndex == index) {
-                        clabel.visible = true
-                    } else
-                        clabel.visible = false
-                }
-            }
 
             //选中状态小圆圈
             Label {
                 id: clabel
-                visible: false
+                visible: historyList.selectedIndex == index
                 width: 16
                 height: 16
                 text: "√"
@@ -281,7 +289,7 @@ Window {
         onClicked: {
             var index = historyList.currentIndex, count = historyList.count
             index += 6
-            console.log("??", index, count, historyList.count)
+            console.log("rightBtn clicked,index Changed", index, count, historyList.count)
             if (index >= count)
                 return
             historyList.positionViewAtIndex(index, ListView.Beginning)
@@ -322,7 +330,9 @@ Window {
                 id: okBtn
                 text: "确认"
                 onClicked: {
-                    funcc.emitOKClicked() //fa发送信号给头像视图区
+                    funcc.emitOKClicked(images) //fa发送信号给头像视图区
+                    console.log("clicked okBtn,now win will be closed")
+                   // win.close()
                 }
                 background: Rectangle {
                     implicitWidth: 72
@@ -338,7 +348,7 @@ Window {
                 id: cancelBtn
                 text: "取消"
                 onClicked: {
-
+                    close()
                 }
                 background: Rectangle {
                     implicitWidth: 72

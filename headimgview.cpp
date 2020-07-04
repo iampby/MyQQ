@@ -48,8 +48,25 @@ void HeadImgView::setImage(QPixmap &image)
     }
     m.scale(s,s);
     img= img.transformed(m,Qt::SmoothTransformation);
-    scene()->setSceneRect(-(img.width()-348.0)/2,-(img.height()-348.0)/2,img.width(),img.height());//中心对齐
+    rangPos=QPoint(-(img.width()-348.0)/2,-(img.height()-348.0)/2);
+    scene()->setSceneRect( rangPos.x(), rangPos.y(),img.width(),img.height());//中心对齐
     qDebug()<<"start draw"<<viewport()->pos();;
+    switch (direct) {
+    case Left:
+        rotate(90);
+        direct=Top;
+        break;
+    case Bottom:
+        rotate(180);
+        direct=Top;
+        break;
+    case Right:
+        rotate(-90);
+        direct=Top;
+        break;
+    default:
+        break;
+    }
     viewport()->update();//只有调用视距口更新才能更新scene 这里主动调用避免有时不会画背景
     // drawBackground( this->paintEngine()->painter(),QRectF(mapToScene(0,0),QSizeF(348.0,348.0)));
 }
@@ -76,7 +93,6 @@ void HeadImgView::setSlider(QSlider *s)
 void HeadImgView::drawBackground(QPainter *painter, const QRectF &rect)
 {
     //重画场景背景
-    qDebug()<<"rect:"<<rect<<sceneRect().topLeft()<<viewport()->rect();
     QRegion r1(rect.x(),rect.y(),350,350,QRegion::Ellipse);
     QRegion r2(rect.x(),rect.y(),350,350);
     QRegion r= r2.subtracted(r1);
@@ -90,6 +106,7 @@ void HeadImgView::drawBackground(QPainter *painter, const QRectF &rect)
 
 void HeadImgView::wheelEvent(QWheelEvent *event)
 {
+    emit getFocus();
     if(!slider->isEnabled())return;
     QPoint numPixels = event->pixelDelta();
     QPoint numDegrees = event->angleDelta() / 8;
@@ -124,19 +141,39 @@ void HeadImgView::mouseMoveEvent(QMouseEvent *event)
             return;
         }
         //重设场景区域，然后重显示
-        scene()->setSceneRect(QRectF((posPreScene+offset),QSizeF(img.width(),img.height())));
-        qDebug()<<"move"<<sceneRect().topLeft();
+        QPoint temp=(posPreScene+offset);
+        if(temp.x()<rangPos.x()*2)temp.rx()=rangPos.x()*2;
+        else if(temp.x()>0)temp.rx()=0;
+        if(temp.y()<rangPos.y()*2)temp.ry()=rangPos.y()*2;
+        else if(temp.y()>0)temp.ry()=0;
+        scene()->setSceneRect(QRectF((temp),QSizeF(img.width(),img.height())));
+        qDebug()<<"move"<<sceneRect().topLeft()<<mapToScene(viewport()->pos());
         viewport()->update();
     }
     event->accept();
 }
 void HeadImgView::mousePressEvent(QMouseEvent *event)
 {
+    emit getFocus();
     if(event->button()==Qt::LeftButton){
         posBegin=event->pos();
         posPreScene=sceneRect().topLeft().toPoint();
         qDebug()<<"position of starting to press where equal to "<<posBegin;
     }
+
+}
+
+const QPixmap &HeadImgView::getGrabPixmap()
+{
+    QPixmap newPix;
+    QPoint newPos=sceneRect().topLeft().toPoint();
+    QPoint movePos=rangPos-newPos;
+    QPoint pos= movePos-rangPos;//移动-起点=新图片起点
+    qDebug()<<"current image is location "<<pos<<" in old image";
+    newPix=img.copy(QRect(pos,QSize(348,348)));
+    if(newPix.isNull()){qDebug()<<"newpix is null";}
+    else newPix.save("d://new.png","png");
+    return newPix;
 }
 //拉伸系数=剩余系数*滑块的当前百分比值+最小系数
 void HeadImgView::valueChanged(int value)
@@ -149,9 +186,16 @@ void HeadImgView::valueChanged(int value)
     qreal scale=scaleBegin+scaleReamin*(value-5)/290;
     QMatrix m;
     m.scale(scale,scale);
+    qint32 prew=img.width();
+    qint32 preh=img.height();
     img=imgBackup.transformed(m);
+    qint32 noww=img.width();
+    qint32 nowh=img.height();
     qDebug()<<"value changed"<<scale;
-    scene()->setSceneRect(-img.width()/2,-img.height()/2,img.width(),img.height());
+    rangPos=QPoint(-(noww-348.0)/2,-(nowh-348.0)/2);
+   scene()->setSceneRect(sceneRect().x()-(noww-prew)/2.0,sceneRect().y()-(nowh-preh)/2.0,img.width(),img.height());
+
+    qDebug()<<sceneRect().topLeft()<<mapToScene(viewport()->pos())<<"???????scale";
     viewport()->update();
 }
 
@@ -177,7 +221,7 @@ void HeadImgView::cwClicked()
         direct=Right;
         break;
     case Bottom:
-       direct=Left;
+        direct=Left;
         break;
     case Left:
         direct=Top;
@@ -199,13 +243,13 @@ void HeadImgView::acwClicked()
         direct=Left;
         break;
     case Bottom:
-       direct=Right;
+        direct=Right;
         break;
     case Left:
         direct=Bottom;
         break;
     case Right:
-          direct=Top;
+        direct=Top;
         break;
     default:
         qDebug()<<"excepted a error";

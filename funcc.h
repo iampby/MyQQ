@@ -8,6 +8,7 @@
 
 #include"weatherhandle.h"
 #include"friendgroupmodel.h"
+#include"images.h"
 #include <QObject>
 #include<QQuickWindow>
 #include<qapplication.h>
@@ -19,7 +20,6 @@
 #include<QTcpSocket>
 #include<qvector.h>
 #include<qdatetime.h>
-class Images;
 class QXmlStreamReader;
 class LoginSocket;
 class QProcess;
@@ -72,8 +72,9 @@ public:
     Q_INVOKABLE void addHeadWidget(QWindow *w, const int&x, const int&y, QPixmap pixmap, const QString&myqq, const bool isgot)const;//更改头像框打开时添加一个QWidget控件到qml控件w
     Q_INVOKABLE void openFile(QString filename);//打开更改头像界面
     Q_INVOKABLE void closeWidget();//发送信号删除widget控件
-    Q_INVOKABLE void okClicked();//发送更改头像 ok 信号
-    Q_INVOKABLE void getHistoryHeadImg(const QString&myqq)const;//获取历史头像 this常量调用
+    Q_INVOKABLE void okClicked(Images *images);//发送更改头像 ok 信号
+    Q_INVOKABLE void getHistoryHeadImg(const QString&myqq) const;//获取历史头像 this常量调用
+    Q_INVOKABLE void selectedImg(QPixmap pixmap)const;//添加qml选中头像到widget this常量调用
 
     Q_INVOKABLE void startAddFriendsProcess(QQuickWindow*arg, QMap<QString, QVariant> obj);//添加好友进程
     unsigned short addFriendsProcessCount()const;
@@ -125,8 +126,9 @@ Q_SIGNALS://使用第三方源码解析时相当有用 这里用来给qml传递信号比较好
 signals:
     void emitOpenFile(const QString& filename);//更改头像界面打开一个文件
     void emitCloseHead();//释放更改头像界面
-    void emitOKClicked();//更改头像界面点击
+    void emitOKClicked(Images*images);//更改头像界面点击
     void emitReadHistory(int code)const;//更改头像界面点击
+    void emitSelectedImg(QPixmap& pixmap)const;//qml选中了一个历史头像
 private slots:
     void analysisWh(QString totalGeoAddr);//解析本地IP获取地理位置及Url
     void handleProcessStarted();

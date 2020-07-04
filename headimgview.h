@@ -24,10 +24,11 @@ public:
     void wheelEvent(QWheelEvent *event);//拉伸图片
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
+    const QPixmap&getGrabPixmap();
 protected:
     void valueChanged(int);
 signals:
-
+void getFocus();
 public slots:
     void zoomOutClicked();
     void zoomInClicked();
@@ -42,6 +43,7 @@ private:
     QPoint posBegin;//当开始按下时鼠标所在的位置
     QPoint posPreScene;//当开始按下时scene所在的位置
     bool control;//控制slider在最小|最大时继续拖动不反响
+    QPoint rangPos;
 };
 
 #endif // HEADIMGVIEW_H

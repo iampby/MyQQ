@@ -112,8 +112,8 @@ ApplicationWindow {
         var tag = qqMainWin.myqq + "101"
         images.setPixmap(tag, obj["headUrl"]) //好友号码+1
         histroyImgModel.append({
-                                   "url": "image://qc/"+ tag,
-                                   "index":0
+                                   "url": "image://qc/" + tag,
+                                   "index": 0
                                })
     }
     //利用元对象信号槽通信机制，把参数从Qtc++->qml 获取好友信息
@@ -136,6 +136,7 @@ ApplicationWindow {
         console.log("obj")
         setInfo = obj //保存设置信息
     }
+    //窗口关闭处理
     onClosing: {
         console.log("closing")
         for (var i = 0; i < 3; i++) {
@@ -153,7 +154,6 @@ ApplicationWindow {
         if (loaderForAlterHImg.status == Loader.Ready) {
             loaderForAlterHImg.item.close()
         }
-
         Qt.quit()
     }
     onWeatherCanShowChanged: {
@@ -288,7 +288,7 @@ FriendModel{ }'), qqMainWin, "dynamic_friend_model")
                     var friendObject = compFriend.createObject(qqMainWin)
                     friendsModel[pos] = friendObject //保存模型用于后面代理初始化代理
                     console.log("created a FriendModel",
-                                friendsModel[pos] == null)
+                                friendsModel[pos] === null)
                     break
                 } else if (compFriend.status === Component.Error) {
                     console.log("compFriend created had failed")
@@ -297,7 +297,21 @@ FriendModel{ }'), qqMainWin, "dynamic_friend_model")
             }
         }
     }
-
+    //历史头像添加时
+    Connections {
+        target: images
+        onHistoryImageAdded: {
+            console.log("onHistoryImageAdded:", url)
+            imgHead.source = ""
+            // imgHead.source = "image://qc/" + myqq + "101/" + Math.random()
+            if (url != "") {
+                histroyImgModel.append({
+                                           "url": "image://qc/" + url
+                                       })
+            }
+            imgHead.source = "image://qc/" + myqq + "101" //设置头像 qimage源
+        }
+    }
     //实体
     Rectangle {
         id: bodyRec
@@ -616,6 +630,7 @@ FriendModel{ }'), qqMainWin, "dynamic_friend_model")
                 Image {
                     id: imgHead
                     asynchronous: true
+                    cache: false
                     fillMode: Image.PreserveAspectCrop
                     visible: false
                     sourceSize: Qt.size(parent.size, parent.size)
@@ -1718,7 +1733,7 @@ FriendModel{ }'), qqMainWin, "dynamic_friend_model")
         id: histroyImgModel
         onCountChanged: {
             console.log("historymodel count changed")
-                imgHead.source = "image://qc/" + myqq + "101" //设置头像 qimage源
+            imgHead.source = "image://qc/" + myqq + "101" //设置头像 qimage源
         }
     }
     //时钟

@@ -14,6 +14,9 @@ public:
     Q_INVOKABLE void setPixmap(const QString&id, const QString&pix);
     Q_INVOKABLE void readHistory();
     Q_INVOKABLE void removeHistory();
+    void insert(QPixmap& pix);
+ Q_SIGNALS:
+    void historyImageAdded(QString url);
 signals:
     void readHistoryHeadImg(QString fileList);
 public:

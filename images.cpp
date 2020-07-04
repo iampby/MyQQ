@@ -22,8 +22,9 @@ void Images::setMyQQ(QString  arg)
 
 QPixmap Images::findPixmap(const QString &id)
 {
-
-    return provider->valueOf(id);
+QPixmap x=provider->valueOf(id);
+if(x.isNull())qDebug()<<"image is null "<<id;
+    return x;
 }
 void Images::setPixmap(const QString &id, const QString &pix)
 {
@@ -65,4 +66,38 @@ void Images::removeHistory()
             qDebug()<<"dir.removeRecursively()";
             dir.removeRecursively();
     }
+}
+
+
+
+void Images::insert(QPixmap& pix)
+{
+    QHash<QString,QPixmap>&imgs= provider->images;
+  QHash<QString,QPixmap>newImas;
+    QHash<QString, QPixmap>::iterator i = imgs.begin();
+    newImas.insert(myqq+"101",pix);
+    qint64 max=0;
+    while (i !=imgs.constEnd()) {
+        qint64 name;
+       try{
+            bool b;
+        name=i.key().toLongLong(&b);
+        if(!b)throw false;
+        }catch(bool&exp){
+            qDebug()<<" name is not incorrect for history image of head ";
+        }
+        if(name>max)max=name;
+        newImas.insert(QString("%1").arg(++name),i.value());
+      ++i;
+    }
+    QString url;
+    if(newImas.size()>18){
+     newImas.remove(myqq+"119");
+     url="";
+    }else{
+        url=QString("%1").arg(++max);
+    }
+ provider->images=newImas;
+ qDebug()<<"ok clicked is finished";
+ emit historyImageAdded(url);
 }

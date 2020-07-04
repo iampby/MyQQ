@@ -28,6 +28,7 @@ HeadImgWidget::HeadImgWidget(QWidget *parent) : QWidget(parent)
     //初始化放大图片信息，用于改变图片颜色
     for (int i = 0; i < imgOut.height(); ++i) {
         QRgb*line=(QRgb*)imgOut.scanLine(i);
+
         for (int j = 0; j < imgOut.width(); ++j) {
             QPoint pos(j,i);
             QRgb rgb=line[j];
@@ -40,6 +41,7 @@ HeadImgWidget::HeadImgWidget(QWidget *parent) : QWidget(parent)
             }
         }
     }
+
     for (int i = 0; i < imgIn.height(); ++i) {
         QRgb*line=(QRgb*)imgIn.scanLine(i);
         for (int j = 0; j < imgIn.width(); ++j) {
@@ -153,10 +155,16 @@ acw->installEventFilter(this);
 
 view->setSlider(slider);
 slider->setEnabled(false);
+connect(zoomout,&QPushButton::clicked,[=](){emit getFocus();});//发送到qml关闭历史头像标签
 connect(zoomout,&QPushButton::clicked,view,&HeadImgView::zoomOutClicked);
+connect(zoomin,&QPushButton::clicked,[=](){emit getFocus();});//发送到qml关闭历史头像标签
 connect(zoomin,&QPushButton::clicked,view,&HeadImgView::zoomInClicked);
+connect(cw,&QPushButton::clicked,[=](){emit getFocus();});//发送到qml关闭历史头像标签
 connect(cw,&QPushButton::clicked,view,&HeadImgView::cwClicked);
+connect(acw,&QPushButton::clicked,[=](){emit getFocus();});//发送到qml关闭历史头像标签
 connect(acw,&QPushButton::clicked,view,&HeadImgView::acwClicked);
+connect(slider,&QSlider::sliderPressed,[=](){emit getFocus();});//发送到qml关闭历史头像标签
+connect(view,&HeadImgView::getFocus,this,[=](){emit getFocus();});//
 }
 
 
@@ -166,10 +174,7 @@ void HeadImgWidget::setHeadImg(QPixmap &head)
     view->setImage(head);
 }
 
-void HeadImgWidget::read(Images &images)
-{
 
-}
 
 
 
@@ -188,11 +193,14 @@ void HeadImgWidget::openFile(const QString &filename)
     view->setImage(img);
 }
 
-void HeadImgWidget::okClicked()
+void HeadImgWidget::okClicked(Images*images)
 {
   QPixmap newHeadImg= view->grab(QRect(QPoint(1,1),QSize(348,348)));
   qDebug()<<"new image has been  got";
-  view->setImage(newHeadImg);
+  view->getGrabPixmap();
+ // emit updateRemoteHeadImg(newHeadImg);
+  //images->insert(newHeadImg);
+  //newHeadImg.save("d:/newhead","png");
 }
 
 

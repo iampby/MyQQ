@@ -4,7 +4,7 @@
 #include <QObject>
 #include<QTcpSocket>
 #include<QJsonDocument>
-
+#include<QEventLoop>
 class BigFileSocket : public QTcpSocket
 {
     Q_OBJECT
@@ -24,6 +24,8 @@ signals:
     void result(int code,const QString& folder=QString(), const QString& type=QString());
     void start();
     void finished(int code);
+    void loopStop();
+    void writtenInstruction();
 public slots:
     void readD();
     void writeD();
@@ -33,6 +35,8 @@ public slots:
 public:
 
 private:
+    QEventLoop loop;//控制写入是否继续
+
     QMap<QString,QByteArray>img;
     QByteArray temp;
     QString ip;

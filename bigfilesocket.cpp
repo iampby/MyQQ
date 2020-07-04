@@ -14,7 +14,11 @@ BigFileSocket::BigFileSocket(QObject *parent)
     connect(this,SIGNAL(connected()),this ,SLOT(writeD()));
     connect(this,SIGNAL(start()),this ,SLOT(post()));
     connect(this,SIGNAL(result(int,QString,QString)),this ,SLOT(resultSlot(int,QString,QString)));
-
+    connect(this,&QTcpSocket::bytesWritten,this,[=](qint64 bytes){
+        emit loopStop();
+        qDebug()<<bytes<<" bytes has been readed";
+    });
+    connect(this,&BigFileSocket::loopStop,&loop,&QEventLoop::quit);//一旦写入完成结束事件循环
     //初始化temp，用来保存分批到来的数据
     temp=QByteArray();
     size=0;
@@ -150,7 +154,9 @@ void BigFileSocket::readD()
 void BigFileSocket::writeD()
 {
     this->write(instruct.toBinaryData());
-    this->waitForBytesWritten();
+    loop.exec();
+    qDebug()<<"exited event loop";
+    emit writtenInstruction();
 }
 
 void BigFileSocket::err(QAbstractSocket::SocketError code)
