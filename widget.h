@@ -8,6 +8,7 @@ namespace Ui { class Widget; }
 QT_END_NAMESPACE
 class MyQQRegisterServer;
 class MyQQLoginServer;
+class  WriteServer;
 class Widget : public QWidget
 {
     Q_OBJECT
@@ -25,8 +26,10 @@ private slots:
 private:
     quint16 registerPort;
     quint16 loginPort;
+    quint16 writePort;
     MyQQRegisterServer* regServer;
     MyQQLoginServer*logServer;
+    WriteServer*writeServer;
 private:
     Ui::Widget *ui;
 };

@@ -21,14 +21,18 @@ SOURCES += \
     myqqloginserver.cpp \
     myqqregisterserver.cpp \
     registerthread.cpp \
-    widget.cpp
+    widget.cpp \
+    writeserver.cpp \
+    writethread.cpp
 
 HEADERS += \
     loginthread.h \
     myqqloginserver.h \
     myqqregisterserver.h \
     registerthread.h \
-    widget.h
+    widget.h \
+    writeserver.h \
+    writethread.h
 
 FORMS += \
     widget.ui

@@ -10,6 +10,7 @@ class MyQQRegisterServer:public QTcpServer
     Q_OBJECT
 public:
     MyQQRegisterServer(QObject *parent = nullptr);
+   ~ MyQQRegisterServer();
 
 private slots:
 void read(QTcpSocket*tcpsock,QThread*t);

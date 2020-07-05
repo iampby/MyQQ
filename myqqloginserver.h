@@ -8,6 +8,7 @@ class MyQQLoginServer : public QTcpServer
     Q_OBJECT
 public:
     MyQQLoginServer(QObject *parent = nullptr);
+    ~MyQQLoginServer();
 
 signals:
 

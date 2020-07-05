@@ -1,3 +1,0 @@
-﻿  loginthread.cpp
-d:\qtpractice\myqqserver\loginthread.cpp(111): warning C4189: “days”: 局部变量已初始化但不引用
-  MyQQServer.vcxproj -> D:\QTpractice\MyQQServer\debug\MyQQServer.exe

@@ -14,6 +14,12 @@ MyQQRegisterServer::MyQQRegisterServer(QObject *parent)
     :QTcpServer (parent)
 {
     count=0;
+    QStringLiteral("");
+}
+
+MyQQRegisterServer::~MyQQRegisterServer()
+{
+    qDebug()<<"~MyQQRegisterServer()";
 }
 
 
@@ -22,7 +28,7 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
     qDebug()<<name<<passwd;
     QMutex m;
    m.lock();//给count上锁
-    if(count>100)//理论上1秒内可以打开的数据库数 100
+    if(count>=100)//理论上1秒内可以打开的数据库数 100
         count=0;
     QSqlDatabase db=QSqlDatabase::addDatabase("QODBC",QDateTime::currentDateTime().toMSecsSinceEpoch()+QString("%1").arg(count++));
     m.unlock();//释放count
@@ -162,7 +168,7 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
 void MyQQRegisterServer::read(QTcpSocket *tcpsock,QThread*t)
 {
     //通过信号槽机制，利用tcpsock把处理过程转移到子线程
-    connect(tcpsock,&QTcpSocket::readyRead,[=](){
+    connect(tcpsock,&QTcpSocket::readyRead,tcpsock,[=](){
         QString str=QString::fromUtf8(tcpsock->readAll().data());
         QStringList strList=str.split(" ");
         if(strList.length()<3){

@@ -8,7 +8,7 @@ class LoginThread:public QObject
     Q_OBJECT
 public:
     LoginThread(qintptr socketDescriptor,qint64 count=100,QObject *parent = nullptr);
-    ~LoginThread();
+   ~ LoginThread();
     qint64 dateSubstraction(const QDate &substracted, const QDate &substraction) const;
 signals:
     void error(QAbstractSocket::SocketError);

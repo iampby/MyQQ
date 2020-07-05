@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>290</x>
-     <y>20</y>
+     <y>10</y>
      <width>91</width>
      <height>51</height>
     </rect>
@@ -50,8 +50,8 @@ background-color:rgb(0, 119, 230)
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>220</y>
-     <width>201</width>
+     <y>140</y>
+     <width>221</width>
      <height>61</height>
     </rect>
    </property>
@@ -68,7 +68,7 @@ color:blue
 }</string>
    </property>
    <property name="text">
-    <string>聊天服务器已关闭！</string>
+    <string>写入文件服务器已关闭！</string>
    </property>
    <property name="textFormat">
     <enum>Qt::AutoText</enum>
@@ -81,7 +81,7 @@ color:blue
    <property name="geometry">
     <rect>
      <x>290</x>
-     <y>230</y>
+     <y>150</y>
      <width>91</width>
      <height>51</height>
     </rect>
@@ -114,7 +114,7 @@ background-color:rgb(0, 119, 230)
    <property name="geometry">
     <rect>
      <x>290</x>
-     <y>130</y>
+     <y>80</y>
      <width>91</width>
      <height>51</height>
     </rect>
@@ -147,7 +147,7 @@ background-color:rgb(0, 119, 230)
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>120</y>
+     <y>70</y>
      <width>201</width>
      <height>61</height>
     </rect>
@@ -178,7 +178,7 @@ color:blue
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>10</y>
+     <y>0</y>
      <width>201</width>
      <height>61</height>
     </rect>
