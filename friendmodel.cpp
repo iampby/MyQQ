@@ -176,12 +176,76 @@ QVariant FriendModel::data(const QModelIndex &index, int role) const
      }
 
 }
+
+int FriendModel::rowOf(const QVariant &var, int role) const
+{
+    int i=-1;
+    switch (role) {
+    case MyQQRole:
+        for ( i = 0; i <m_dataList.length(); ++i) {
+           if(m_dataList.at(i)->myqq()==var.toString())
+               return i;
+        }
+        break;
+    case NameRole:
+        for ( i = 0; i <m_dataList.length(); ++i) {
+           if(m_dataList.at(i)->name()==var.toString())
+               return i;
+        }
+         break;
+    case SignatureRole:
+        for ( i = 0; i <m_dataList.length(); ++i) {
+           if(m_dataList.at(i)->signature()==var.toString())
+               return i;
+        }
+         break;
+    case ImgPathRole:
+        for ( i = 0; i <m_dataList.length(); ++i) {
+           if(m_dataList.at(i)->imgPath()==var.toString())
+               return i;
+        }
+         break;
+    case TagRole:
+        for ( i = 0; i <m_dataList.length(); ++i) {
+           if(m_dataList.at(i)->tag()==var.toString())
+               return i;
+        }
+         break;
+    case GradeRole:
+        for ( i = 0; i <m_dataList.length(); ++i) {
+           if(m_dataList.at(i)->grade()==var.toString())
+               return i;
+        }
+         break;
+    case StatusRole:
+        for ( i = 0; i <m_dataList.length(); ++i) {
+           if(m_dataList.at(i)->status()==var.toString())
+               return i;
+        }
+         break;
+    case InfoSetRole:
+        for ( i = 0; i <m_dataList.length(); ++i) {
+           if(m_dataList.at(i)->infoSet()==var.toString())
+               return i;
+        }
+         break;
+    case StatusSetRole:
+        for ( i = 0; i <m_dataList.length(); ++i) {
+           if(m_dataList.at(i)->statusSet()==var.toString())
+               return i;
+        }
+         break;
+    default:
+      break;
+    }
+    return -1;
+}
 //row<0  value is inserted and before first item or row >=size() value is inserted and after last item
 void FriendModel::insert(int row, FriendData*value)
 {
     if(row<0)
         row=0;
-    else if(row>=this->rowCount())
+    else if(row>this->rowCount())
         row=this->rowCount();
     beginInsertRows(this->createIndex(row,0),row,row);
     m_dataList.insert(row,value);
@@ -218,21 +282,31 @@ void FriendModel::setData(const int &row,const QString& value, int role)
         break;
     case SignatureRole:
         data->setSignature(value);
+         break;
     case ImgPathRole:
         data->setImgPath(value);
+        qDebug()<<data->imgPath();
+         break;
     case TagRole:
        data->setTag(value);
+        break;
     case GradeRole:
        data->setGrade(value);
+        break;
     case StatusRole:
        data->setStatus(value);
+        break;
     case InfoSetRole:
         data->setInfoSet(value);
+         break;
     case StatusSetRole:
         data->setStatusSet(value);
+         break;
     default:
       break;
     };
+    dataChanged(createIndex(row,0),createIndex(row,0));
+    qDebug()<<" dataChanged(createIndex(row,0),createIndex(row,0))";
 }
 
 void FriendModel::append(const QString &myqq,const QString &name, const QString &signature,

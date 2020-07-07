@@ -59,12 +59,13 @@ public:
     //基础函数
     Q_INVOKABLE  int rowCount(const QModelIndex &parent=QModelIndex()) const;
     QHash<int,QByteArray>roleNames()const;
-  Q_INVOKABLE QString data(const int &, int ) const;
+    Q_INVOKABLE QString data(const int &, int ) const;
     QVariant data(const QModelIndex &index, int role) const;//纯虚函数必须实现
+   Q_INVOKABLE int rowOf(const QVariant&var , int role=MyQQRole) const;//返回角色名的值所在行
     //修改数据
     void insert(int row, FriendData *value);
-   Q_INVOKABLE  void remove(const int& row,const int&count=1);
-   Q_INVOKABLE  void setData(const int &row,const QString& value, int role);
+    Q_INVOKABLE  void remove(const int& row,const int&count=1);
+    Q_INVOKABLE  void setData(const int &row,const QString& value, int role=MyQQRole);
     Q_INVOKABLE void append(const QString &myqq, const QString&name, const QString&signature, const QString&imgPath,
                             const QString&tag,const QString&grade, const QString&status, const QString&infoSet, const QString&statusSet);
 private:

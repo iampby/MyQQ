@@ -560,12 +560,19 @@ void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,cons
         widget->setHeadImg(pixmap);//添加当前头像
         temp->setGeometry(x,y,widget->width(),widget->height());
         connect(this,&FuncC::emitOpenFile,widget,&HeadImgWidget::openFile);//打开文件
-        connect(this,&FuncC::emitOKClicked,widget,&HeadImgWidget::okClicked);//ok处理
+        connect(this,&FuncC::emitOKClicked,widget,[=](Images*images){
+            widget->okClicked(images,myqq);
+        });//ok处理
+        //刷新好友模型id值
+        connect(widget,&HeadImgWidget::updateMyself,this,[=](const QString&id){
+            qDebug()<<"emit emitUpdateFriendsModel(id)";
+            emit updateFriendsModel(id);
+        });
         //更新远程头像
-
         connect(widget,&HeadImgWidget::updateRemoteHeadImg,this,[=](const QPixmap&pix){
             qDebug()<<"updateRemoteHeadImg signal had sent";
             disconnect(widget,SIGNAL(updateRemoteHeadImg(QPixmap)));//先断开连接，这个通信只调用一次
+
             QString instructDescription="4 historyHeadImg "+myqq+" writedHeaderSize";
             BigFileSocket*updateImgSock=new BigFileSocket();//子线程不能有父类
             updateImgSock->setInstruct(instructDescription);
@@ -579,7 +586,7 @@ void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,cons
             //删除线程
             connect(thread,&QThread::finished,thread,&QThread::deleteLater);
             //获取文件结果收尾处理
-           connect(updateImgSock,&BigFileSocket::writtenInstruction, updateImgSock,[=](){
+            connect(updateImgSock,&BigFileSocket::writtenInstruction, updateImgSock,[=](){
                 qDebug()<<"writtenInstruction";
                 QBuffer buffer;
                 buffer.open(QIODevice::WriteOnly);//pixmap不能为空，必须先将图片加载到pixmap中
@@ -592,6 +599,7 @@ void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,cons
                 thread->quit();
                 qDebug()<<"updating headimg thread had exited";
             });
+
         });
 
         //关闭历史头像标签
@@ -600,7 +608,7 @@ void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,cons
             QMetaObject::invokeMethod(w,"alterSelectedIndex",Qt::QueuedConnection) ;
         });
         //添加选中的头像
-        connect(this,&FuncC::emitSelectedImg,widget,[=](QPixmap&pix){
+        connect(this,&FuncC::emitSelectedImg,widget,[=]( QPixmap pix){
             qDebug()<<"handle selected img ";
             widget->setHeadImg(pix);
         });
@@ -629,10 +637,7 @@ void FuncC::closeWidget()
     emit emitCloseHead();//关闭信号
 }
 
-void FuncC::okClicked(Images*images)
-{
-    emit emitOKClicked(images);
-}
+
 
 
 void FuncC::getHistoryHeadImg(const QString&myqq)const
@@ -658,10 +663,6 @@ void FuncC::getHistoryHeadImg(const QString&myqq)const
     });
 }
 
-void FuncC::selectedImg(QPixmap  pixmap) const
-{
-    emitSelectedImg(pixmap);
-}
 
 void FuncC::startAddFriendsProcess(QQuickWindow*arg,QMap<QString, QVariant>obj)
 {

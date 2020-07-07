@@ -14,14 +14,15 @@ class HeadImgWidget : public QWidget
     Q_OBJECT
 public:
     explicit HeadImgWidget(QWidget *parent = nullptr);
-    void setHeadImg(QPixmap&head);
+    void setHeadImg(QPixmap &head);
     ~HeadImgWidget();
 signals:
     void getFocus();//Widget获得焦点 发送到qml关闭历史头像选中标签
     void updateRemoteHeadImg(const QPixmap&);
+    void updateMyself(const QString &id);
 public slots:
     void openFile(const QString&filename);
-    void okClicked(Images *images);
+    void okClicked(Images *images, const QString &myqq);
 protected:
     bool eventFilter(QObject *watched, QEvent *event);
     void transColor(QImage&img, const QHash<QPoint, QRgb> &colors);

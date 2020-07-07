@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_Images_t {
-    QByteArrayData data[14];
-    char stringdata0[124];
+    QByteArrayData data[15];
+    char stringdata0[135];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -44,13 +44,14 @@ QT_MOC_LITERAL(9, 81, 2), // "id"
 QT_MOC_LITERAL(10, 84, 9), // "setPixmap"
 QT_MOC_LITERAL(11, 94, 3), // "pix"
 QT_MOC_LITERAL(12, 98, 11), // "readHistory"
-QT_MOC_LITERAL(13, 110, 13) // "removeHistory"
+QT_MOC_LITERAL(13, 110, 13), // "removeHistory"
+QT_MOC_LITERAL(14, 124, 10) // "setPixmap2"
 
     },
     "Images\0historyImageAdded\0\0url\0"
     "readHistoryHeadImg\0fileList\0setMyQQ\0"
     "arg\0findPixmap\0id\0setPixmap\0pix\0"
-    "readHistory\0removeHistory"
+    "readHistory\0removeHistory\0setPixmap2"
 };
 #undef QT_MOC_LITERAL
 
@@ -60,7 +61,7 @@ static const uint qt_meta_data_Images[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-       7,   14, // methods
+       8,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -68,15 +69,16 @@ static const uint qt_meta_data_Images[] = {
        2,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    1,   49,    2, 0x06 /* Public */,
-       4,    1,   52,    2, 0x06 /* Public */,
+       1,    1,   54,    2, 0x06 /* Public */,
+       4,    1,   57,    2, 0x06 /* Public */,
 
  // methods: name, argc, parameters, tag, flags
-       6,    1,   55,    2, 0x02 /* Public */,
-       8,    1,   58,    2, 0x02 /* Public */,
-      10,    2,   61,    2, 0x02 /* Public */,
-      12,    0,   66,    2, 0x02 /* Public */,
-      13,    0,   67,    2, 0x02 /* Public */,
+       6,    1,   60,    2, 0x02 /* Public */,
+       8,    1,   63,    2, 0x02 /* Public */,
+      10,    2,   66,    2, 0x02 /* Public */,
+      12,    0,   71,    2, 0x02 /* Public */,
+      13,    0,   72,    2, 0x02 /* Public */,
+      14,    2,   73,    2, 0x02 /* Public */,
 
  // signals: parameters
     QMetaType::Void, QMetaType::QString,    3,
@@ -88,6 +90,7 @@ static const uint qt_meta_data_Images[] = {
     QMetaType::Void, QMetaType::QString, QMetaType::QString,    9,   11,
     QMetaType::Void,
     QMetaType::Void,
+    QMetaType::Void, QMetaType::QString, QMetaType::QString,    9,   11,
 
        0        // eod
 };
@@ -106,6 +109,7 @@ void Images::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void
         case 4: _t->setPixmap((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
         case 5: _t->readHistory(); break;
         case 6: _t->removeHistory(); break;
+        case 7: _t->setPixmap2((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -156,13 +160,13 @@ int Images::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 7)
+        if (_id < 8)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 7;
+        _id -= 8;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 7)
+        if (_id < 8)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 7;
+        _id -= 8;
     }
     return _id;
 }

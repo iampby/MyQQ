@@ -47,6 +47,7 @@ ApplicationWindow {
     property string status: "1"
     property string where: ""
     property string townmans: ""
+
     //用于鼠标拉伸
     property int enableSize: 6
     property bool isPressed: false
@@ -112,7 +113,7 @@ ApplicationWindow {
         var tag = qqMainWin.myqq + "101"
         images.setPixmap(tag, obj["headUrl"]) //好友号码+1
         histroyImgModel.append({
-                                   "url": "image://qc/" + tag,
+                                   "url": "image://history/" + tag,
                                    "index": 0
                                })
     }
@@ -123,13 +124,14 @@ ApplicationWindow {
         while (m === null) {
             console.log("m=null")
         } //如果为空则等待其加载
-        var imgPath = "file:../user/" + mainWin.myqq + "/friends/" + obj["myqq"]
-                + "1.png" //换为List.qml本地路径
+        var mq = obj["myqq"]
+        var imgPath = "../user/" + mainWin.myqq + "/friends/" + mq + "1.png" //换为List.qml本地路径
+        images.setPixmap2(mq + "1", imgPath)
         //添加数据到模型
         //qvariantmap转过来的只能[string]获取属性
-        m.append(obj["myqq"], obj["昵称"], obj["个性签名"], imgPath, obj["备注"],
-                 obj["等级"], obj["状态"], obj["Message - Settin"],
-                 obj["Status_Settin"])
+        var url = "image://friends/" + mq + "1"
+        m.append(mq, obj["昵称"], obj["个性签名"], url, obj["备注"], obj["等级"],
+                 obj["状态"], obj["Message - Settin"], obj["Status_Settin"])
     }
     //利用元对象信号槽通信机制，把参数从Qtc++->qml,获取设置信息
     onRunGetSetInfoFunction: {
@@ -189,9 +191,10 @@ ApplicationWindow {
             }
         }
     }
-    //拖拽调整大小
+    //target func
     Connections {
         target: func
+        //拖拽调整大小
         onSizeChanged: {
             console.log("???", w, h)
             if (w < qqMainWin.minimumWidth) {
@@ -222,29 +225,6 @@ ApplicationWindow {
                     qqMainWin.y += delta.y
             }
         }
-    }
-
-    //得到网址时时爬取json部分的天气数据
-    Connections {
-        target: funcc
-        onFinished: {
-            var url = funcc.localUrl
-            funcc.crawWeatherUrl(url, 0)
-            func.makeRequest(url, arrayWea)
-        }
-    }
-    //当本地天气已经准备好时，设置可以打开weather窗口
-    Connections {
-        target: funcc
-        onCrawWeatherUrlFinished: {
-            if (weatherCanShow === 0)
-                weatherCanShow = 1
-            else if (weatherCanShow === 1)
-                weatherCanShow = 2
-        }
-    }
-    Connections {
-        target: func
         onMakeRequestFinished: {
             if (weatherCanShow === 0)
                 weatherCanShow = 1
@@ -252,19 +232,29 @@ ApplicationWindow {
                 weatherCanShow = 2
         }
     }
-    //登录信息获取完成时传递qqmainwin到Qt，用来从qt里头调用qml方法
+    //target funcc
     Connections {
         target: funcc
+        //得到网址时时爬取json部分的天气数据
+        onFinished: {
+            var url = funcc.localUrl
+            funcc.crawWeatherUrl(url, 0)
+            func.makeRequest(url, arrayWea)
+        }
+        //当本地天气已经准备好时，设置可以打开weather窗口
+        onCrawWeatherUrlFinished: {
+            if (weatherCanShow === 0)
+                weatherCanShow = 1
+            else if (weatherCanShow === 1)
+                weatherCanShow = 2
+        }
+        //登录信息获取完成时传递qqmainwin到Qt，用来从qt里头调用qml方法
         onGetFileFinished: {
             funcc.win = qqMainWin //传递元对象到Qtc++
             funcc.initLoginInfo() //读取inxo.xml
             funcc.win = null
         }
-    }
-
-    //接受读取的一个好友组信息到模型
-    Connections {
-        target: funcc
+        //接受读取的一个好友组信息到模型
         onGetFriendGroup: {
             friendGroupModel.append(name, "", "", set)
             //创建一个空好友模型，用于初始化viewFriend代理
@@ -272,7 +262,7 @@ ApplicationWindow {
 
             /*Qt.createQmlObject在有其它部件创建时可能回到导致null对象创建
             var friendObject = Qt.createQmlObject(('import Model 1.0;
-FriendModel{ }'), qqMainWin, "dynamic_friend_model")
+    FriendModel{ }'), qqMainWin, "dynamic_friend_model")
             //以下和官方文档描述不符，不知道啥事阿
     if (friendObject === null) {
                 //错误返回null
@@ -296,22 +286,39 @@ FriendModel{ }'), qqMainWin, "dynamic_friend_model")
                 }
             }
         }
+        //自己的头像更改处理
+        onUpdateFriendsModel: {
+            console.log("id=", id)
+            for (var i = 0; i < friendsModel.length; ++i) {
+                console.log("onUpdateFriendsModel:i=", i)
+                var m = friendsModel[i]
+                var row = m.rowOf(myqq)
+                if (row !== -1) {
+                    console.log("find myself,the number is ", myqq)
+                    m.setData(row, "", 3)
+                    m.setData(row, "image://friends/" + id, 3)
+                    console.log("end update")
+                }
+            }
+        }
     }
+
     //历史头像添加时
     Connections {
         target: images
         onHistoryImageAdded: {
             console.log("onHistoryImageAdded:", url)
             imgHead.source = ""
-            // imgHead.source = "image://qc/" + myqq + "101/" + Math.random()
+            // imgHead.source = "image://history/" + myqq + "101/" + Math.random()
             if (url != "") {
                 histroyImgModel.append({
-                                           "url": "image://qc/" + url
+                                           "url": "image://history/" + url
                                        })
             }
-            imgHead.source = "image://qc/" + myqq + "101" //设置头像 qimage源
+            imgHead.source = "image://history/" + myqq + "101" //设置头像 qimage源
         }
     }
+
     //实体
     Rectangle {
         id: bodyRec
@@ -1733,7 +1740,7 @@ FriendModel{ }'), qqMainWin, "dynamic_friend_model")
         id: histroyImgModel
         onCountChanged: {
             console.log("historymodel count changed")
-            imgHead.source = "image://qc/" + myqq + "101" //设置头像 qimage源
+            imgHead.source = "image://history/" + myqq + "101" //设置头像 qimage源
         }
     }
     //时钟

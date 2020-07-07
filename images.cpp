@@ -4,12 +4,13 @@
 #include<qdir.h>
 Images::Images(QObject *parent ):QObject(parent)
 {
-    provider=new QmlImageProvider;
+    provider1=new QmlImageProvider;
+    provider2=new QmlImageProvider;
 }
 
 Images::~Images()
 {
-qDebug()<<"images delete";
+qDebug()<<"~Images()";
 }
 
 void Images::setMyQQ(QString  arg)
@@ -21,7 +22,7 @@ void Images::setMyQQ(QString  arg)
 
 QPixmap Images::findPixmap(const QString &id)
 {
-QPixmap x=provider->valueOf(id);
+QPixmap x=provider1->valueOf(id);
 if(x.isNull())qDebug()<<"image is null "<<id;
     return x;
 }
@@ -34,7 +35,7 @@ void Images::setPixmap(const QString &id, const QString &pix)
         return;
     }
     qDebug()<<id<<endl;
-    provider->images.insert(id,pixmap);
+    provider1->images.insert(id,pixmap);
 }
 
 void Images::readHistory()
@@ -52,8 +53,8 @@ void Images::readHistory()
         QPixmap pixmap;
         pixmap.load(dir.absoluteFilePath(v),"png");
         QString temp=myqq+"1"+v.left(v.length()-4);
-        fileList+="image://qc/"+temp+".";
-        provider->images.insert(temp,pixmap);
+        fileList+="image://history/"+temp+".";
+        provider1->images.insert(temp,pixmap);
     }
     emit readHistoryHeadImg(fileList);
 }
@@ -71,7 +72,7 @@ void Images::removeHistory()
 
 void Images::insert(QPixmap& pix)
 {
-    QHash<QString,QPixmap>&imgs= provider->images;
+    QHash<QString,QPixmap>&imgs= provider1->images;
   QHash<QString,QPixmap>newImas;
     QHash<QString, QPixmap>::iterator i = imgs.begin();
     newImas.insert(myqq+"101",pix);
@@ -96,7 +97,19 @@ void Images::insert(QPixmap& pix)
     }else{
         url=QString("%1").arg(++max);
     }
- provider->images=newImas;
+ provider1->images=newImas;
  qDebug()<<"ok clicked is finished";
  emit historyImageAdded(url);
+}
+
+void Images::setPixmap2(const QString &id, const QString &pix)
+{
+    qDebug()<<"setPixmap2 id="<<id;
+    QPixmap pixmap;
+    pixmap.load(pix,"png");
+    if(pixmap.isNull()){
+        qDebug()<<"pixmap is null";
+        return;
+    }
+    provider2->images.insert(id,pixmap);
 }

@@ -10,6 +10,7 @@ public:
   const QPixmap valueOf(const QString& id);
     QPixmap requestPixmap(const QString &id, QSize *size, const QSize &requestedSize);
     QHash<QString,QPixmap>images;
+
 };
 
 #endif // QMLIMAGEPROVIDER_H

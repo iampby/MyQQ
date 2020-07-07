@@ -31,7 +31,8 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     Images*images=new Images(&engine);//ÍË³ö¼´»ÙÃð
     engine.rootContext()->setContextProperty("images",images);
-    engine.addImageProvider("qc",images->provider);
+    engine.addImageProvider("history",images->provider1);
+    engine.addImageProvider("friends",images->provider2);
     QTranslator tran;
     tran.load("./qt_zh_CN.qm");
     app.installTranslator(&tran);

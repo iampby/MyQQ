@@ -27,7 +27,6 @@ Window {
         historyList.selectedUrl = "-1"
     }
 
-
     Connections {
         target: images
         onReadHistoryHeadImg: {
@@ -47,7 +46,6 @@ Window {
             inCenterLoader.item.histroyImgModel.isgot = true
         }
     }
-
 
     //关闭处理
     onClosing: {
@@ -181,13 +179,15 @@ Window {
         onClicked: {
             var index = historyList.currentIndex
             index -= 6
-            if(index<6)leftBtn.visible=false
-            else leftBtn.visible=true
+            if (index < 6)
+                leftBtn.visible = false
+
             if (index < 0)
                 index = 0
             historyList.positionViewAtIndex(index, ListView.Beginning)
             historyList.currentIndex = index
             console.log("current index", historyList.currentIndex)
+            rightBtn.visible = true
         }
 
         background: Rectangle {
@@ -231,7 +231,7 @@ Window {
             if (selectedIndex != -1) {
                 var str = selectedUrl
                 str = str.substring(str.lastIndexOf("/") + 1, str.length)
-                funcc.selectedImg(images.findPixmap(str))
+                funcc.emitSelectedImg(images.findPixmap(str))
             }
         }
         model: inCenterLoader.item.histroyImgModel
@@ -291,13 +291,17 @@ Window {
         onClicked: {
             var index = historyList.currentIndex, count = historyList.count
             index += 6
-            console.log("rightBtn clicked,index Changed", index, count, historyList.count)
-            if(index>=12)rightBtn.visible=false
-            else rightBtn.visible=true
+            console.log("rightBtn clicked,index Changed", index, count,
+                        historyList.count)
+            if (index >= 12)
+                rightBtn.visible = false
+
+
             if (index >= count)
                 return
             historyList.positionViewAtIndex(index, ListView.Beginning)
             historyList.currentIndex = index
+            leftBtn.visible=true
         }
 
         background: Rectangle {

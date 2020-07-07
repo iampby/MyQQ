@@ -168,7 +168,7 @@ connect(view,&HeadImgView::getFocus,this,[=](){emit getFocus();});//
 }
 
 
-void HeadImgWidget::setHeadImg(QPixmap &head)
+void HeadImgWidget::setHeadImg( QPixmap &head)
 {
     qDebug()<<"image of head is loaded";
     view->setImage(head);
@@ -193,12 +193,20 @@ void HeadImgWidget::openFile(const QString &filename)
     view->setImage(img);
 }
 
-void HeadImgWidget::okClicked(Images*images)
+void HeadImgWidget::okClicked(Images*images,const QString&myqq)
 {
-  QPixmap newHeadImg= view->getGrabPixmap();
-  qDebug()<<"new image has been  got";
-  emit updateRemoteHeadImg(newHeadImg);
-  images->insert(newHeadImg);
+    QPixmap newHeadImg= view->getGrabPixmap();
+    qDebug()<<"new image has been  got";
+    emit updateRemoteHeadImg(newHeadImg);
+    images->insert(newHeadImg);
+
+    if(images->provider2->images.contains(myqq+"1")){
+        QString id=myqq+"1";
+       images->provider2->images[id]=newHeadImg ;
+        qDebug()<<"images->provider2->images[id]=newHeadImg";
+        updateMyself(id);
+    }
+
 }
 
 
