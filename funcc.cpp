@@ -24,7 +24,7 @@ typedef bool (*TestConnection)(int*flags,int reserved);
 FuncC::FuncC(QObject *parent):QObject(parent)
 {
     m_win=Q_NULLPTR;m_sourceIco="";registerSock=nullptr;timer=nullptr;loginSock=nullptr;
-    processCount=0;registerPort=5566;ip="127.0.0.1";loginPort=5567;
+    processCount=0;registerPort=5566;ip="127.0.0.1";loginPort=5567;writeFilePort=5568;
     m_myQQ=QString();m_passwd=QString();//初始化myqq,passwd
     wh=new WeatherHandle;
     QTimer *timer=new QTimer(this);            //新建一个定时器对象
@@ -562,15 +562,15 @@ void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,cons
         connect(this,&FuncC::emitOpenFile,widget,&HeadImgWidget::openFile);//打开文件
         connect(this,&FuncC::emitOKClicked,widget,&HeadImgWidget::okClicked);//ok处理
         //更新远程头像
-      /*
+
         connect(widget,&HeadImgWidget::updateRemoteHeadImg,this,[=](const QPixmap&pix){
             qDebug()<<"updateRemoteHeadImg signal had sent";
             disconnect(widget,SIGNAL(updateRemoteHeadImg(QPixmap)));//先断开连接，这个通信只调用一次
-            QString instructDescription="4 historyHeadImg "+myqq;
+            QString instructDescription="4 historyHeadImg "+myqq+" writedHeaderSize";
             BigFileSocket*updateImgSock=new BigFileSocket();//子线程不能有父类
             updateImgSock->setInstruct(instructDescription);
             updateImgSock->setIp(ip);
-            updateImgSock->setPort(loginPort);
+            updateImgSock->setPort(writeFilePort);
             QThread*thread=new QThread();
             updateImgSock->moveToThread(thread);
             thread->start();
@@ -587,13 +587,13 @@ void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,cons
                 QByteArray pixArray;
                 pixArray.append(buffer.data());
                 updateImgSock->write(pixArray);
-                updateImgSock->l
+                updateImgSock->loop.exec();
                 thread->exit(0);
                 thread->quit();
-                qDebug()<"updating headimg thread had exited";
+                qDebug()<<"updating headimg thread had exited";
             });
         });
-        */
+
         //关闭历史头像标签
         connect(widget,&HeadImgWidget::getFocus,[=](){
             qDebug()<<"QMetaObject::invokeMethod(w,\"alterSelectedIndex\",Qt::QueuedConnection)";

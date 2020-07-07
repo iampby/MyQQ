@@ -49,6 +49,7 @@ void HeadImgView::setImage(QPixmap &image)
     m.scale(s,s);
     img= img.transformed(m,Qt::SmoothTransformation);
     rangPos=QPoint(-(img.width()-348.0)/2,-(img.height()-348.0)/2);
+    scene()->setSceneRect( rangPos.x(), rangPos.y(),0,0);//刷新
     scene()->setSceneRect( rangPos.x(), rangPos.y(),img.width(),img.height());//中心对齐
     qDebug()<<"start draw"<<viewport()->pos();;
     switch (direct) {
@@ -163,7 +164,7 @@ void HeadImgView::mousePressEvent(QMouseEvent *event)
 
 }
 
-const QPixmap &HeadImgView::getGrabPixmap()
+const QPixmap HeadImgView::getGrabPixmap()
 {
     QPixmap newPix;
     QPoint newPos=sceneRect().topLeft().toPoint();
@@ -172,7 +173,6 @@ const QPixmap &HeadImgView::getGrabPixmap()
     qDebug()<<"current image is location "<<pos<<" in old image";
     newPix=img.copy(QRect(pos,QSize(348,348)));
     if(newPix.isNull()){qDebug()<<"newpix is null";}
-    else newPix.save("d://new.png","png");
     return newPix;
 }
 //拉伸系数=剩余系数*滑块的当前百分比值+最小系数
@@ -194,8 +194,6 @@ void HeadImgView::valueChanged(int value)
     qDebug()<<"value changed"<<scale;
     rangPos=QPoint(-(noww-348.0)/2,-(nowh-348.0)/2);
    scene()->setSceneRect(sceneRect().x()-(noww-prew)/2.0,sceneRect().y()-(nowh-preh)/2.0,img.width(),img.height());
-
-    qDebug()<<sceneRect().topLeft()<<mapToScene(viewport()->pos())<<"???????scale";
     viewport()->update();
 }
 

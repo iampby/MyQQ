@@ -195,12 +195,10 @@ void HeadImgWidget::openFile(const QString &filename)
 
 void HeadImgWidget::okClicked(Images*images)
 {
-  QPixmap newHeadImg= view->grab(QRect(QPoint(1,1),QSize(348,348)));
+  QPixmap newHeadImg= view->getGrabPixmap();
   qDebug()<<"new image has been  got";
-  view->getGrabPixmap();
- // emit updateRemoteHeadImg(newHeadImg);
-  //images->insert(newHeadImg);
-  //newHeadImg.save("d:/newhead","png");
+  emit updateRemoteHeadImg(newHeadImg);
+  images->insert(newHeadImg);
 }
 
 

@@ -33,9 +33,9 @@ public slots:
     void post();//连接主机
     void resultSlot(int code, const QString& folder, const QString& type);
 public:
+    QEventLoop loop;//控制写入是否继续
 
 private:
-    QEventLoop loop;//控制写入是否继续
 
     QMap<QString,QByteArray>img;
     QByteArray temp;

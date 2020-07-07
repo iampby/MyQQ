@@ -8,7 +8,12 @@ QmlImageProvider::QmlImageProvider()
 
 }
 
-const QPixmap &QmlImageProvider::valueOf(const QString &id)
+QmlImageProvider::~QmlImageProvider()
+{
+    qDebug()<<"~QmlImageProvider()";
+}
+
+const QPixmap  QmlImageProvider::valueOf(const QString &id)
 {
     return  images.value(id);
 }

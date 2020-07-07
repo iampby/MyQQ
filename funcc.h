@@ -146,7 +146,7 @@ private:
 
     LoginSocket*loginSock;
     quint16 loginPort;
-
+quint16 writeFilePort;
     //记载MyQQ信息
     //用户的 name（昵称） sex（性别） signature（个性签名） days（活跃天数） grade（等级) status(状态） 所在地 故乡
     QMap<QString, QVariant>userInfo;

@@ -181,6 +181,8 @@ Window {
         onClicked: {
             var index = historyList.currentIndex
             index -= 6
+            if(index<6)leftBtn.visible=false
+            else leftBtn.visible=true
             if (index < 0)
                 index = 0
             historyList.positionViewAtIndex(index, ListView.Beginning)
@@ -290,6 +292,8 @@ Window {
             var index = historyList.currentIndex, count = historyList.count
             index += 6
             console.log("rightBtn clicked,index Changed", index, count, historyList.count)
+            if(index>=12)rightBtn.visible=false
+            else rightBtn.visible=true
             if (index >= count)
                 return
             historyList.positionViewAtIndex(index, ListView.Beginning)
@@ -332,7 +336,7 @@ Window {
                 onClicked: {
                     funcc.emitOKClicked(images) //fa发送信号给头像视图区
                     console.log("clicked okBtn,now win will be closed")
-                   // win.close()
+                    win.close()
                 }
                 background: Rectangle {
                     implicitWidth: 72

@@ -15,10 +15,11 @@ BigFileSocket::BigFileSocket(QObject *parent)
     connect(this,SIGNAL(start()),this ,SLOT(post()));
     connect(this,SIGNAL(result(int,QString,QString)),this ,SLOT(resultSlot(int,QString,QString)));
     connect(this,&QTcpSocket::bytesWritten,this,[=](qint64 bytes){
-        emit loopStop();
         qDebug()<<bytes<<" bytes has been readed";
+        loop.quit();
+        qDebug()<<" loop.quit()";
     });
-    connect(this,&BigFileSocket::loopStop,&loop,&QEventLoop::quit);//一旦写入完成结束事件循环
+
     //初始化temp，用来保存分批到来的数据
     temp=QByteArray();
     size=0;
@@ -29,7 +30,7 @@ void BigFileSocket::setInstruct(const QString &arg)
     QStringList l=arg.split(" ",QString::SkipEmptyParts);
     QJsonObject o;
     try{
-        if(l.length()>3)throw -1;
+        if(l.length()>4)throw -1;
         else if(l.length()<=2)throw -2;
         o.insert("instruct",QJsonValue(l.at(0)));
         o.insert("content",QJsonValue(l.at(1)));
@@ -40,6 +41,9 @@ void BigFileSocket::setInstruct(const QString &arg)
         qDebug()<<"unkown exception in:32row:bigfilesocket";
     }
     myqq=l.at(2);
+    if(l.length()==4){
+        o.insert("headerSize",QJsonValue(true));
+    }
     //建立目录
     QDir mk;
     QString dir;
@@ -153,7 +157,17 @@ void BigFileSocket::readD()
 
 void BigFileSocket::writeD()
 {
+    if(instruct.object().value("headerSize").toBool()){
+        qDebug()<<"length "<<4;
+        QByteArray length;
+        QDataStream stream(&length,QIODevice::WriteOnly);
+        stream.setVersion(QDataStream::Qt_4_0);
+        quint8 l=instruct.toBinaryData().size();
+        stream<<l;
+        this->write(length+instruct.toBinaryData());
+    }else
     this->write(instruct.toBinaryData());
+    qDebug()<<"started event loop";
     loop.exec();
     qDebug()<<"exited event loop";
     emit writtenInstruction();

@@ -5,7 +5,6 @@
 Images::Images(QObject *parent ):QObject(parent)
 {
     provider=new QmlImageProvider;
-
 }
 
 Images::~Images()

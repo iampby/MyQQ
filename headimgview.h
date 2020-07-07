@@ -24,7 +24,7 @@ public:
     void wheelEvent(QWheelEvent *event);//¿≠…ÏÕº∆¨
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
-    const QPixmap&getGrabPixmap();
+    const QPixmap getGrabPixmap();
 protected:
     void valueChanged(int);
 signals:
