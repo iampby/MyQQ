@@ -1,5 +1,6 @@
 #include "widget.h"
 #include "ui_widget.h"
+#include"global.h"
 #include"myqqloginserver.h"
 #include"myqqregisterserver.h"
 #include"writeserver.h"
@@ -19,6 +20,10 @@ Widget::Widget(QWidget *parent)
 Widget::~Widget()
 {
     delete ui;
+    for (QFile*v :files) {
+        delete v,v=nullptr;
+    }
+    files.clear();
 }
 
 

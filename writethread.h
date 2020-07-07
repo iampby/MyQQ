@@ -11,7 +11,7 @@ class WriteThread:public QObject
 public:
     enum FileType{
         NoFile,
-        Png
+        HistoryHeadImage
     };
     WriteThread(qintptr socketDescriptor,QObject *parent = nullptr);
     ~WriteThread();

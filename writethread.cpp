@@ -1,13 +1,15 @@
 #include "writethread.h"
+#include"global.h"
 #include <qsqlquery.h>
 #include <qdir.h>
 #include <qjsondocument.h>
 #include<qjsonobject.h>
 #include <qpixmap.h>
 #include <qtimer.h>
-
+#include<QXmlStreamReader>
+#include <qjsonarray.h>
 WriteThread::WriteThread(qintptr socketDescriptor,  QObject *parent)
-:QObject(parent),socketDescriptor(socketDescriptor)
+    :QObject(parent),socketDescriptor(socketDescriptor)
 {
     size=0;FT=NoFile;
     tcpsocket=new QTcpSocket(this);
@@ -23,8 +25,8 @@ WriteThread::WriteThread(qintptr socketDescriptor,  QObject *parent)
         emit loopStop();
         qDebug()<<bytes<<" bytes has been readed";
     });
-    QTimer::singleShot(200,Qt::CoarseTimer,this,[=](){
-        qDebug()<<"timer 6000ms exit";
+    QTimer::singleShot(60000,Qt::CoarseTimer,this,[=](){
+        qDebug()<<"timer 60s exit";
         emit finished();
         qDebug()<<"thread had exited";
     });
@@ -45,18 +47,91 @@ bool WriteThread::adjustHistoryImg(QByteArray &bytes, const QString &filePath, c
         return false;
     }
     QStringList temp;temp<<"*.png";
+    QString newName,name;qint8 two;
     QFileInfoList info=dir.entryInfoList(temp,QDir::Files,QDir::Name);
     for (int i = info.length()-1; i >=0;--i) {
-        QString name=info.at(i).fileName();
-        qint8 two=name.left(2).toShort();
+         name=info.at(i).fileName();
+        two=name.left(2).toShort();
         QFile file(dir.filePath(name));
         if(two>=18)file.remove();
         ++two;
-        bool ok=file.rename(dir.filePath(QString("%1.png").arg(two)));
+        if(two<10)newName="0"+QString("%1.png").arg(two);
+        else newName=QString("%1.png").arg(two);
+        bool ok=file.rename(dir.filePath(newName));
         if(!ok)qDebug()<<"warning: alter file is of fuilure, named "<<name;
     }
-    return head.save(dir.filePath("01.png"),"png");
+    bool ok= head.save(dir.filePath("01.png"),"png");
+    if(!ok)return ok;
+    dir.cdUp();
 
+    QFile infoxml(dir.path()+"/info.xml");
+   if(!infoxml.open(QIODevice::ReadOnly)){
+    qDebug()<<dir.path()+"/info.xml"<<":opened unsuceessful";
+   }
+   qDebug()<<"readed "<<infoxml.fileName();
+    QXmlStreamReader reader;
+    reader.setDevice(&infoxml);
+    QVector<QString>friends;
+    while (!reader.atEnd()) {
+        reader.readNext();
+        qDebug()<<"name="<<reader.name().toString();
+        if(reader.name().toString()=="friend"){
+            QString mq=reader.attributes().value("myqq").toString();
+            qDebug()<<"found a friend,it's MyQQ is"<<mq;
+            friends.append(mq);
+        }
+    }
+    qDebug()<<"number of friends is equal to"<<friends.length();
+    //循环遍历全局文件对象，查找是否有标记文件，标记文件保存着那些好友头像发生了变化
+    for (QString&v :friends) {
+        qDebug()<<"marked MyQQ is "<<v<<",this represent to need updating image of head while next to accesses marked floder";
+        QDir tagDir("../userData/"+v+"/friendsInfo");
+        if(!tagDir.exists()){
+            tagDir.mkpath("./");//创建当前目录
+        }
+        QString tagName="markedHeadImg.json";
+        muter.lock();
+        if(files.contains(v)){
+            QFile* markedFile=files.value(v);
+            if(markedFile->open(QIODevice::ReadWrite)){
+                QByteArray markData=markedFile->readAll();
+                QJsonDocument jsonDoc=QJsonDocument::fromJson(markData);
+                if(!jsonDoc.isObject()){
+                    qDebug()<<"error:file "<<markedFile->fileName()<<" is not a object";
+                }
+                QJsonObject obj=jsonDoc.object();
+                QJsonArray arr=obj.value("myqq").toArray();
+                QJsonObject tempObj;
+                tempObj.insert("number",QJsonValue(myqq));
+                arr.append(QJsonValue(tempObj));
+                obj.insert("myqq",QJsonValue(arr));
+                jsonDoc=QJsonDocument();
+                jsonDoc.setObject(obj);
+                markedFile->write(jsonDoc.toJson());
+                markedFile->close();
+            }else
+                qDebug()<<"json write is of failure,named  "<<markedFile->fileName();
+        }else {
+            QFile* markedFile=new QFile(tagDir.filePath(tagName));
+            if(markedFile->open(QIODevice::ReadWrite)){
+                QJsonDocument jsonDoc;
+                QJsonObject obj;
+                QJsonArray arr;
+                QJsonObject tempObj;
+                tempObj.insert("number",QJsonValue(myqq));
+                arr.append(QJsonValue(tempObj));
+                obj.insert("myqq",QJsonValue(arr));
+                jsonDoc;
+                jsonDoc.setObject(obj);
+                markedFile->write(jsonDoc.toJson());
+                markedFile->close();
+                files.insert(v,markedFile);
+            }else
+                qDebug()<<"json write is of failure,named  "<<markedFile->fileName();
+        }
+         muter.unlock();
+    }
+    return true;
 }
 
 
@@ -85,13 +160,13 @@ void WriteThread::readD()
                 if(in=="4"){
                     QString content=obj.value("content").toString();
                     if(content=="historyHeadImg"){
-                       myqq=obj.value("myqq").toString();
+                        myqq=obj.value("myqq").toString();
                         if(myqq.isEmpty()){
                             tcpsocket->disconnectFromHost();
                             return;
                         }
                         fileName="../userData/"+myqq+"/historyHeadImg/01.png";
-                        FT=Png;
+                        FT=HistoryHeadImage;
                         size=1;
                         continue;
                     }
@@ -100,7 +175,7 @@ void WriteThread::readD()
         }else{
             QByteArray data=tcpsocket->readAll();
             switch (FT) {
-            case Png:
+            case HistoryHeadImage:
                 png.append(data);
                 break;
             default:
@@ -114,7 +189,7 @@ void WriteThread::disconnected()
 {
     qDebug()<<"  Write QTcpSocket disconnected";
     switch (FT) {
-    case Png:
+    case HistoryHeadImage:
         if(adjustHistoryImg(png,fileName,"png")){
             qDebug()<<"added history image successfully";
         }
@@ -122,5 +197,6 @@ void WriteThread::disconnected()
     default:
         break;
     }
+    qDebug()<<"emit finished()";
     emit finished();
 }

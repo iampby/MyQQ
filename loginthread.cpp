@@ -83,7 +83,7 @@ void LoginThread::readD()
         qDebug()<<QStringLiteral("打开数据库成功！");
     else {
         qDebug()<<QStringLiteral("打开数据库失败！");
-        emit finished();//由于同时打开的数据库过多或或者其他原因结束
+        emit finished();//由于同时打开数据库过多或者其他原因结束
         return;
     }
     qDebug()<<"login"<<db.connectionName()<<db.databaseName();
@@ -723,7 +723,7 @@ table1_1.name as location1,table1_2.name as location2,table1_3.name as location3
                         }
                         QStringList temp;
                         temp<<"*.png";
-                        QStringList filelist=dir.entryList(temp,QDir::Files,QDir::Name);
+                        QStringList filelist=dir.entryList(temp,QDir::Files);
                         if(filelist.isEmpty()){
                             qDebug()<<"it's is empty for dir of history-image";
                             goto label;//跳转结尾
@@ -746,6 +746,7 @@ table1_1.name as location1,table1_2.name as location2,table1_3.name as location3
                                 continue;
                             }
                             QFile ofile(dir.filePath(v));
+                            qDebug()<<"a file that was not successfully opened, named "<<dir.filePath(v);
                             if(!ofile.open(QIODevice::ReadOnly)){
                                 qDebug()<<"a file that was not successfully opened, named "<<dir.filePath(v);
                                 goto label;//跳转结尾
