@@ -11,17 +11,19 @@ import "../"
 //注意，qqMainWin是通过加载器从Component清零后用文件的方式加载的，这会导致，在初始化时通过加载器访问的属性异常
 //即在刚刚初始化期间，通过对象直接访问属性才是安全的，所以这里所有的初始化的涉及属性相关的处理过程都在qqmainwin内进行
 ApplicationWindow {
-    property alias menuPop: menuPop
-    property alias loaderForAbout: loaderForAbout
-    property alias loaderForMesWin: loaderForMesWin
+    property alias menuPop: menuPop //左下角菜单弹出窗
+    property alias loaderForAbout: loaderForAbout //关于小窗口
+    property alias loaderForMesWin: loaderForMesWin //切换小提示窗口
     property alias loaderForWeather: loaderForWeather //天气界面
     property alias loaderForHeadImg: loaderForHeadImg //头像悬浮界面
     property alias loaderForAlterHImg: loaderForAlterHImg //更改头像界面
-    property alias cityWeatherModel: cityWeatherModel
+    property alias loaderForAlterInfo: loaderForAlterInfo //修改用户资料界面
+    property alias cityWeatherModel: cityWeatherModel //保存3天天气信息
     property int weatherCanShow: 0 //2表示准备好
     property alias friendGroupModel: friendGroupModel
     property alias histroyImgModel: histroyImgModel //历史头像model
     property alias viewFriend: viewFriend
+
     property var friendsModel: [] //保存好友模型，用来过渡且便于使用
     //好友代理数，由于代理动态加载，在friendGroupModel添加数据过程中一直处于线程忙碌，无法直接构造，所以标记是否构造完用来加载好友模型
     property int friendDelegateCount: 0
@@ -40,6 +42,7 @@ ApplicationWindow {
     //用户属性
     property string myqq: ""
     property string name: "我的昵称"
+    property alias headSource: imgHead.source //头像
     property string sex: ""
     property string activeDays: "" //数据库是int64 这里转为安全数据
     property int grade: -1
@@ -196,7 +199,7 @@ ApplicationWindow {
         target: func
         //拖拽调整大小
         onSizeChanged: {
-            console.log("???", w, h)
+            console.log("onSizeChanged:", w, h)
             if (w < qqMainWin.minimumWidth) {
                 if (directX < 0)
                     qqMainWin.x += (qqMainWin.width - qqMainWin.minimumWidth)
@@ -295,7 +298,7 @@ ApplicationWindow {
                 var row = m.rowOf(myqq)
                 if (row !== -1) {
                     console.log("find myself,the number is ", myqq)
-                    m.setData(row, "", 3)
+                    m.setData(row, "", 3) //刷新
                     m.setData(row, "image://friends/" + id, 3)
                     console.log("end update")
                 }
@@ -617,6 +620,8 @@ ApplicationWindow {
                             headImgMenu.x = headImgMenu.posx + 5 + recHead.x
                             headImgMenu.y = headImgMenu.posy + 5 + recHead.y
                             headImgMenu.visible = true
+                        } else {
+                            actions.openAlterUserInfoAct.trigger() //打开个人资料界面
                         }
                     }
                     onHoveredChanged: {
@@ -663,6 +668,7 @@ ApplicationWindow {
                     implicitHeight: 104
                     border.width: 1
                     border.color: "lightgray"
+                    //修改个人资料
                     ToolButton {
                         id: alterInfoBtn
                         y: 6
@@ -673,6 +679,7 @@ ApplicationWindow {
                         font.pointSize: 10
                         onClicked: {
                             headImgMenu.visible = false
+                            actions.openAlterUserInfoAct.trigger() //打开个人资料界面
                         }
                         background: Rectangle {
                             width: headImgMenu.width
@@ -680,6 +687,7 @@ ApplicationWindow {
                             color: alterInfoBtn.hovered ? "#eeeeee" : "transparent"
                         }
                     }
+                    //更换头像
                     ToolButton {
                         id: alterHImgBtn
                         width: headImgMenu.width
@@ -791,33 +799,33 @@ ApplicationWindow {
                         mouse.accepted = true
                     }
                 }
-                //等级提示
-                ToolTip {
-                    id: gradeTip
-                    x: gradeLab.posx
-                    y: gradeLab.posy + 20
-                    delay: 1000
-                    visible: false
+            }
+            //等级提示
+            ToolTip {
+                id: gradeTip
+                x: gradeLab.x + gradeLab.posx
+                y: gradeLab.y + gradeLab.posy + 20
+                delay: 1000
+                visible: false
 
-                    background: Label {
-                        id: gradeBack
-                        font.pointSize: 10
-                        color: "gray"
-                        text: "我的MQ等级:\n 等级:" + grade + "级\n 剩余升级天数:55天"
-                        lineHeightMode: Text.FixedHeight //固定值模式
-                        lineHeight: gradeMetrics.height + 5 //固定值为行高加5
-                        verticalAlignment: Text.AlignVCenter
-                        background: Rectangle {
-                            implicitHeight: 52
-                            implicitWidth: gradeMetrics.advanceWidth
-                            color: Qt.rgba(230, 230, 230, 1.0)
-                        }
+                background: Label {
+                    id: gradeBack
+                    font.pointSize: 10
+                    color: "gray"
+                    text: "我的MQ等级:\n 等级:" + grade + "级\n 剩余升级天数:55天"
+                    lineHeightMode: Text.FixedHeight //固定值模式
+                    lineHeight: gradeMetrics.height + 5 //固定值为行高加5
+                    verticalAlignment: Text.AlignVCenter
+                    background: Rectangle {
+                        implicitHeight: 52
+                        implicitWidth: gradeMetrics.advanceWidth
+                        color: Qt.rgba(230, 230, 230, 1.0)
                     }
-                    TextMetrics {
-                        id: gradeMetrics
-                        text: " 剩余升级天数:55天"
-                        font: gradeBack.font
-                    }
+                }
+                TextMetrics {
+                    id: gradeMetrics
+                    text: " 剩余升级天数:55天"
+                    font: gradeBack.font
                 }
             }
             //个性签名
@@ -904,66 +912,66 @@ ApplicationWindow {
                     elideWidth: signatureTF.width
                     elide: Text.ElideRight
                 }
-                //个性签名提示
-                ToolTip {
-                    id: sigTip
-                    x: signatureTF.posx
-                    y: signatureTF.posy + 20
-                    delay: 1000
-                    visible: false
+            }
+            //个性签名提示
+            ToolTip {
+                id: sigTip
+                x: signatureTF.x + signatureTF.posx
+                y: signatureTF.y + signatureTF.posy + 20
+                delay: 1000
+                visible: false
 
-                    background: Label {
-                        property string str: "个性签名更新:" + signature
-                        property int bw: 0
-                        property int bh: 0
-                        id: sigTipBack
-                        // elide: Text.ElideRight
-                        font.pointSize: 10
-                        color: "gray"
-                        wrapMode: Text.Wrap
-                        maximumLineCount: 2
-                        lineHeight: 1.1
-                        verticalAlignment: Text.AlignVCenter
-                        onStrChanged: {
-                            var one = "个性签名更新:", two = "" //第一行字符 第二行字符
+                background: Label {
+                    property string str: "个性签名更新:" + signature
+                    property int bw: 0
+                    property int bh: 0
+                    id: sigTipBack
+                    // elide: Text.ElideRight
+                    font.pointSize: 10
+                    color: "gray"
+                    wrapMode: Text.Wrap
+                    maximumLineCount: 2
+                    lineHeight: 1.1
+                    verticalAlignment: Text.AlignVCenter
+                    onStrChanged: {
+                        var one = "个性签名更新:", two = "" //第一行字符 第二行字符
 
-                            var bytes = func.getCharByteLength(one) //初始化累计字节数
-                            var length = str.length
-                            for (var i = 7; i < length; i++) {
-                                var temp = str.charAt(i)
-                                console.log("temp", temp, bytes)
-                                var l = func.getCharByteLength(temp) //单个字符字节数
-                                if (bytes + l < 29) {
-                                    //如果小于29个字节则为第一行字符
-                                    one += temp
-                                    bytes += l
-                                } else {
-                                    two = str.substring(i, length) //设置第二行字符
-                                    break
-                                }
-                            }
-                            sigTipBack.text = one + "\n"
-                            sigTipMetc.text = one
-                            sigTipBack.bw = sigTipMetc.width + 3
-                            if (two !== "") {
-                                sigTipBack.bh = (sigTipMetc.height + 4) * 2
-                                sigTipMetc.text = two //用于获取省略的字符
-                                sigTipBack.text += sigTipMetc.elidedText
+                        var bytes = func.getCharByteLength(one) //初始化累计字节数
+                        var length = str.length
+                        for (var i = 7; i < length; i++) {
+                            var temp = str.charAt(i)
+                            console.log("temp", temp, bytes)
+                            var l = func.getCharByteLength(temp) //单个字符字节数
+                            if (bytes + l < 29) {
+                                //如果小于29个字节则为第一行字符
+                                one += temp
+                                bytes += l
                             } else {
-                                sigTipBack.bh = sigTipMetc.height + 4
+                                two = str.substring(i, length) //设置第二行字符
+                                break
                             }
                         }
-                        background: Rectangle {
-                            height: sigTipBack.bh
-                            width: sigTipBack.bw
-                            color: "#fefee1"
+                        sigTipBack.text = one + "\n"
+                        sigTipMetc.text = one
+                        sigTipBack.bw = sigTipMetc.width + 3
+                        if (two !== "") {
+                            sigTipBack.bh = (sigTipMetc.height + 4) * 2
+                            sigTipMetc.text = two //用于获取省略的字符
+                            sigTipBack.text += sigTipMetc.elidedText
+                        } else {
+                            sigTipBack.bh = sigTipMetc.height + 4
                         }
-                        TextMetrics {
-                            id: sigTipMetc
-                            font: sigTipBack.font
-                            elideWidth: sigTipBack.bw - 3 //省略字符宽度为提示背景宽度
-                            elide: Text.ElideRight
-                        }
+                    }
+                    background: Rectangle {
+                        height: sigTipBack.bh
+                        width: sigTipBack.bw
+                        color: "#fefee1"
+                    }
+                    TextMetrics {
+                        id: sigTipMetc
+                        font: sigTipBack.font
+                        elideWidth: sigTipBack.bw - 3 //省略字符宽度为提示背景宽度
+                        elide: Text.ElideRight
                     }
                 }
             }
@@ -1715,9 +1723,15 @@ ApplicationWindow {
         id: loaderForHeadImg
         visible: Loader.Ready === loaderForAbout.status
     }
+    //更改头像界面
     Loader {
         id: loaderForAlterHImg
         visible: Loader.Ready === loaderForAlterHImg.status
+    }
+    //修改用户资料界面
+    Loader {
+        id: loaderForAlterInfo
+        visible: Loader.Ready === loaderForAlterInfo.status
     }
 
     //非界面

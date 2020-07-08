@@ -77,5 +77,7 @@
         <file alias="images/mainInterface/alterHImgHeader.png">../images/mainInterface/alterHImgHeader.png</file>
         <file alias="images/mainInterface/alterHeadClose.png">../images/mainInterface/alterHeadClose.png</file>
         <file alias="images/mainInterface/alterHeadMin.png">../images/mainInterface/alterHeadMin.png</file>
+        <file alias="images/mainInterface/userInfoClothing.png">../images/mainInterface/userInfoClothing.png</file>
+        <file alias="images/mainInterface/userInfoDefault.png">../images/mainInterface/userInfoDefault.png</file>
     </qresource>
 </RCC>

@@ -100,5 +100,8 @@
         <file>images/mainInterface/alterHImgHeader.png</file>
         <file>images/mainInterface/alterHeadClose.png</file>
         <file>images/mainInterface/alterHeadMin.png</file>
+        <file>main/IndividualData.qml</file>
+        <file>images/mainInterface/userInfoClothing.png</file>
+        <file>images/mainInterface/userInfoDefault.png</file>
     </qresource>
 </RCC>

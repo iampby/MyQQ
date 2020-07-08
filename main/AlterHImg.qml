@@ -13,7 +13,7 @@ Window {
     height: 618
     flags: Qt.FramelessWindowHint | Qt.Window //显示任务栏
     color: "lightgray" //边界颜色
-    visible: true
+    visible: false
     title: "更换头像"
     function midFunc() {
         console.log("midfunc invocations")
@@ -50,11 +50,8 @@ Window {
     //关闭处理
     onClosing: {
         hide()
-        console.log(" clear")
         funcc.closeWidget() //释放widget资源 必须在loader释放之前
-        console.log("clear 2")
         loaderForAlterHImg.source = "" //相当于deletelater
-        console.log("clear end")
     }
 
     //移动鼠标
@@ -296,12 +293,11 @@ Window {
             if (index >= 12)
                 rightBtn.visible = false
 
-
             if (index >= count)
                 return
             historyList.positionViewAtIndex(index, ListView.Beginning)
             historyList.currentIndex = index
-            leftBtn.visible=true
+            leftBtn.visible = true
         }
 
         background: Rectangle {

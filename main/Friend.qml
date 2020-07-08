@@ -20,7 +20,7 @@ Button {
                 id: headRec
                 width: 40
                 height: 40
-                color: "red"
+                color: "transparent"
                 radius: 90
                 Image {
                     id: hImg

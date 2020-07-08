@@ -584,12 +584,17 @@ void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,cons
             emit updateImgSock->start();//转移到新线程去post host
             connect(thread,&QThread::finished,updateImgSock,&BigFileSocket::deleteLater);
             //删除线程
+             connect(this,&FuncC::emitOKClicked,thread,[=](){
+                 qDebug()<<"closed window causes a thread to exit";
+                 thread->exit(0);
+                 thread->quit();
+             });
             connect(thread,&QThread::finished,thread,&QThread::deleteLater);
             //获取文件结果收尾处理
             connect(updateImgSock,&BigFileSocket::writtenInstruction, updateImgSock,[=](){
                 qDebug()<<"writtenInstruction";
                 QBuffer buffer;
-                buffer.open(QIODevice::WriteOnly);//pixmap不能为空，必须先将图片加载到pixmap中
+                buffer.open(QIODevice::WriteOnly);
                 pix.save(&buffer,"png");
                 QByteArray pixArray;
                 pixArray.append(buffer.data());
@@ -612,7 +617,6 @@ void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,cons
             qDebug()<<"handle selected img ";
             widget->setHeadImg(pix);
         });
-        connect(widget,&HeadImgWidget::destroyed,[=](){qDebug()<<"destoryed qmlWin";});
         connect(this,&FuncC::emitCloseHead,widget,[=](){
             qDebug()<<"deletelater pre";
             widget->deleteLater();//延迟删除

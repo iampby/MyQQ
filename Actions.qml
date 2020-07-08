@@ -23,6 +23,7 @@ Rectangle {
     property alias switchAct: switchAction //切换账号按钮
     property alias headImgAct: headImgAction //头像悬浮时弹出界面
     property alias openAlterHImgAct: openAlterHImgAction //更改头像
+    property alias openAlterUserInfoAct: openAlterUserInfoAction //用户资料修改
 
     //登录界面Actions
     Action {
@@ -419,7 +420,32 @@ Rectangle {
             }
         }
     }
-
+    Action {
+        id: openAlterUserInfoAction
+        onTriggered: {
+            console.log("openAlterUserInfoAction")
+            if (inCenterLoader.item.loaderForAlterInfo === undefined)
+                return
+            var loader = inCenterLoader.item.loaderForAlterInfo
+            if (!(Loader.Ready === loader.status)) {
+                console.log("loaded")
+                loader.source = "qrc:/main/IndividualData.qml"
+            }
+            while (true) {
+                if (loader.status === Loader.Ready) {
+                    console.log("start show")
+                    console.log("opened the IndividualData.qml")
+                    loader.item.x = (mainWin.desktopAvailableWidth - loader.item.width) / 2
+                    loader.item.y = (mainWin.desktopAvailableHeight - loader.item.height) / 2
+                    loader.item.show()
+                    break
+                } else if (loader.status === Loader.Error) {
+                    console.log("loaderForAlterInfo  occured a error")
+                    break
+                }
+            }
+        }
+    }
     //附属于主界面窗口的Actions
     Action {
         //切换账号窗口的确认动作
