@@ -1,5 +1,6 @@
 ﻿import QtQuick 2.11
 import QtQuick.Window 2.11
+import QtQuick.Layouts 1.12
 import QtQuick.Controls 2.5
 import QtGraphicalEffects 1.12
 import QtGraphicalEffects 1.12
@@ -10,6 +11,7 @@ Window {
     id: win
     width: 722
     height: 522
+    visible: true
     title: "个人资料"
     flags: Qt.FramelessWindowHint | Qt.Window //显示任务栏
     color: "lightgray" //边界颜色
@@ -163,9 +165,11 @@ Window {
                         }
                         onHoveredChanged: {
                             if (containsMouse) {
+                                cursorShape = Qt.PointingHandCursor
                                 recHead.border.width = 2
                                 headTip.show("点击更换头像")
                             } else {
+                                cursorShape = Qt.ArrowCursor
                                 recHead.border.width = 0
                                 headTip.close()
                             }
@@ -230,6 +234,10 @@ Window {
                     maximumLineCount: 1
                     text: inCenterLoader.item.name
                     color: "#ffffff"
+                    MouseForShape {
+                        shapeInside: Qt.SizeVerCursor
+                        shapeOutside: Qt.ArrowCursor
+                    }
                 }
                 //个性签名
                 TextField {
@@ -379,6 +387,376 @@ Window {
                 }
             }
         }
+        //右边
+        Item {
+            id: right
+            x: 358
+            clip: true
+            width: parent.width - 358
+            height: parent.height
+
+            Button {
+                property int posx: 0
+                property int posy: 0
+                id: minBtn
+                x: right.width - 64
+                width: 32
+                height: 33
+                onClicked: {
+                    win.showMinimized()
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onPositionChanged: {
+                        //记录tip坐标
+                        if (!minTip.visible) {
+                            minBtn.posx = mouseX
+                            minBtn.posy = mouseY
+                        }
+                    }
+                    onPressed: {
+                        mouse.accepted = false
+                    }
+                    onHoveredChanged: {
+                        if (containsMouse) {
+                            minTip.show("最小化")
+                        } else {
+                            minTip.close()
+                        }
+                    }
+                }
+                background: Rectangle {
+                    implicitWidth: 32
+                    implicitHeight: 33
+                    color: "#5e6368"
+                    Image {
+                        id: minImg
+                        source: "qrc:/images/mainInterface/userInfoMin.png"
+                        sourceSize: Qt.size(32, 33)
+                    }
+                    ColorOverlay {
+                        anchors.fill: minImg
+                        source: minImg
+                        color: minBtn.hovered ? (minBtn.pressed ? "#dedede" : Qt.lighter(
+                                                                      "#dedede",
+                                                                      1.10)) : "white"
+                    }
+                }
+                //最小化提示
+                ToolTip {
+                    id: minTip
+                    x: minBtn.posx
+                    y: minBtn.posy + 20
+                    delay: 1000
+                    visible: false
+                    font.pointSize: 10
+                    Text {
+                        anchors.fill: parent
+                        text: minTip.text
+                        font: minTip.font
+                        color: "lightgray"
+                    }
+                    background: Rectangle {
+                        height: minTip.height
+                        width: minTip.width
+                        border.width: 1
+                        border.color: "lightgray"
+                    }
+                }
+            }
+            Button {
+                property int posx: 0
+                property int posy: 0
+                id: closeBtn
+                x: right.width - 32
+                width: 32
+                height: 33
+                onClicked: {
+                    win.close()
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onPositionChanged: {
+                        //记录tip坐标
+                        if (!closeTip.visible) {
+                            closeBtn.posx = mouseX
+                            closeBtn.posy = mouseY
+                        }
+                    }
+                    onPressed: {
+                        mouse.accepted = false
+                    }
+
+                    onHoveredChanged: {
+                        if (containsMouse) {
+                            closeTip.show("关闭")
+                        } else {
+                            closeTip.close()
+                        }
+                    }
+                }
+
+                background: Rectangle {
+                    implicitWidth: 32
+                    implicitHeight: 33
+                    color: "#5e6368"
+                    Image {
+                        id: closeImg
+                        source: "qrc:/images/mainInterface/userInfoClose.png"
+                        sourceSize: Qt.size(32, 33)
+                    }
+                    ColorOverlay {
+                        anchors.fill: closeImg
+                        source: closeImg //ededed dedede ff5439 e04a32
+                        color: closeBtn.hovered ? (closeBtn.pressed ? "#e04a32" : Qt.lighter(
+                                                                          "#e04a32",
+                                                                          1.2)) : "white"
+                    }
+                }
+                //关闭提示
+                ToolTip {
+                    id: closeTip
+                    x: closeBtn.posx
+                    y: closeBtn.posy + 20
+                    delay: 1000
+                    visible: false
+                    font.pointSize: 10
+                    Text {
+                        anchors.fill: parent
+                        text: closeTip.text
+                        font: closeTip.font
+                        color: "lightgray"
+                    }
+                    background: Rectangle {
+                        height: closeTip.height
+                        width: closeTip.width
+                        border.width: 1
+                        border.color: "lightgray"
+                    }
+                }
+            }
+
+            //右边信息
+            Flickable {
+                id: rightFlick
+                x: 20
+                y: 40
+                clip: true
+                interactive: false
+                width: right.width - x
+                height: right.height - y
+                contentWidth: column.width
+                contentHeight: column.height
+                ScrollBar.vertical: ScrollBar {
+                    parent: rightFlick //必须设置父对象才能启动hovered and pressed以及鼠标事件
+                    anchors.right: rightFlick.right //绑定右边
+                    orientation: Qt.Vertical
+                    policy: ScrollBar.AlwaysOn // (contentHeight > container.height
+                    //- 40) ? (hovered ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff) : ScrollBar.AlwaysOff
+                    size: rightFlick.height / rightFlick.contentHeight
+                    hoverEnabled: true
+                    active: true
+                    contentItem: Rectangle {
+                        implicitWidth: 6
+                        implicitHeight: parent.size * rightFlick.height
+                        radius: width / 2
+                        color: parent.hovered ? Qt.darker("#d7d7d7",
+                                                          1.3) : "#d7d7d7"
+                    }
+                }
+
+                ColumnLayout {
+                    id: column
+                    clip: true
+                    spacing: 15
+                    //penguin bar
+                    Item {
+                        width: 320
+                        height: 16
+                        Image {
+                            source: "qrc:/images/mainInterface/userInfoPenguin.png"
+                        }
+                        Label {
+                            id: labMyQQ
+                            x: 30
+                            font.pointSize: 10
+                            text: "2567469480"
+                        }
+
+                        Button {
+                            id: editMaterialBtn
+                            x: 320 - width
+                            width: 62
+                            height: 16
+                            onClicked: {
+                                console.log("editMaterialBtn clicked")
+                            }
+
+                            background: Label {
+                                width: 62
+                                height: 16
+                                text: "编辑资料"
+                                font.pointSize: 11
+                                color: editMaterialBtn.hovered ? Qt.lighter(
+                                                                     "#009bdb",
+                                                                     1.15) : "#009bdb"
+                            }
+                        }
+                    }
+                    //person bar
+                    RowLayout {
+                        spacing: 10
+                        Image {
+                            source: "qrc:/images/mainInterface/userInfoPerson.png"
+                        }
+                        Label {
+                            id: labSex
+                            font.pointSize: 10
+                            text: "男"
+                        }
+                        Label {
+                            id: labBirthday
+                            font.pointSize: 10
+                            text: "6月1日"
+                        }
+                        Label {
+                            id: labConstellation
+                            font.pointSize: 10
+                            text: "巨蟹座"
+                        }
+                        Label {
+                            id: labZodiac
+                            font.pointSize: 10
+                            text: "属鼠"
+                        }
+                    }
+                    //grade bar
+                    RowLayout {
+                        spacing: 10
+                        Image {
+                            source: "qrc:/images/mainInterface/userInfoGrade.png"
+                        }
+                        Repeater {
+                            id: rep
+                            model: gradeModel
+                            ToolButton {
+                                background: Image {
+                                    sourceSize: Qt.size(19, 19)
+                                    source: img
+                                }
+                            }
+                        }
+                    }
+                    //separator
+                    Rectangle {
+                        width: 320
+                        height: 1
+                        color: "lightgray"
+                    }
+
+                    //MyQQ age bar
+                    Item {
+                        width: 200
+                        height: 20
+                        Image {
+                            source: "qrc:/images/mainInterface/userInfoQAge.png"
+                        }
+                        Label {
+                            x: 35
+                            font.pointSize: 10
+                            text: "Q龄"
+                        }
+                        Label {
+                            id: labQAge
+                            x: 105
+                            font.pointSize: 10
+                            text: "0年"
+                        }
+                    }
+                    //separator
+                    Rectangle {
+                        width: 320
+                        height: 1
+                        color: "lightgray"
+                    }
+
+                    //photo wall
+                    Item {
+                        width: rightFlick.width
+                        height: 18
+                        Label {
+                            text: "照片墙"
+                            font.pointSize: 12
+                        }
+                        Button {
+                            id: loadPhotoBtn1
+                            x: 320 - width
+                            width: 62
+                            height: 16
+                            onClicked: {
+                                console.log("editMaterialBtn clicked")
+                            }
+
+                            background: Label {
+                                width: 62
+                                height: 16
+                                text: "上传照片"
+                                font.pointSize: 11
+                                color: loadPhotoBtn1.hovered ? Qt.lighter(
+                                                                   "#009bdb",
+                                                                   1.15) : "#009bdb"
+                            }
+                        }
+                    }
+                    //照片墙内容
+                    Container {
+                        id: wallContiner
+                        width: 320
+                        height: 220
+                        currentIndex: 0
+                        contentItem: Item {}
+                        //无照片时状态
+                        Rectangle {
+                            id: con1
+                            width: 320
+                            height: 220
+                            visible: true
+                            Image {
+                                sourceSize: Qt.size(320, 220)
+                                source: "qrc:/images/mainInterface/wallBack.png"
+                            }
+                            Button {
+                                id: loadPhotoBtn2
+                                x: 71
+                                y: 86
+                                width: 178
+                                height: 46
+                                background: Rectangle {
+                                    implicitHeight: 46
+                                    implicitWidth: 178
+                                    color: loadPhotoBtn2.hovered ? Qt.lighter(
+                                                                       "#009bdb",
+                                                                       1.15) : "#009bdb"
+                                    Image {
+                                        sourceSize: Qt.size(178, 46)
+                                        source: "qrc:/images/mainInterface/loadPhoto.png"
+                                    }
+                                }
+                            }
+                        }
+                        //有照片时状态
+                        GridView {
+                            id: cont2
+                            visible: false
+                        }
+                    }
+                }
+            }
+        }
     }
     //时钟
     //延迟关闭提示
@@ -389,5 +767,9 @@ Window {
         onTriggered: {
             sigTip.close()
         }
+    }
+    //等级图标模型
+    ListModel {
+        id: gradeModel
     }
 }

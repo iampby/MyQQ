@@ -103,5 +103,13 @@
         <file>main/IndividualData.qml</file>
         <file>images/mainInterface/userInfoClothing.png</file>
         <file>images/mainInterface/userInfoDefault.png</file>
+        <file>images/mainInterface/userInfoClose.png</file>
+        <file>images/mainInterface/userInfoMin.png</file>
+        <file>images/mainInterface/userInfoGrade.png</file>
+        <file>images/mainInterface/userInfoPenguin.png</file>
+        <file>images/mainInterface/userInfoQAge.png</file>
+        <file>images/mainInterface/userInfoPerson.png</file>
+        <file>images/mainInterface/loadPhoto.png</file>
+        <file>images/mainInterface/wallBack.png</file>
     </qresource>
 </RCC>

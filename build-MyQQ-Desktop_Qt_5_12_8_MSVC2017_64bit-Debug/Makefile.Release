@@ -313,40 +313,48 @@ release\qrc_qml_qmlcache.obj: qml_qmlcache.qrc \
 		..\images\imgRegister\img2.png \
 		..\images\imgRegister\img1.png \
 		..\images\imgRegister\img3.png \
-		..\images\mainInterface\exitIcon.png \
-		..\images\mainInterface\aboutImg.png \
-		..\images\mainInterface\cross.png \
+		..\images\mainInterface\colection.png \
 		..\images\mainInterface\arrowLeft.png \
-		..\images\mainInterface\qqIcon.png \
-		..\images\mainInterface\infManagerAdd.png \
-		..\images\mainInterface\initalHead.png \
-		..\images\mainInterface\star.png \
-		..\images\mainInterface\crown.png \
-		..\images\mainInterface\openArrow.png \
-		..\images\mainInterface\qqMinimum.png \
-		..\images\mainInterface\mainMenu.png \
-		..\images\mainInterface\alterHeadClose.png \
-		..\images\mainInterface\money.png \
-		..\images\mainInterface\wind.png \
-		..\images\mainInterface\alterHeadMin.png \
-		..\images\mainInterface\qqWhite.png \
-		..\images\mainInterface\alterHImgHeader.png \
-		..\images\mainInterface\headInfBgd.png \
-		..\images\mainInterface\userInfoClothing.png \
-		..\images\mainInterface\qqWhite.ico \
-		..\images\mainInterface\mesClose.png \
-		..\images\mainInterface\moon.png \
+		..\images\mainInterface\userInfoClose.png \
+		..\images\mainInterface\userInfoPenguin.png \
+		..\images\mainInterface\userInfoPerson.png \
 		..\images\mainInterface\frok.png \
-		..\images\mainInterface\sun.png \
-		..\images\mainInterface\iconSearch.png \
+		..\images\mainInterface\star.png \
 		..\images\mainInterface\userInfoDefault.png \
 		..\images\mainInterface\arrowBottom.png \
+		..\images\mainInterface\mesClose.png \
+		..\images\mainInterface\headInfBgd.png \
+		..\images\mainInterface\cross.png \
+		..\images\mainInterface\infManagerAdd.png \
+		..\images\mainInterface\userInfoQAge.png \
+		..\images\mainInterface\openArrow.png \
+		..\images\mainInterface\qqWhite.png \
+		..\images\mainInterface\userInfoMin.png \
 		..\images\mainInterface\inforManager.png \
-		..\images\mainInterface\qqClose.png \
-		..\images\mainInterface\addFriend.png \
-		..\images\mainInterface\infManager.png \
-		..\images\mainInterface\colection.png \
+		..\images\mainInterface\aboutImg.png \
+		..\images\mainInterface\qqMinimum.png \
 		..\images\mainInterface\qqCloseC.png \
+		..\images\mainInterface\iconSearch.png \
+		..\images\mainInterface\wind.png \
+		..\images\mainInterface\infManager.png \
+		..\images\mainInterface\qqClose.png \
+		..\images\mainInterface\alterHImgHeader.png \
+		..\images\mainInterface\initalHead.png \
+		..\images\mainInterface\exitIcon.png \
+		..\images\mainInterface\loadPhoto.png \
+		..\images\mainInterface\mainMenu.png \
+		..\images\mainInterface\wallBack.png \
+		..\images\mainInterface\sun.png \
+		..\images\mainInterface\alterHeadClose.png \
+		..\images\mainInterface\crown.png \
+		..\images\mainInterface\money.png \
+		..\images\mainInterface\moon.png \
+		..\images\mainInterface\addFriend.png \
+		..\images\mainInterface\qqIcon.png \
+		..\images\mainInterface\userInfoClothing.png \
+		..\images\mainInterface\userInfoGrade.png \
+		..\images\mainInterface\alterHeadMin.png \
+		..\images\mainInterface\qqWhite.ico \
 		..\images\mainInterface\weather\geo1.png \
 		..\images\mainInterface\weather\???.png \
 		..\images\mainInterface\weather\?.png \

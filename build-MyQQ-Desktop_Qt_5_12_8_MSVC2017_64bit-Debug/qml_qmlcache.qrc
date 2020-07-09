@@ -79,5 +79,13 @@
         <file alias="images/mainInterface/alterHeadMin.png">../images/mainInterface/alterHeadMin.png</file>
         <file alias="images/mainInterface/userInfoClothing.png">../images/mainInterface/userInfoClothing.png</file>
         <file alias="images/mainInterface/userInfoDefault.png">../images/mainInterface/userInfoDefault.png</file>
+        <file alias="images/mainInterface/userInfoClose.png">../images/mainInterface/userInfoClose.png</file>
+        <file alias="images/mainInterface/userInfoMin.png">../images/mainInterface/userInfoMin.png</file>
+        <file alias="images/mainInterface/userInfoGrade.png">../images/mainInterface/userInfoGrade.png</file>
+        <file alias="images/mainInterface/userInfoPenguin.png">../images/mainInterface/userInfoPenguin.png</file>
+        <file alias="images/mainInterface/userInfoQAge.png">../images/mainInterface/userInfoQAge.png</file>
+        <file alias="images/mainInterface/userInfoPerson.png">../images/mainInterface/userInfoPerson.png</file>
+        <file alias="images/mainInterface/loadPhoto.png">../images/mainInterface/loadPhoto.png</file>
+        <file alias="images/mainInterface/wallBack.png">../images/mainInterface/wallBack.png</file>
     </qresource>
 </RCC>

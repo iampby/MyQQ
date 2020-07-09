@@ -17,7 +17,7 @@ ApplicationWindow {
     x: qqMainWin.x + qqMainWin.width / 2 - width / 2
     y: qqMainWin.y + qqMainWin.height / 2 - height / 2
     onClosing: {
-        hide()//不退出app
+        hide() //不退出app
         loaderForMesWin.source = ""
         console.log("mesWin on closeing->")
     }

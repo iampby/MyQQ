@@ -8,12 +8,12 @@ import "../"
 
 ApplicationWindow {
     id: aboutWin
-    visible: false
+    visible: true
     width: 378
     height: 284
     title: qsTr("关于MyQQ")
     // modality: Qt.ApplicationModal
-    flags: Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+    flags: Qt.Window | Qt.FramelessWindowHint
     x: qqMainWin.x + qqMainWin.width / 2 - width / 2
     y: qqMainWin.y + qqMainWin.height / 2 - height / 2
     onClosing: {
@@ -32,7 +32,6 @@ ApplicationWindow {
             aboutWin.y += movedCoordinate.y
         }
     }
-
 
     header: ToolBar {
         height: 30
