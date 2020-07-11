@@ -6,6 +6,7 @@
 #include<qjsonobject.h>
 #include <qimage.h>
 #include<qdir.h>
+#include <qtimer.h>
 BigFileSocket::BigFileSocket(QObject *parent)
     :QTcpSocket(parent),instruct(QJsonDocument())
 {
@@ -201,6 +202,10 @@ void BigFileSocket::err(QAbstractSocket::SocketError code)
 void BigFileSocket::post()
 {
     this->connectToHost(ip,port);
+    QTimer::singleShot(40000,this,[=](){
+        qDebug()<<"QTimer::singleShot 40s";
+        emit finished(-1);
+    });
 }
 
 void BigFileSocket::resultSlot(int code, const QString& folder, const QString& type)

@@ -27,7 +27,9 @@ SOURCES += \
     loginsocket.cpp \
         main.cpp \
     funcc.cpp \
+    netmonitor.cpp \
     qmlimageprovider.cpp \
+    UpdateTimer.cpp \
     weatherhandle.cpp \
     registersocket.cpp
 
@@ -57,6 +59,8 @@ HEADERS += \
     headimgwidget.h \
     images.h \
     loginsocket.h \
+    netmonitor.h \
     qmlimageprovider.h \
+    UpdateTimer.h \
     weatherhandle.h \
     registersocket.h

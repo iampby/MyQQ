@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<myqq number="10012">
+<myqq number="10001">
     <set>
         <头像>0</头像>
         <名称>0</名称>
@@ -11,14 +11,14 @@
     <friendGroup>
         <我的设备 set="none"></我的设备>
         <我的好友 set="none">
-            <friend myqq="10012">
-                <昵称>齐天大圣到此一游</昵称>
+            <friend myqq="10001">
+                <昵称>hello world!</昵称>
                 <个性签名></个性签名>
-                <头像路径>../userData/10012/historyHeadImg/01.png</头像路径>
+                <头像路径>../userData/10001/historyHeadImg/01.png</头像路径>
                 <备注></备注>
                 <等级>0</等级>
                 <状态>0</状态>
-                <set info="0" status="0"></set>
+                <set status="0" info="0"></set>
             </friend></我的好友>
         <朋友 set="none"></朋友>
         <家人 set="none"></家人>

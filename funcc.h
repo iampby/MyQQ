@@ -1,30 +1,29 @@
 #ifndef FUNCC_H
 #define FUNCC_H
-// Flags for InternetGetConnectedState
-#define INTERNET_CONNECTION_MODEM           1
-#define INTERNET_CONNECTION_LAN             2
-#define INTERNET_CONNECTION_PROXY           4
-#define INTERNET_CONNECTION_MODEM_BUSY      8
+
 
 #include"weatherhandle.h"
 #include"friendgroupmodel.h"
 #include"images.h"
+#include"headimgwidget.h"
+#include"netmonitor.h"
+#include"UpdateTimer.h"
 #include <QObject>
 #include<QQuickWindow>
 #include<qapplication.h>
 #include<qdesktopwidget.h>
 #include<qtimer.h>
 #include<QNetworkReply>
-#include<QNetworkConfigurationManager>
 #include <QHostAddress>
 #include<QTcpSocket>
 #include<qvector.h>
 #include<qdatetime.h>
+
+
 class QXmlStreamReader;
 class LoginSocket;
 class QProcess;
 class RegisterSocket;
-#include"headimgwidget.h"
 class FuncC:public QObject
 {
     Q_OBJECT
@@ -37,6 +36,7 @@ class FuncC:public QObject
 
 public:
     FuncC(QObject *parent = nullptr);
+    ~ FuncC();
     QQuickWindow *win()const;
     QString sourceIco() const;
     QString localCity() const;
@@ -73,6 +73,9 @@ public:
     Q_INVOKABLE void openFile(QString filename);//打开更改头像界面
     Q_INVOKABLE void closeWidget();//发送信号删除widget控件
     Q_INVOKABLE void getHistoryHeadImg(const QString&myqq) const;//获取历史头像 this常量调用
+    Q_INVOKABLE void updateSignature(QString signature, const QString&in);//更新个性签名
+    Q_INVOKABLE void deleteNetTimer();//删除网络监测器
+
 
     Q_INVOKABLE void startAddFriendsProcess(QQuickWindow*arg, QMap<QString, QVariant> obj);//添加好友进程
     unsigned short addFriendsProcessCount()const;
@@ -131,7 +134,7 @@ Q_SIGNALS:
 private slots:
     void analysisWh(QString totalGeoAddr);//解析本地IP获取地理位置及Url
     void handleProcessStarted();
-    void GetInternetConnectState();
+    // void GetInternetConnectState();
     void registerFinished();
     void registerConnectFailed();
 private:
@@ -145,10 +148,11 @@ private:
 
     LoginSocket*loginSock;
     quint16 loginPort;
-quint16 writeFilePort;
+    quint16 updatePort;
     //记载MyQQ信息
     //用户的 name（昵称） sex（性别） signature（个性签名） days（活跃天数） grade（等级) status(状态） 所在地 故乡
     QMap<QString, QVariant>userInfo;
+
     QString m_myQQ;
     QString m_passwd;
     QVariantMap setInfo;//记录设置信息，登录用
@@ -159,13 +163,13 @@ quint16 writeFilePort;
 
 
 
-    QTimer* timer;
+    NetMonitor* timer;//网络监测定时 windows用 子线程运行
+    UpdateTimer*updateTimer;//定时更新用户界面 子线程运行
     bool online;
     QString m_localCity;
     QString m_localUrl;
     QString _3dayWeaAndTem[3][2];
     unsigned short processCount;//添加好友进程个数 非0即1
-    QNetworkConfigurationManager*mgr;
     WeatherHandle*wh;
     QString cityNameAboutWeather[3][2];
     QString cityList[50][2];

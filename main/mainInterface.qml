@@ -20,6 +20,7 @@ ApplicationWindow {
     property alias loaderForAlterInfo: loaderForAlterInfo //修改用户资料界面
     property alias cityWeatherModel: cityWeatherModel //保存3天天气信息
     property int weatherCanShow: 0 //2表示准备好
+    property bool isinit:true //用来避免第一次用户信息变化是发送更新信号
     property alias friendGroupModel: friendGroupModel
     property alias histroyImgModel: histroyImgModel //历史头像model
     property alias viewFriend: viewFriend
@@ -132,6 +133,7 @@ ApplicationWindow {
         images.setPixmap2(mq + "1", imgPath)
         //添加数据到模型
         //qvariantmap转过来的只能[string]获取属性
+        console.log("obj[\"个性签名\"]=", obj["个性签名"])
         var url = "image://friends/" + mq + "1"
         m.append(mq, obj["昵称"], obj["个性签名"], url, obj["备注"], obj["等级"],
                  obj["状态"], obj["Message - Settin"], obj["Status_Settin"])
@@ -191,6 +193,29 @@ ApplicationWindow {
                 listM[i].delegateModel = friendsModel[i]
                 listM[i].pos = i
                 console.log("delegate pos:", i, listM[i] === undefined)
+            }
+        }
+    }
+    //个性签名更新
+    onSignatureChanged: {
+        console.log("onSignatureChanged:")
+        //5 更新个性签名
+        if (isinit){
+            isinit=false
+            console.log("isinit=true")
+            return
+        }
+        var ins = "5 updateSianature  " + myqq + "  headerSize"
+        funcc.updateSignature(qqMainWin.signature, ins)
+        for (var i = 0; i < friendsModel.length; ++i) {
+            console.log("onSignatureChanged:i=", i)
+            var m = friendsModel[i]
+            var row = m.rowOf(myqq)
+            if (row !== -1) {
+                console.log("find myself,the number is ", myqq)
+                m.setData(row, signature, 2)
+                console.log("updated show: ", signature)
+                console.log("end update")
             }
         }
     }
@@ -836,6 +861,7 @@ ApplicationWindow {
                 x: nameLab.x
                 y: nameLab.y + nameLab.height
                 hoverEnabled: true
+                leftPadding: 0
                 placeholderText: "编辑个性签名"
                 placeholderTextColor: "white"
                 text: sigMetrics.elidedText
@@ -852,6 +878,7 @@ ApplicationWindow {
                     } else {
                         signature = text //失去焦点 把文本赋值给个性签名
                         text = sigMetrics.elidedText
+                        console.log(text)
                         color = "white"
                     }
                 }
@@ -977,7 +1004,7 @@ ApplicationWindow {
             }
             Rectangle {
                 id: weatherRec
-                x: headRec.width - width
+                x: headerRec.width - width
                 y: recHead.y
                 width: 48
                 height: 52
@@ -1002,6 +1029,7 @@ ApplicationWindow {
                 }
                 Image {
                     id: imgWeather
+                    sourceSize: Qt.size(48, 52)
                     source: "qrc:/images/mainInterface/wind.png"
                 }
             }

@@ -3,15 +3,12 @@
 #include"loginsocket.h"
 #include"bigfilesocket.h"
 #include"headimgwidget.h"
+#include<qthread.h>
 #include<QDebug>
 #include<qprocess.h>
-#include<qthread.h>
-#include<Psapi.h>
 #include<qsqlquery.h>
 #include <qregularexpression.h>
-#include<QNetworkConfigurationManager>
 #include <qdir.h>
-#include <QLibrary>
 #include <qhostaddress.h>
 #include<QFileDialog>
 #include<QXmlStreamReader>
@@ -19,18 +16,16 @@
 #include <qlabel.h>
 #include <QBuffer>
 
-
-typedef bool (*TestConnection)(int*flags,int reserved);
+//funcc类
 FuncC::FuncC(QObject *parent):QObject(parent)
 {
-    m_win=Q_NULLPTR;m_sourceIco="";registerSock=nullptr;timer=nullptr;loginSock=nullptr;
-    processCount=0;registerPort=5566;ip="127.0.0.1";loginPort=5567;writeFilePort=5568;
+    m_win=Q_NULLPTR;registerSock=nullptr;loginSock=nullptr;timer=nullptr;updateTimer=nullptr;
+    processCount=0;ip="127.0.0.1";m_sourceIco="";
+    loginPort=5567;updatePort=5568;registerPort=5566;
+    online=false;
     m_myQQ=QString();m_passwd=QString();//初始化myqq,passwd
     wh=new WeatherHandle;
-    QTimer *timer=new QTimer(this);            //新建一个定时器对象
-    timer->setInterval(1000);
-    online=false;
-    connect(timer,SIGNAL(timeout()),this,SLOT(GetInternetConnectState()));
+
     m_localCity="";
     m_localUrl="";
     for(int r=0;r<3;r++){
@@ -50,6 +45,21 @@ FuncC::FuncC(QObject *parent):QObject(parent)
     cityCount=0;
     initAllCitys();
 
+}
+
+FuncC::~FuncC()
+{
+    qDebug()<<"~FuncC()";
+    if(timer){
+        qDebug()<<"network timer can be to delete";
+        emit timer->stopMonitor();//阻塞队列连接信号发出 必须先退出进程事件圈在删除对象
+        delete timer,timer=nullptr;
+    }
+    if(updateTimer){
+        qDebug()<<"updating timer can be to delete";
+        emit updateTimer->stopTimer();//阻塞队列连接信号发出 必须先退出进程事件圈在删除对象
+        delete updateTimer,updateTimer=nullptr;
+    }
 }
 
 QQuickWindow *FuncC::win() const
@@ -108,50 +118,7 @@ void FuncC::handleProcessStarted()
     processCount+=1;
     qDebug()<<"start";
 }
-//获取网络变化并发送网络变化信号
-void FuncC::GetInternetConnectState()
-{
-    QLibrary lib("Wininet");
-    //如果正确加载了dll
-    int b;
-    if(lib.load())
-    {
-        bool isOnline=false;//是否在线
-        int  flags;
-        //获取dll库中的函数InternetGetConnectedState函数地址`
-        TestConnection  myConnectFun=(TestConnection)lib.resolve("InternetGetConnectedState");
-        //判断是否连网
-        isOnline=myConnectFun(&flags,0);
-        if(isOnline)
-        {
-            //在线：拨号上网
-            if ( flags & INTERNET_CONNECTION_MODEM ) //在线：拨号上网
-            {
-                b=1;
 
-            } else  if(flags & INTERNET_CONNECTION_LAN)  //在线：通过局域网
-            {
-                b=2;
-            }
-            else if(flags & INTERNET_CONNECTION_PROXY) //在线：代理
-            {
-                b=4;
-            }
-            if(online==!(bool)b){
-                online=(bool)b;
-                emit netChanged(online);//信号发射出去
-            }
-        }
-        else
-        {
-            b = -1;//网络中断
-            if(online){
-                online=false;
-                emit netChanged(online);//信号发射出去
-            }
-        }
-    }
-}
 
 void FuncC::registerFinished()
 {
@@ -432,6 +399,30 @@ void FuncC::login(const QString &myqq,const QString &passwd)
                 if(!r.remove())
                     qDebug()<<"removed info.xml unsuccessfully.";*/
                     loginSock->deleteLater();//删除指针
+                    //子线程 网路状态定时判断
+                    online=true;
+                    timer=new NetMonitor();
+                    timer->setTimerInterval(2000);//2s监测
+                    connect(timer,&NetMonitor::getNetStatus,timer,[=](qint32&status){
+                        //断网了
+                        if(online&&status==-1){
+                            qDebug()<<"disconnected network";
+                            online=false;
+                            //有网了
+                        }else if(!online&&status!=-1){
+                            qDebug()<<"connected network";
+                            online=true;
+                        }
+                    });
+                    emit timer->startMonitor();
+                    updateTimer=new UpdateTimer();
+                    updateTimer->setMyqq(myqq);
+                    updateTimer->setIp(ip);
+                    updateTimer->setPort(loginPort);
+                    updateTimer->setTimerInterval(300000);//五分钟获取一次更新
+                    emit updateTimer->startTimer();
+
+
                     return;
                 }
             }
@@ -478,12 +469,12 @@ bool FuncC::writeImg(const QByteArray &content, const QString &filepath, const c
 
 void FuncC::startClock()
 {
-    timer->start();
+    //  timer->start();
 }
 
 void FuncC::stopClock()
 {
-    timer->stop();
+    //timer->stop();
 }
 
 
@@ -577,18 +568,18 @@ void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,cons
             BigFileSocket*updateImgSock=new BigFileSocket();//子线程不能有父类
             updateImgSock->setInstruct(instructDescription);
             updateImgSock->setIp(ip);
-            updateImgSock->setPort(writeFilePort);
+            updateImgSock->setPort(updatePort);
             QThread*thread=new QThread();
             updateImgSock->moveToThread(thread);
             thread->start();
             emit updateImgSock->start();//转移到新线程去post host
             connect(thread,&QThread::finished,updateImgSock,&BigFileSocket::deleteLater);
             //删除线程
-             connect(this,&FuncC::emitOKClicked,thread,[=](){
-                 qDebug()<<"closed window causes a thread to exit";
-                 thread->exit(0);
-                 thread->quit();
-             });
+            connect(this,&FuncC::emitOKClicked,thread,[=](){
+                qDebug()<<"closed window causes a thread to exit";
+                thread->exit(0);
+                thread->quit();
+            });
             connect(thread,&QThread::finished,thread,&QThread::deleteLater);
             //获取文件结果收尾处理
             connect(updateImgSock,&BigFileSocket::writtenInstruction, updateImgSock,[=](){
@@ -665,6 +656,41 @@ void FuncC::getHistoryHeadImg(const QString&myqq)const
         thread->quit();
         emit emitReadHistory(code);
     });
+}
+
+void FuncC::updateSignature(QString signature, const QString &in)
+{
+    qDebug()<<"updating remote signature";
+    BigFileSocket*updateSigSock=new BigFileSocket();//子线程不能有父类
+    updateSigSock->setInstruct(in);
+    updateSigSock->setIp(ip);
+    updateSigSock->setPort(updatePort);
+    QThread*thread=new QThread();
+    updateSigSock->moveToThread(thread);
+    thread->start();
+    emit updateSigSock->start();//转移到新线程去post host
+    connect(thread,&QThread::finished,updateSigSock,&BigFileSocket::deleteLater);
+    //删除线程
+
+    connect(thread,&QThread::finished,thread,&QThread::deleteLater);
+    //获取文件结果收尾处理
+    connect(updateSigSock,&BigFileSocket::writtenInstruction, updateSigSock,[=](){
+
+        updateSigSock->write(signature.toUtf8());
+        if(!signature.isEmpty())//防止空字节阻塞
+            updateSigSock->loop.exec();
+        thread->exit(0);
+        thread->quit();
+        qDebug()<<"updating signature thread had exited";
+    });
+}
+
+void FuncC::deleteNetTimer()
+{
+    if(timer){
+        qDebug()<<"network timer had been deleted";
+        delete timer,timer=nullptr;
+    }
 }
 
 

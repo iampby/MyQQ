@@ -138,6 +138,7 @@ Rectangle {
                 var passwd = inCenterLoader.item.loginInf.passwd.edit.text
                 time60sForLogin.restart()
                 funcc.login(account, passwd)
+                console.log("account and passwd:", account, passwd)
                 inCenterLoader.item.loginInf.loginText = "登录中..."
             }
         }
@@ -409,8 +410,11 @@ Rectangle {
                     console.log("opened the AlterHImg")
                     loader.item.x = (mainWin.desktopAvailableWidth - loader.item.width) / 2
                     loader.item.y = (mainWin.desktopAvailableHeight - loader.item.height) / 2
-                    funcc.addHeadWidget(loader.item, 19, 84, images.findPixmap(inCenterLoader.item.myqq+"101"),
-                                        inCenterLoader.item.myqq, inCenterLoader.item.histroyImgModel.isgot)
+                    funcc.addHeadWidget(
+                                loader.item, 19, 84, images.findPixmap(
+                                    inCenterLoader.item.myqq + "101"),
+                                inCenterLoader.item.myqq,
+                                inCenterLoader.item.histroyImgModel.isgot)
                     loader.item.show()
                     break
                 } else if (loader.status === Loader.Error) {
@@ -460,6 +464,7 @@ Rectangle {
             mainWin.show()
             mainWin.raise()
             mainWin.requestActivate()
+            funcc.deleteNetTimer()//删除网络监测器
         }
     }
 

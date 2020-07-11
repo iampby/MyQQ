@@ -34,6 +34,7 @@ public slots:
     void resultSlot(int code, const QString& folder, const QString& type);
 public:
     QEventLoop loop;//控制写入是否继续
+    QJsonDocument instruct;
 
 private:
 
@@ -41,7 +42,6 @@ private:
     QByteArray temp;
     QString ip;
     quint16 port;
-    QJsonDocument instruct;
     enum WriteInstruct m_write;
     qint64 size;
     QString imgName;
