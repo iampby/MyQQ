@@ -114,7 +114,7 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
                                             QDomText headPathT=doc.createTextNode(headPath);
                                             headPathEle.appendChild(headPathT);
                                             QDomElement tagEle=doc.createElement(QStringLiteral("备注"));
-                                            QDomText tagT=doc.createTextNode("");
+                                            QDomText tagT=doc.createTextNode(name);//默认为昵称
                                             tagEle.appendChild(tagT);
                                             QDomElement gradeEle=doc.createElement(QStringLiteral("等级"));
                                             QDomText gradeT=doc.createTextNode("0");

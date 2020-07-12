@@ -11,27 +11,29 @@ class WriteThread:public QObject
 public:
     enum FileType{
         NoFile,
-        HistoryHeadImage
+        HistoryHeadImage,
+        Signature
     };
-    WriteThread(qintptr socketDescriptor,QObject *parent = nullptr);
+    WriteThread(qintptr socketDescriptor,qint64 count,QObject *parent = nullptr);
     ~WriteThread();
     bool adjustHistoryImg(QByteArray&bytes,const QString&filePath,const QString&fileType);
+    bool updateSignature(QByteArray&bytes);
 signals:
     void error(QAbstractSocket::SocketError);
     void finished();
-    void loopStop();
+    void startTimer();
 public slots:
-
+void timer();
 private slots:
       void readD();
       void disconnected();
 private:
     qintptr socketDescriptor;
+    qint64 count;
     QTcpSocket*tcpsocket;
-    QEventLoop loop;
     qint64 size;
     FileType FT;
-    QByteArray png;
+    QByteArray bytes;
     QString fileName;
     QString myqq;
 };

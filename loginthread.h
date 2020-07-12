@@ -14,8 +14,9 @@ signals:
     void error(QAbstractSocket::SocketError);
     void finished();
     void loopStop();
+    void startTimer();
 public slots:
-
+void timer();
 private slots:
       void readD();
       void disconnected();

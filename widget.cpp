@@ -20,10 +20,10 @@ Widget::Widget(QWidget *parent)
 Widget::~Widget()
 {
     delete ui;
-    for (QFile*v :files) {
+    for (QFile*v :historyImgFiles) {
         delete v,v=nullptr;
     }
-    files.clear();
+    historyImgFiles.clear();
 }
 
 
@@ -78,12 +78,12 @@ void Widget::on_pushButton3_clicked()
     if(ui->pushButton3->text()==QStringLiteral("开启")){
         writeServer=new WriteServer(this);
         if(!writeServer->listen(QHostAddress::Any,writePort)){
-            QMessageBox::critical(this,QStringLiteral("失败"),QStringLiteral("开启写入文件服务器失败！"));
+            QMessageBox::critical(this,QStringLiteral("失败"),QStringLiteral("开启更新信息服务器失败！"));
             delete  writeServer;
             writeServer=nullptr;
             return;
         }
-        ui->label3->setText(QStringLiteral("写入文件服务器已开启！"));
+        ui->label3->setText(QStringLiteral("更新信息服务器已开启！"));
         ui->pushButton3->setText(QStringLiteral("关闭"));
     }else{
         writeServer->close();
@@ -91,7 +91,7 @@ void Widget::on_pushButton3_clicked()
             delete writeServer;
             writeServer=nullptr;
         }
-        ui->label3->setText(QStringLiteral("写入文件服务器已关闭！"));
+        ui->label3->setText(QStringLiteral("更新信息服务器已关闭！"));
         ui->pushButton3->setText(QStringLiteral("开启"));
     }
 }

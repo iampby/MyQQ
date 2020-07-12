@@ -1,4 +1,5 @@
 #include "loginthread.h"
+#include"global.h"
 #include<qtcpsocket.h>
 #include<qjsonobject.h>
 #include<qjsondocument.h>
@@ -9,6 +10,8 @@
 #include<qeventloop.h>
 #include <qdatastream.h>
 #include <QJsonArray>
+#include <qtimer.h>
+#include<qthread.h>
 //因为套接字发送数据可能是粘在一起的，所以要先发送个数据大小
 //最好是在发送头字节加个int标记大小，这里用int8标记json数据，因为发送数据的最小单位就是字节了，保证接收到，同时json字节小于256
 //大数据的大小就用json标记大小
@@ -16,7 +19,7 @@
 LoginThread::LoginThread(qintptr socketDescriptor, qint64 count, QObject *parent)
     :QObject(parent),socketDescriptor(socketDescriptor),count(count)
 {
-    tcpsocket=new QTcpSocket(this);
+    tcpsocket=new QTcpSocket(this);//tcpsocket 必须继承父类 才能流畅地使用线程
     if(!tcpsocket->setSocketDescriptor(this->socketDescriptor)) {
         qDebug()<<QStringLiteral("创建套接字失败！");
         emit error(tcpsocket->error());
@@ -25,10 +28,11 @@ LoginThread::LoginThread(qintptr socketDescriptor, qint64 count, QObject *parent
     }
     tcpsocket->setSocketOption(QAbstractSocket::KeepAliveOption,true);//windows必设
     connect(tcpsocket,&QTcpSocket::readyRead,this,&LoginThread::readD);
+    connect(this,&LoginThread::startTimer,this,&LoginThread::timer);
     connect(tcpsocket,&QTcpSocket::disconnected,this,&LoginThread::disconnected);
     connect(tcpsocket,&QTcpSocket::bytesWritten,this,[=](qint64 bytes){
         emit loopStop();
-        qDebug()<<bytes<<" bytes has been readed";
+        qDebug()<<"bytesWritten:"<<bytes<<"bytes";
     });
 }
 
@@ -60,6 +64,16 @@ qint64 LoginThread::dateSubstraction(const QDate &substracted, const QDate &subs
             age-=1;
     }
     return age;
+}
+
+void LoginThread::timer()
+{
+    //子线程调用定时器
+    QTimer::singleShot(60000,Qt::CoarseTimer,this,[=](){
+        qDebug()<<"timer 60s exit";
+        emit finished();
+        qDebug()<<"thread had exited";
+    });
 }
 
 
@@ -797,6 +811,125 @@ label:
                     writeJson.setObject(writeObj);
                     tcpsocket->write(writeJson.toJson());
                     loop.exec();
+                    //传修改数据会user
+                }else if(in.toString()=="6"){
+                    QString value=obj.value("content").toString();
+                    if(value=="updateUser"){
+                        bool ok=true;//默认成功
+                        QString myqq=obj.value("myqq").toString();
+                        QDir dir("../userData/"+myqq+"/friendsInfo");
+                        if(dir.exists()){
+                            if(historyImgFiles.contains(myqq)){
+                                historyImgMuter.lock();
+                                QFile* headimg=historyImgFiles.value(myqq);
+                                if(headimg->exists()){
+                                    qDebug()<<headimg->fileName()<<" is found";
+                                    if(headimg->open(QIODevice::ReadOnly)){
+                                        qDebug()<<"opened the file";
+                                        QJsonDocument json=QJsonDocument::fromJson(headimg->readAll());
+                                        if(!json.isObject()){
+                                            qDebug()<<" json is not object";
+                                            ok=false;
+                                        }
+                                        QJsonObject obj=json.object();
+                                        QJsonArray arr=obj.value("myqq").toArray();
+                                        if(arr.isEmpty())ok=false;
+                                        else{
+                                            for (int var = 0; var < arr.size(); ++var) {
+                                                QJsonObject temp= arr.at(var).toObject();
+                                                if(temp.isEmpty()){
+                                                    qDebug()<<"warning:occured a empty obj in markedHeadImg.json";
+                                                    continue;
+                                                }
+                                                QString mq=temp.value("number").toString();
+                                                QFile tempFile("../userData/"+mq+"/historyHeadImg/01.png");
+                                                if(!tempFile.open(QIODevice::ReadOnly)){
+                                                    qDebug()<<"warning:opened a file unsuccessful,named "<<tempFile.fileName();
+                                                    continue;
+                                                }
+                                                QByteArray data=tempFile.readAll();
+                                                tempFile.close();
+                                                QJsonDocument tempDoc;
+                                                QJsonObject tempObj;
+                                                tempObj.insert("content",QJsonValue("headImg"));
+                                                tempObj.insert("size",QJsonValue(data.size()));
+                                                tempObj.insert("number",QJsonValue(mq));
+                                                tempDoc.setObject(tempObj);
+                                                quint8 size;QByteArray sizeData;
+                                                size=tempDoc.toJson().size();
+                                                QDataStream stream(&sizeData,QIODevice::WriteOnly);
+                                                stream.setVersion(QDataStream::Qt_4_0);
+                                                stream<<size;
+                                                tcpsocket->write(sizeData+tempDoc.toJson());
+                                                loop.exec();
+                                                tcpsocket->write(data);
+                                                loop.exec();
+                                            }
+                                        }
+                                    }else ok=false;
+                                    headimg->remove();//删除标记文件
+                                }
+                                historyImgFiles.remove(myqq);//删除共享文件变量
+                            }
+                            //传送签名和昵称
+                            if(sigFiles.contains(myqq)){
+                                QFile* sigFile=sigFiles.value(myqq);
+                                if(sigFile->exists()){
+                                    qDebug()<<sigFile->fileName()<<" is found";
+                                    if(!sigFile->open(QIODevice::ReadOnly)){
+                                        ok=false;
+                                        qDebug()<<"warning:opened the file is of failure,named "<<sigFile->fileName();
+                                    }else{
+                                        QByteArray data=sigFile->readAll();
+                                        QJsonDocument tempDoc;
+                                        QJsonObject tempObj;
+                                        tempObj.insert("content",QJsonValue("signatureAndName"));
+                                        tempObj.insert("size",QJsonValue(data.size()));
+                                        tempDoc.setObject(tempObj);
+                                        quint8 size;QByteArray sizeData;
+                                        size=tempDoc.toJson().size();
+                                        QDataStream stream(&sizeData,QIODevice::WriteOnly);
+                                        stream.setVersion(QDataStream::Qt_4_0);
+                                        stream<<size;
+                                        tcpsocket->write(sizeData+tempDoc.toJson());
+                                        loop.exec();
+                                       // QJsonDocument json=QJsonDocument::fromJson(data);
+                                        tcpsocket->write(data);
+                                        loop.exec();
+                                    }
+                                    if(sigFile->remove())qDebug()<<"result of  sigFile->remove():true";
+                                }
+                                sigFiles.remove(myqq);//删除共享文件变量
+                            }
+                        }else ok=false;
+                        //成功处理
+                        qDebug()<<"result is "<<ok;
+                        writeObj.insert("content",QJsonValue("end"));
+                        writeObj.insert("result",QJsonValue("true"));
+                        writeJson.setObject(writeObj);
+                        QByteArray sizedata;
+                        quint8 l=writeJson.toJson().size();
+                        QDataStream sizeStr(&sizedata,QIODevice::WriteOnly);
+                        sizeStr.setVersion(QDataStream::Qt_4_0);
+                        sizeStr<<l;
+                        tcpsocket->write(sizedata+ writeJson.toJson());
+                        loop.exec();
+                        tcpsocket->disconnectFromHost();
+                        return;
+                    }else{
+                        writeObj.insert("content",QJsonValue("end"));
+                        writeObj.insert("result",QJsonValue("false"));
+                        writeJson.setObject(writeObj);
+                        QByteArray sizedata;
+                        quint8 l=writeJson.toJson().size();
+                        QDataStream sizeStr(&sizedata,QIODevice::WriteOnly);
+                        sizeStr.setVersion(QDataStream::Qt_4_0);
+                        sizeStr<<l;
+                        tcpsocket->write(sizedata+ writeJson.toJson());
+                        loop.exec();
+                        tcpsocket->disconnectFromHost();
+                        return;
+                    }
                 }
             }
         }
@@ -807,6 +940,7 @@ void LoginThread::disconnected()
 {
     qDebug()<<"disconnected";
     emit finished();
+
 }
 
 QString LoginThread::handleLogRec(QString &rec,QString& host,QString&ip) const

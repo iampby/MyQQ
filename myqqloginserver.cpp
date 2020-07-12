@@ -30,4 +30,5 @@ void MyQQLoginServer::incomingConnection(qintptr socketDescriptor)
         qDebug()<<"login thread exit";
     });
     thread->start();
+    emit loginHandle->startTimer();
 }

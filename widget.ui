@@ -68,7 +68,7 @@ color:blue
 }</string>
    </property>
    <property name="text">
-    <string>写入文件服务器已关闭！</string>
+    <string>更新信息服务器已关闭！</string>
    </property>
    <property name="textFormat">
     <enum>Qt::AutoText</enum>

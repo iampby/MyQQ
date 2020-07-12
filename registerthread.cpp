@@ -24,6 +24,13 @@ void RegisterThread::run()
     tcpsock->setSocketOption(QAbstractSocket::KeepAliveOption,true);//windows必设
     emit hasRunning(tcpsock,this);
     connect(this,&RegisterThread::finished,tcpsock,&QTcpSocket::deleteLater);
+    //子线程调用定时器
+    QTimer::singleShot(30000,Qt::CoarseTimer,tcpsock,[=](){
+        qDebug()<<"timer 30s exit";
+        this->exit(1);
+        this->quit();
+        qDebug()<<"thread had exited";
+    });
     exec();
 }
 
