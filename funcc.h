@@ -137,6 +137,7 @@ private slots:
     // void GetInternetConnectState();
     void registerFinished();
     void registerConnectFailed();
+    void  updateHandle(const bool &ok);//定时获取数据后处理界面更新
 private:
     QQuickWindow *m_win;
 

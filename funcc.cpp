@@ -138,6 +138,8 @@ void FuncC::registerConnectFailed()
     registerSock->close();
 }
 
+
+
 void FuncC::initLoginInfo()
 {
     //用户的 name（昵称） sex（性别） signature（个性签名） days（活跃天数） grade（等级) status(状态） 所在地 故乡
@@ -415,13 +417,14 @@ void FuncC::login(const QString &myqq,const QString &passwd)
                         }
                     });
                     emit timer->startMonitor();
+                    //子线程 定时更新界面信息
                     updateTimer=new UpdateTimer();
                     updateTimer->setMyqq(myqq);
                     updateTimer->setIp(ip);
                     updateTimer->setPort(loginPort);
-                    updateTimer->setTimerInterval(300000);//五分钟获取一次更新
+                    updateTimer->setTimerInterval(20000);//五分钟获取一次更新
                     emit updateTimer->startTimer();
-
+                    connect(updateTimer,&UpdateTimer::emitResult,this,&FuncC::updateHandle);
 
                     return;
                 }
@@ -437,7 +440,12 @@ void FuncC::login(const QString &myqq,const QString &passwd)
     });
     loginSock->connectToHost(ip,loginPort);
 }
-
+//更新界面信息
+void FuncC::updateHandle(const bool &ok)
+{
+    qDebug()<<"updateHandle(bool &ok)"<<ok;
+qDebug()<<updateTimer->sigMap.value(m_myQQ);
+}
 bool FuncC::writeFile(const QByteArray &content, const QString &filepath)
 {
     QFile file(filepath);
