@@ -85,8 +85,17 @@ bool WriteThread::adjustHistoryImg(QByteArray &bytes, const QString &filePath, c
             tagDir.mkpath("./");//创建当前目录
         }
         QString tagName="markedHeadImg.json";
-        historyImgMuter.lock();
         if(historyImgFiles.contains(v)){
+            QMutex* muter=historyImgMuter.value(v);//引用
+            muter->lock();
+            //如果没有容纳 则自动更新线程前一步调用 需跳转到新建更新标记文件处
+            if(!historyImgFiles.contains(v)){
+                qDebug()<<"notice:marked markedHeadImg.json file just now  was deleted from other thread";
+                muter->unlock();
+                historyImgMuter.remove(v);
+                delete muter,muter=nullptr;//删除指针
+                goto label;
+            }
             QFile* markedFile=historyImgFiles.value(v);
             if(markedFile->open(QIODevice::ReadWrite)){
                 QByteArray markData=markedFile->readAll();
@@ -106,7 +115,9 @@ bool WriteThread::adjustHistoryImg(QByteArray &bytes, const QString &filePath, c
                 markedFile->close();
             }else
                 qDebug()<<"json write is of failure,named  "<<markedFile->fileName();
+            muter->unlock();
         }else {
+            label:
             QFile* markedFile=new QFile(tagDir.filePath(tagName));
             if(markedFile->open(QIODevice::ReadWrite)){
                 QJsonDocument jsonDoc;
@@ -121,10 +132,13 @@ bool WriteThread::adjustHistoryImg(QByteArray &bytes, const QString &filePath, c
                 markedFile->write(jsonDoc.toJson());
                 markedFile->close();
                 historyImgFiles.insert(v,markedFile);
-            }else
+                QMutex* muter=new QMutex();
+                historyImgMuter.insert(v,muter);
+            }else{
                 qDebug()<<"json write is of failure,named  "<<markedFile->fileName();
+                markedFile->deleteLater();
+            }
         }
-        historyImgMuter.unlock();
     }
     return true;
 }
@@ -213,8 +227,16 @@ infoxml.close();
             tagDir.mkpath("./");//创建当前目录
         }
         QString tagName="markedSignatureAndName.json";
-        sigMuter.lock();
         if(sigFiles.contains(v)){
+            QMutex*muter=sigMuter[v];
+            muter->lock();
+            if(!sigFiles.contains(v)){
+                qDebug()<<"notice:marked markedSignatureAndName.json file  just now  was deleted from other thread";
+                muter->unlock();
+               sigMuter.remove(v);
+                delete muter,muter=nullptr;//删除指针
+                goto label;//如果文件已经移除，重新更新文件
+            }
             QFile* markedFile=sigFiles.value(v);
             if(markedFile->open(QIODevice::ReadWrite)){
                 QByteArray markData=markedFile->readAll();
@@ -232,7 +254,9 @@ infoxml.close();
                 markedFile->close();
             }else
                 qDebug()<<"json write is of failure,named  "<<markedFile->fileName();
+            muter->unlock();
         }else {
+            label:
             QFile* markedFile=new QFile(tagDir.filePath(tagName));
             if(markedFile->open(QIODevice::ReadWrite)){
                 QJsonDocument json;
@@ -247,12 +271,14 @@ infoxml.close();
                 markedFile->write(json.toJson());
                 markedFile->close();
                 sigFiles.insert(v,markedFile);
+                QMutex* muter=new QMutex();
+                sigMuter.insert(v,muter);
             }else{
                 qDebug()<<"json write is of failure,named  "<<markedFile->fileName();
              delete markedFile,markedFile=nullptr;
             }
         }
-        sigMuter.unlock();
+
     }
     return ok;
 }

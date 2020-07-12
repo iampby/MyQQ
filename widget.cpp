@@ -24,6 +24,12 @@ Widget::~Widget()
         delete v,v=nullptr;
     }
     historyImgFiles.clear();
+
+    for (QFile*v :sigFiles) {
+        delete v,v=nullptr;
+    }
+    sigFiles.clear();
+
 }
 
 

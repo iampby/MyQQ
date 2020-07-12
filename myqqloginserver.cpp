@@ -1,7 +1,9 @@
 #include "myqqloginserver.h"
+#include"global.h"
 #include"loginthread.h"
 
 #include <qthread.h>
+#include <qtimer.h>
 MyQQLoginServer::MyQQLoginServer(QObject *parent)
     :QTcpServer(parent)
 {
@@ -28,6 +30,28 @@ void MyQQLoginServer::incomingConnection(qintptr socketDescriptor)
         thread->exit(0);
         thread->quit();
         qDebug()<<"login thread exit";
+    });
+     //删除historyImgMuter锁集合中的一个锁
+    connect(loginHandle,&LoginThread::delayedHeadImgDeletion,this,[=](const QString number){
+        //延迟5s删除
+        QTimer::singleShot(5000,this,[=](){
+            if(!historyImgFiles.contains(number)){
+                QMutex*muter=historyImgMuter.value(number);
+                historyImgMuter.remove(number);//如果没有更新标记文件，正常删除锁
+                delete muter,muter=nullptr;
+            }
+        });
+    });
+    //删除锁集合中的一个锁
+    connect(loginHandle,&LoginThread::delayedSigAndNameDeletion,this,[=](const QString number){
+        //延迟5s删除
+        QTimer::singleShot(5000,this,[=](){
+            if(!sigFiles.contains(number)){
+                 QMutex*muter=sigMuter.value(number);
+                sigMuter.remove(number);//如果没有更新标记文件，正常删除锁
+                   delete muter,muter=nullptr;
+            }
+        });
     });
     thread->start();
     emit loginHandle->startTimer();

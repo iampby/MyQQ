@@ -820,7 +820,8 @@ label:
                         QDir dir("../userData/"+myqq+"/friendsInfo");
                         if(dir.exists()){
                             if(historyImgFiles.contains(myqq)){
-                                historyImgMuter.lock();
+                               QMutex*muter=historyImgMuter.value(myqq);
+                               muter->lock();
                                 QFile* headimg=historyImgFiles.value(myqq);
                                 if(headimg->exists()){
                                     qDebug()<<headimg->fileName()<<" is found";
@@ -869,10 +870,15 @@ label:
                                     }else ok=false;
                                     headimg->remove();//删除标记文件
                                 }
+                                headimg->deleteLater();//文件延迟删除
                                 historyImgFiles.remove(myqq);//删除共享文件变量
+                                muter->unlock();//解锁 如果可能 等另一个更新标记文件线程执行完就 锁集合留给后面删除或者另一个线程删除
+                                emit delayedHeadImgDeletion(myqq);//延迟删除集合锁
                             }
                             //传送签名和昵称
                             if(sigFiles.contains(myqq)){
+                                QMutex*muter=sigMuter.value(myqq);//右值引用
+                                muter->lock();
                                 QFile* sigFile=sigFiles.value(myqq);
                                 if(sigFile->exists()){
                                     qDebug()<<sigFile->fileName()<<" is found";
@@ -899,7 +905,10 @@ label:
                                     }
                                     if(sigFile->remove())qDebug()<<"result of  sigFile->remove():true";
                                 }
+                                sigFile->deleteLater();
                                 sigFiles.remove(myqq);//删除共享文件变量
+                                muter->unlock();//解锁 如果可能 等另一个更新标记文件线程执行完就 锁集合留给后面删除或者另一个线程删除
+                                emit delayedSigAndNameDeletion(myqq);
                             }
                         }else ok=false;
                         //成功处理
@@ -915,7 +924,6 @@ label:
                         tcpsocket->write(sizedata+ writeJson.toJson());
                         loop.exec();
                         tcpsocket->disconnectFromHost();
-                        return;
                     }else{
                         writeObj.insert("content",QJsonValue("end"));
                         writeObj.insert("result",QJsonValue("false"));
@@ -928,8 +936,8 @@ label:
                         tcpsocket->write(sizedata+ writeJson.toJson());
                         loop.exec();
                         tcpsocket->disconnectFromHost();
-                        return;
                     }
+                    return;
                 }
             }
         }

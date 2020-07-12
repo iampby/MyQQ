@@ -15,6 +15,8 @@ signals:
     void finished();
     void loopStop();
     void startTimer();
+    void  delayedHeadImgDeletion(const QString);
+    void  delayedSigAndNameDeletion(const QString);
 public slots:
 void timer();
 private slots:
