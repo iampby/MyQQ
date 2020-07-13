@@ -4,6 +4,8 @@
 #include <QJsonObject>
 #include <QObject>
 #include<QTcpSocket>
+#include<qeventloop.h>
+
 class LoginSocket : public QTcpSocket
 {
     Q_OBJECT
@@ -25,6 +27,7 @@ signals:
     void finished(int result);
 private:
     qint64 size;
+    QEventLoop loop;
 };
 
 #endif // LOGINSOCKET_H

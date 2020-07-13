@@ -1,6 +1,7 @@
 ﻿import QtQuick 2.11
 import QtQuick.Controls 2.5
 import QtQuick.Layouts 1.3
+import QtGraphicalEffects 1.12
 
 Button {
     property int w: parent.width //宽度
@@ -15,32 +16,41 @@ Button {
             x: 12
             height: h
             spacing: 12
-            Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
             Rectangle {
                 id: headRec
                 width: 40
                 height: 40
+                clip: true
                 color: "transparent"
                 radius: 90
                 Image {
                     id: hImg
-                    anchors.fill: parent
                     asynchronous: true
                     cache: false
+                    visible: false
                     fillMode: Image.PreserveAspectCrop
                     sourceSize: Qt.size(40, 40)
                 }
+                //遮罩
+                OpacityMask {
+                    width: headRec.width
+                    height: headRec.height
+                    source: hImg
+                    maskSource: headRec
+                }
             }
-            RowLayout {
-                spacing: 0
-                Layout.alignment: Qt.AlignLeft
+            ColumnLayout {
+                spacing: 3
                 Label {
                     id: top
-                    height: 15
+                    font.pointSize: 11
+                    height: 18
                 }
                 Label {
                     id: bottom
+                    font.pointSize: 9
                     height: 15
+                    color: "gray"
                 }
             }
         }

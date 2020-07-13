@@ -91,11 +91,10 @@ void BigFileSocket::readD()
             size=l;
             if(l<=0){
                 qDebug()<<"size is less than or equal to zero";
-                continue;
             }
+            continue;
         }
         QByteArray data=this->read(size);
-        //qDebug()<<data.data();
         QJsonDocument doc=QJsonDocument::fromJson(data);
         if(doc.isObject()){
             QJsonObject obj=doc.object();

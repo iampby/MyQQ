@@ -27,10 +27,9 @@ public:
     void startTcpScoket();
     void setIp(const QString&);
     void setPort(const quint16&);
+private:
     void splitSignatureAndName(QByteArray&data);
-    QMap<QString,QPixmap>historyMap;//记录好友头像
-    QMap<QString,QString>sigMap;//记录好友个性签名
-    QMap<QString,QString>nameMap;//记录好友昵称
+    void makePixmap(const QByteArray&);
 signals:
     void stopTimer();
     void startTimer();
@@ -38,6 +37,10 @@ signals:
 private slots:
     void writeInstruct();
     void readD();
+public:
+    QMap<QString,QPixmap>historyMap;//记录好友头像
+    QMap<QString,QString>sigMap;//记录好友个性签名
+    QMap<QString,QString>nameMap;//记录好友昵称
 private:
     QTimer*timer;
     QThread*t;

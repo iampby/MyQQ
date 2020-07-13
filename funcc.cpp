@@ -3,6 +3,7 @@
 #include"loginsocket.h"
 #include"bigfilesocket.h"
 #include"headimgwidget.h"
+#include"friendmodel.h"
 #include<qthread.h>
 #include<QDebug>
 #include<qprocess.h>
@@ -226,7 +227,7 @@ void FuncC::initGroupChatInfo( QXmlStreamReader &reader)
 {
     reader.readNextStartElement();
     QVector<QVector<QMap<QString,QString>>>v;
-    groupChatInfo.insert(reader.name().toString(),v);
+    //groupChatInfo.insert(reader.name().toString(),v);
 }
 
 void FuncC::parseFriendInfo(QXmlStreamReader &reader, QString &endString,int&pos)
@@ -352,6 +353,11 @@ void FuncC::setIp(const QString &address)
     ip=address;
 }
 
+void FuncC::initImageSet(Images *arg)
+{
+    images=arg;
+}
+
 
 
 bool FuncC::saveStringToTxt(const QString &str,const QString& title,const QString&dir)
@@ -376,8 +382,8 @@ void FuncC::login(const QString &myqq,const QString &passwd)
     //用户的 name（昵称） sex（性别） signature（个性签名） days（活跃天数） grade（等级) status(状态） 所在地 故乡
     loginSock=new LoginSocket(myqq,passwd,this);
     connect(loginSock,&LoginSocket::finished,[=](int result){
+        qDebug()<<"result:"<<result;
         if(result==0){
-
             userInfo=loginSock->infoObj.toVariantMap();
             userInfo.remove("instruct");
             userInfo.remove("result");
@@ -423,7 +429,7 @@ void FuncC::login(const QString &myqq,const QString &passwd)
                     updateTimer->setIp(ip);
                     updateTimer->setPort(loginPort);
                     updateTimer->setTimerInterval(20000);//五分钟获取一次更新
-                    emit updateTimer->startTimer();
+                  // emit updateTimer->startTimer();
                     connect(updateTimer,&UpdateTimer::emitResult,this,&FuncC::updateHandle);
 
                     return;
@@ -444,7 +450,54 @@ void FuncC::login(const QString &myqq,const QString &passwd)
 void FuncC::updateHandle(const bool &ok)
 {
     qDebug()<<"updateHandle(bool &ok)"<<ok;
-qDebug()<<updateTimer->sigMap.value(m_myQQ);
+    if(ok){
+        //处理更新好友头像
+        if(!updateTimer->historyMap.isEmpty()){
+            qDebug()<<"updated a friends image of head ";
+            QMap<QString,QPixmap>::const_iterator i=updateTimer->historyMap.cbegin();
+            QMap<QString,QPixmap>::const_iterator end=updateTimer->historyMap.cend();
+            while(i!=end){
+                QString number=i.key();
+                QPixmap&newpix= images->provider2->images[number];
+                newpix= i.value();//赋新值
+                newpix.save("./x.png");
+                qDebug()<<endl<<endl;
+                emit updateFriendsModel("image://friends/"+number+"1",FriendModel::ImgPathRole,number);//更新一个好友头像
+                ++i;
+            }
+            updateTimer->historyMap.clear();
+        }
+        //更新签名
+        if(!updateTimer->sigMap.isEmpty()){
+            qDebug()<<"updated  friends signature ";
+            QMap<QString,QString>::const_iterator i=updateTimer->sigMap.cbegin();
+            QMap<QString,QString>::const_iterator end=updateTimer->sigMap.cend();
+            while(i!=end){
+                QString number=i.key();
+                QString sig=i.value();
+                emit updateFriendsModel(sig,FriendModel::SignatureRole,number);//更新一个好友头像
+                ++i;
+            }
+            updateTimer->sigMap.clear();
+        }
+        //更新昵称
+        if(!updateTimer->nameMap.isEmpty()){
+            qDebug()<<"updated  friends name ";
+            QMap<QString,QString>::const_iterator i=updateTimer->nameMap.cbegin();
+            QMap<QString,QString>::const_iterator end=updateTimer->nameMap.cend();
+            while(i!=end){
+                QString number=i.key();
+                QString name=i.value();
+                emit updateFriendsModel(name,FriendModel::NameRole,number);//更新一个好友昵称
+                ++i;
+            }
+            updateTimer->nameMap.clear();
+        }
+    }else{
+        if(!updateTimer->historyMap.isEmpty())updateTimer->historyMap.clear();
+        if(!updateTimer->sigMap.isEmpty())updateTimer->sigMap.clear();
+        if(!updateTimer->nameMap.isEmpty())updateTimer->nameMap.clear();
+    }
 }
 bool FuncC::writeFile(const QByteArray &content, const QString &filepath)
 {
@@ -563,9 +616,9 @@ void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,cons
             widget->okClicked(images,myqq);
         });//ok处理
         //刷新好友模型id值
-        connect(widget,&HeadImgWidget::updateMyself,this,[=](const QString&id){
+        connect(widget,&HeadImgWidget::updateMyself,this,[=](const QString&number){
             qDebug()<<"emit emitUpdateFriendsModel(id)";
-            emit updateFriendsModel(id);
+            emit updateFriendsModel("image://friends/"+number+"1",FriendModel::ImgPathRole,number);
         });
         //更新远程头像
         connect(widget,&HeadImgWidget::updateRemoteHeadImg,this,[=](const QPixmap&pix){

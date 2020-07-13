@@ -13,7 +13,7 @@ Window {
     height: 618
     flags: Qt.FramelessWindowHint | Qt.Window //显示任务栏
     color: "lightgray" //边界颜色
-     visible: true
+    visible: true
     title: "更换头像"
     function midFunc() {
         console.log("midfunc invocations")
@@ -43,7 +43,6 @@ Window {
                 console.log(obj[i].url)
             }
             inCenterLoader.item.histroyImgModel.append(obj)
-            inCenterLoader.item.histroyImgModel.isgot = true
         }
     }
 

@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_Images_t {
-    QByteArrayData data[15];
-    char stringdata0[135];
+    QByteArrayData data[16];
+    char stringdata0[141];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -35,20 +35,21 @@ QT_MOC_LITERAL(0, 0, 6), // "Images"
 QT_MOC_LITERAL(1, 7, 17), // "historyImageAdded"
 QT_MOC_LITERAL(2, 25, 0), // ""
 QT_MOC_LITERAL(3, 26, 3), // "url"
-QT_MOC_LITERAL(4, 30, 18), // "readHistoryHeadImg"
-QT_MOC_LITERAL(5, 49, 8), // "fileList"
-QT_MOC_LITERAL(6, 58, 7), // "setMyQQ"
-QT_MOC_LITERAL(7, 66, 3), // "arg"
-QT_MOC_LITERAL(8, 70, 10), // "findPixmap"
-QT_MOC_LITERAL(9, 81, 2), // "id"
-QT_MOC_LITERAL(10, 84, 9), // "setPixmap"
-QT_MOC_LITERAL(11, 94, 3), // "pix"
-QT_MOC_LITERAL(12, 98, 11), // "readHistory"
-QT_MOC_LITERAL(13, 110, 13), // "removeHistory"
-QT_MOC_LITERAL(14, 124, 10) // "setPixmap2"
+QT_MOC_LITERAL(4, 30, 5), // "index"
+QT_MOC_LITERAL(5, 36, 18), // "readHistoryHeadImg"
+QT_MOC_LITERAL(6, 55, 8), // "fileList"
+QT_MOC_LITERAL(7, 64, 7), // "setMyQQ"
+QT_MOC_LITERAL(8, 72, 3), // "arg"
+QT_MOC_LITERAL(9, 76, 10), // "findPixmap"
+QT_MOC_LITERAL(10, 87, 2), // "id"
+QT_MOC_LITERAL(11, 90, 9), // "setPixmap"
+QT_MOC_LITERAL(12, 100, 3), // "pix"
+QT_MOC_LITERAL(13, 104, 11), // "readHistory"
+QT_MOC_LITERAL(14, 116, 13), // "removeHistory"
+QT_MOC_LITERAL(15, 130, 10) // "setPixmap2"
 
     },
-    "Images\0historyImageAdded\0\0url\0"
+    "Images\0historyImageAdded\0\0url\0index\0"
     "readHistoryHeadImg\0fileList\0setMyQQ\0"
     "arg\0findPixmap\0id\0setPixmap\0pix\0"
     "readHistory\0removeHistory\0setPixmap2"
@@ -69,28 +70,28 @@ static const uint qt_meta_data_Images[] = {
        2,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    1,   54,    2, 0x06 /* Public */,
-       4,    1,   57,    2, 0x06 /* Public */,
+       1,    2,   54,    2, 0x06 /* Public */,
+       5,    1,   59,    2, 0x06 /* Public */,
 
  // methods: name, argc, parameters, tag, flags
-       6,    1,   60,    2, 0x02 /* Public */,
-       8,    1,   63,    2, 0x02 /* Public */,
-      10,    2,   66,    2, 0x02 /* Public */,
-      12,    0,   71,    2, 0x02 /* Public */,
-      13,    0,   72,    2, 0x02 /* Public */,
-      14,    2,   73,    2, 0x02 /* Public */,
+       7,    1,   62,    2, 0x02 /* Public */,
+       9,    1,   65,    2, 0x02 /* Public */,
+      11,    2,   68,    2, 0x02 /* Public */,
+      13,    0,   73,    2, 0x02 /* Public */,
+      14,    0,   74,    2, 0x02 /* Public */,
+      15,    2,   75,    2, 0x02 /* Public */,
 
  // signals: parameters
-    QMetaType::Void, QMetaType::QString,    3,
-    QMetaType::Void, QMetaType::QString,    5,
+    QMetaType::Void, QMetaType::QString, QMetaType::Int,    3,    4,
+    QMetaType::Void, QMetaType::QString,    6,
 
  // methods: parameters
-    QMetaType::Void, QMetaType::QString,    7,
-    QMetaType::QPixmap, QMetaType::QString,    9,
-    QMetaType::Void, QMetaType::QString, QMetaType::QString,    9,   11,
+    QMetaType::Void, QMetaType::QString,    8,
+    QMetaType::QPixmap, QMetaType::QString,   10,
+    QMetaType::Void, QMetaType::QString, QMetaType::QString,   10,   12,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::QString, QMetaType::QString,    9,   11,
+    QMetaType::Void, QMetaType::QString, QMetaType::QString,   10,   12,
 
        0        // eod
 };
@@ -101,7 +102,7 @@ void Images::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void
         auto *_t = static_cast<Images *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
-        case 0: _t->historyImageAdded((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 0: _t->historyImageAdded((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< qint32(*)>(_a[2]))); break;
         case 1: _t->readHistoryHeadImg((*reinterpret_cast< QString(*)>(_a[1]))); break;
         case 2: _t->setMyQQ((*reinterpret_cast< QString(*)>(_a[1]))); break;
         case 3: { QPixmap _r = _t->findPixmap((*reinterpret_cast< const QString(*)>(_a[1])));
@@ -115,7 +116,7 @@ void Images::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void
     } else if (_c == QMetaObject::IndexOfMethod) {
         int *result = reinterpret_cast<int *>(_a[0]);
         {
-            using _t = void (Images::*)(QString );
+            using _t = void (Images::*)(QString , qint32 );
             if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&Images::historyImageAdded)) {
                 *result = 0;
                 return;
@@ -172,9 +173,9 @@ int Images::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 }
 
 // SIGNAL 0
-void Images::historyImageAdded(QString _t1)
+void Images::historyImageAdded(QString _t1, qint32 _t2)
 {
-    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
+    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)) };
     QMetaObject::activate(this, &staticMetaObject, 0, _a);
 }
 

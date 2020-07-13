@@ -19,7 +19,7 @@ public:
 signals:
     void getFocus();//Widget获得焦点 发送到qml关闭历史头像选中标签
     void updateRemoteHeadImg(const QPixmap&);
-    void updateMyself(const QString &id);
+    void updateMyself(const QString &number);
 public slots:
     void openFile(const QString&filename);
     void okClicked(Images *images, const QString &myqq);

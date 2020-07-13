@@ -20,7 +20,7 @@ ApplicationWindow {
     property alias loaderForAlterInfo: loaderForAlterInfo //修改用户资料界面
     property alias cityWeatherModel: cityWeatherModel //保存3天天气信息
     property int weatherCanShow: 0 //2表示准备好
-    property bool isinit:true //用来避免第一次用户信息变化是发送更新信号
+    property bool isinit: true //用来避免第一次用户信息变化是发送更新信号
     property alias friendGroupModel: friendGroupModel
     property alias histroyImgModel: histroyImgModel //历史头像model
     property alias viewFriend: viewFriend
@@ -135,6 +135,7 @@ ApplicationWindow {
         //qvariantmap转过来的只能[string]获取属性
         console.log("obj[\"个性签名\"]=", obj["个性签名"])
         var url = "image://friends/" + mq + "1"
+        console.log("mq:", mq)
         m.append(mq, obj["昵称"], obj["个性签名"], url, obj["备注"], obj["等级"],
                  obj["状态"], obj["Message - Settin"], obj["Status_Settin"])
     }
@@ -200,8 +201,8 @@ ApplicationWindow {
     onSignatureChanged: {
         console.log("onSignatureChanged:")
         //5 更新个性签名
-        if (isinit){
-            isinit=false
+        if (isinit) {
+            isinit = false
             console.log("isinit=true")
             return
         }
@@ -314,17 +315,19 @@ ApplicationWindow {
                 }
             }
         }
-        //自己的头像更改处理
+        //好友界面信息更改处理
         onUpdateFriendsModel: {
-            console.log("id=", id)
-            for (var i = 0; i < friendsModel.length; ++i) {
+            console.log("value=", value, " number=", number)
+            var length = friendsModel.length
+            for (var i = 0; i < length; ++i) {
                 console.log("onUpdateFriendsModel:i=", i)
                 var m = friendsModel[i]
-                var row = m.rowOf(myqq)
+                var row = m.rowOf(number)
                 if (row !== -1) {
-                    console.log("find myself,the number is ", myqq)
-                    m.setData(row, "", 3) //刷新
-                    m.setData(row, "image://friends/" + id, 3)
+                    console.log("start update:MyQQ is", number)
+                    if (role === 3)
+                        m.setData(row, "", role) //图片刷新
+                    m.setData(row, value, role)
                     console.log("end update")
                 }
             }
@@ -334,13 +337,15 @@ ApplicationWindow {
     //历史头像添加时
     Connections {
         target: images
+        //头像被更改时
         onHistoryImageAdded: {
-            console.log("onHistoryImageAdded:", url)
+            console.log("onHistoryImageAdded:url(", url, ") index(")
             imgHead.source = ""
             // imgHead.source = "image://history/" + myqq + "101/" + Math.random()
             if (url != "") {
                 histroyImgModel.append({
-                                           "url": "image://history/" + url
+                                           "url": "image://history/" + url,
+                                           "index": index
                                        })
             }
             imgHead.source = "image://history/" + myqq + "101" //设置头像 qimage源

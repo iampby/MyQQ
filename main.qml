@@ -82,6 +82,7 @@ ApplicationWindow {
         onLoaded: {
             //对Component和Qml文件组件都起作用,当组件加载完成时，才能调用dpChanged启动对组件调整
             dpChanged() //调整位置
+            funcc.initImageSet(images);//初始化图片提供器images给funcc,便于调用
         }
     }
     Component {

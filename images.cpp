@@ -98,8 +98,8 @@ void Images::insert(QPixmap& pix)
         url=QString("%1").arg(++max);
     }
  provider1->images=newImas;
- qDebug()<<"ok clicked is finished";
- emit historyImageAdded(url);
+ qDebug()<<"ok clicked is finished"<<url;
+ emit historyImageAdded(url,newImas.size());
 }
 
 void Images::setPixmap2(const QString &id, const QString &pix)

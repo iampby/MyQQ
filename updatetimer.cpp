@@ -21,6 +21,8 @@ UpdateTimer::UpdateTimer(QObject *parent)
     moveToThread(t);
     t->start();
     connect(timer,&QTimer::timeout,timer,[=](){
+        size=0;
+        number="";
         startTcpScoket();
     });
     connect(tcpsocket,&QTcpSocket::bytesWritten,loop,&QEventLoop::quit);
@@ -87,39 +89,52 @@ void UpdateTimer::setPort(const quint16 &arg)
 
 void UpdateTimer::splitSignatureAndName(QByteArray &data)
 {
- QJsonDocument json=QJsonDocument::fromJson(data);
- if(!json.isObject()){
-     qDebug()<<"json is not object";
-     return;
- }
- QJsonObject obj=json.object();
- QJsonArray arr1=obj.value("signature").toArray(QJsonArray());
- QJsonArray arr2=obj.value("name").toArray(QJsonArray());
- if(!arr1.isEmpty()){
-     qDebug()<<"signature is got";
-     for (int var = 0; var < arr1.size(); ++var) {
-         QJsonObject temp=arr1.at(var).toObject(QJsonObject());
-         QString num=temp.value("number").toString(),v=temp.value("signature").toString();
-         if(num.isEmpty()){
-             qDebug()<<"warning:a signature is null";
-             continue;
-         }
-         sigMap.insert(num,v);
-     }
- }
- if(!arr2.isEmpty()){
-      qDebug()<<"name is got";
-      for (int var = 0; var < arr2.size(); ++var) {
-          QJsonObject temp=arr2.at(var).toObject(QJsonObject());
-          QString num=temp.value("number").toString(),v=temp.value("name").toString();
-          if(num.isEmpty()){
-              qDebug()<<"warning:a name is null";
-              continue;
-          }
-          sigMap.insert(num,v);
-      }
- }
- qDebug()<<"signature and name is arranged";
+    QJsonDocument json=QJsonDocument::fromJson(data);
+    if(!json.isObject()){
+        qDebug()<<"json is not object";
+        return;
+    }
+    QJsonObject obj=json.object();
+    QJsonArray arr1=obj.value("signature").toArray(QJsonArray());
+    QJsonArray arr2=obj.value("name").toArray(QJsonArray());
+    if(!arr1.isEmpty()){
+        qDebug()<<"signature is got";
+        for (int var = 0; var < arr1.size(); ++var) {
+            QJsonObject temp=arr1.at(var).toObject(QJsonObject());
+            QString num=temp.value("number").toString(),v=temp.value("signature").toString();
+            if(num.isEmpty()){
+                qDebug()<<"warning:a signature is null";
+                continue;
+            }
+            sigMap.insert(num,v);
+        }
+    }
+    if(!arr2.isEmpty()){
+        qDebug()<<"name is got";
+        for (int var = 0; var < arr2.size(); ++var) {
+            QJsonObject temp=arr2.at(var).toObject(QJsonObject());
+            QString num=temp.value("number").toString(),v=temp.value("name").toString();
+            if(num.isEmpty()){
+                qDebug()<<"warning:a name is null";
+                continue;
+            }
+            sigMap.insert(num,v);
+        }
+    }
+    qDebug()<<"signature and name is arranged";
+}
+
+void UpdateTimer::makePixmap(const QByteArray &data)
+{
+    QPixmap headPix;
+    if(!number.isEmpty()){
+        if(headPix.loadFromData(data,"png")){
+            qDebug()<<"image of head is loaded";
+            historyMap.insert(number,headPix);
+        }
+        else qDebug()<<"warning:image of head is not loaded";
+    }
+    else qDebug()<<"warning:number is empty";
 }
 
 void UpdateTimer::writeInstruct()
@@ -146,15 +161,18 @@ void UpdateTimer::readD()
             stream.setVersion(QDataStream::Qt_4_0);
             quint8 l;
             stream>>l;
+            qDebug()<<"l="<<l;
             size=l;
             if(l<=0){
                 qDebug()<<"size is less than or equal to zero";
-                continue;
             }
+            continue;
         }
         QByteArray data=tcpsocket->read(size);
+        qDebug()<<"dispatched size is equal to "<<size;
         QJsonDocument jsonDoc=QJsonDocument::fromJson(data);
         if(jsonDoc.isObject()){
+            qDebug()<<"object:"<<jsonDoc.toJson();
             QJsonObject obj=jsonDoc.object();
             QString content=obj.value("content").toString();
             //更新头像
@@ -172,36 +190,30 @@ void UpdateTimer::readD()
                 r_type=SignatureAndName;
                 continue;
             }else if(content=="end"){
-               QString ok=obj.value("result").toString();
+                QString ok=obj.value("result").toString();
                 if(ok=="true"){
                     qDebug()<<"finishing updating";
                     emit emitResult(true);
                 }else{
-                     qDebug()<<"unfinished updating";
-                emit emitResult(false);
+                    qDebug()<<"unfinished updating";
+                    emit emitResult(false);
                 }
             }
 
         }
-        QPixmap headPix;
         switch (r_type) {
-       //接收头像
+        //接收头像
         case HeadImage:
-            if(!number.isEmpty()){
-              if(headPix.loadFromData(data,"png")){
-                  qDebug()<<"image of head is loaded";
-                  historyMap.insert(number,headPix);
-              }
-              else qDebug()<<"warning:image of head is not loaded";
-            }
-            else qDebug()<<"warning:number is empty";
+            makePixmap(data);
             size=0;
+            number="";
             r_type=NoType;
             break;
             //个性签名处理和昵称
         case SignatureAndName:
             splitSignatureAndName(data);
             size=0;
+            number="";
             r_type=NoType;
             break;
         default:

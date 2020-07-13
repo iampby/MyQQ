@@ -22,7 +22,7 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_HeadImgWidget_t {
     QByteArrayData data[12];
-    char stringdata0[108];
+    char stringdata0[112];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -36,17 +36,17 @@ QT_MOC_LITERAL(1, 14, 8), // "getFocus"
 QT_MOC_LITERAL(2, 23, 0), // ""
 QT_MOC_LITERAL(3, 24, 19), // "updateRemoteHeadImg"
 QT_MOC_LITERAL(4, 44, 12), // "updateMyself"
-QT_MOC_LITERAL(5, 57, 2), // "id"
-QT_MOC_LITERAL(6, 60, 8), // "openFile"
-QT_MOC_LITERAL(7, 69, 8), // "filename"
-QT_MOC_LITERAL(8, 78, 9), // "okClicked"
-QT_MOC_LITERAL(9, 88, 7), // "Images*"
-QT_MOC_LITERAL(10, 96, 6), // "images"
-QT_MOC_LITERAL(11, 103, 4) // "myqq"
+QT_MOC_LITERAL(5, 57, 6), // "number"
+QT_MOC_LITERAL(6, 64, 8), // "openFile"
+QT_MOC_LITERAL(7, 73, 8), // "filename"
+QT_MOC_LITERAL(8, 82, 9), // "okClicked"
+QT_MOC_LITERAL(9, 92, 7), // "Images*"
+QT_MOC_LITERAL(10, 100, 6), // "images"
+QT_MOC_LITERAL(11, 107, 4) // "myqq"
 
     },
     "HeadImgWidget\0getFocus\0\0updateRemoteHeadImg\0"
-    "updateMyself\0id\0openFile\0filename\0"
+    "updateMyself\0number\0openFile\0filename\0"
     "okClicked\0Images*\0images\0myqq"
 };
 #undef QT_MOC_LITERAL

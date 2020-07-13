@@ -9,6 +9,7 @@ LoginSocket::LoginSocket(const QString &myqq, const QString &passwd, QObject *pa
 {
     connect(this, SIGNAL(readyRead()),this,SLOT(readD()));
     connect(this, SIGNAL(connected()),this,SLOT(toWrite()));
+    connect(this, SIGNAL(bytesWritten(qint64)),&loop,SLOT(quit()));
     connect(this,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(err(QAbstractSocket::SocketError)));
 }
 
@@ -94,7 +95,7 @@ void LoginSocket::toWrite()
     obj.insert("ip",QJsonValue(addr.toString()));
     QJsonDocument docJson(obj);
     this->write(docJson.toBinaryData());
-    this->waitForBytesWritten(2000);
+    loop.exec();
 }
 
 void LoginSocket::err(QAbstractSocket::SocketError code)

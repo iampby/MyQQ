@@ -55,14 +55,14 @@ public:
 
     //注意，对Qml数据类型的引用，除指针外，其他的必须为常量级引用，不能为变量引用，猜测是转换通过复制实现，即不能对实际指向的地址数据做出修改，所以常量引用、指针和常数才能通过
 
-
+    Q_INVOKABLE void  initImageSet(Images*arg);//赋值images
     Q_INVOKABLE void registerMyQQ(const QString&MyName,const QString&passwd);// 注册MyQQ,参数MyQQ、passwd
     Q_INVOKABLE bool saveStringToTxt(const QString &str,const QString& title,const QString&dir);
 
     Q_INVOKABLE void  login(const QString&myqq,const QString&passwd);
     Q_INVOKABLE bool  writeFile(const QByteArray&content,const QString&filepath);//保存数据到文件
     bool  writeImg(const QByteArray&content,const QString&filepath, const char *format = nullptr);//保存图片到文件
-    //Q_INVOKABLE QString openFile(const QString&title,const QString&dir,const QString&filter)const;//打开文件对话框
+    //Q_INVOKABLE QString openFile(const QString&title,const QString&dir,const QString&filter)const;//打开文件对话框 这个函数不能在qml调用 指针问题难以解决固不用
 
     Q_INVOKABLE void startClock();// 开始计时（用于实时监测网络）
     Q_INVOKABLE void stopClock();// 停止计时（用于实时监测网络）
@@ -124,7 +124,7 @@ Q_SIGNALS://使用第三方源码解析时相当有用 这里用来给qml传递信号比较好
     void finished();//完成解析当地地址并获取url
     void netChanged(const bool& flags);//断开或连接网络
     void crawWeatherUrlFinished();
-    void updateFriendsModel(const QString&id)const;//刷新好友模型id
+    void updateFriendsModel(const QString&value,const qint32& role,const QString&number)const;//刷新好友模型数据
 Q_SIGNALS:
     void emitOpenFile(const QString& filename);//更改头像界面打开一个文件
     void emitCloseHead();//释放更改头像界面
@@ -140,8 +140,9 @@ private slots:
     void  updateHandle(const bool &ok);//定时获取数据后处理界面更新
 private:
     QQuickWindow *m_win;
-
     QString m_sourceIco;
+
+    Images*images;//值等于一个qml注册对象,提供qpixmap与qml image的交互,便于调用
 
     QString ip;
     RegisterSocket*registerSock;
@@ -158,15 +159,11 @@ private:
     QString m_passwd;
     QVariantMap setInfo;//记录设置信息，登录用
 
-
-
-    QMap<QString,QVector<QVector<QMap<QString,QString>>>>groupChatInfo;
-
-
+   // QMap<QString,QVector<QVector<QMap<QString,QString>>>>groupChatInfo;
 
     NetMonitor* timer;//网络监测定时 windows用 子线程运行
     UpdateTimer*updateTimer;//定时更新用户界面 子线程运行
-    bool online;
+    bool online;//网络状态记录
     QString m_localCity;
     QString m_localUrl;
     QString _3dayWeaAndTem[3][2];

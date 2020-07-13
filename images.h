@@ -21,7 +21,7 @@ public:
 
 
  Q_SIGNALS:
-    void historyImageAdded(QString url);
+    void historyImageAdded(QString url,qint32 index);
 signals:
     void readHistoryHeadImg(QString fileList);
 public:

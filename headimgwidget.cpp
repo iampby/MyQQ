@@ -200,11 +200,11 @@ void HeadImgWidget::okClicked(Images*images,const QString&myqq)
     emit updateRemoteHeadImg(newHeadImg);
     images->insert(newHeadImg);
 
-    if(images->provider2->images.contains(myqq+"1")){
-        QString id=myqq+"1";
+    QString id=myqq+"1";
+    if(images->provider2->images.contains(id)){
        images->provider2->images[id]=newHeadImg ;
         qDebug()<<"images->provider2->images[id]=newHeadImg";
-        updateMyself(id);
+        updateMyself(myqq);
     }
 
 }
