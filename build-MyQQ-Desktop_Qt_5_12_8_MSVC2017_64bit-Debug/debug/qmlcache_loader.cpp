@@ -5,14 +5,14 @@
 static const unsigned char qt_resource_tree[] = {
 0,
 0,0,0,0,2,0,0,0,9,0,0,0,1,0,0,1,
-236,0,2,0,0,0,13,0,0,0,16,0,0,1,46,0,
+236,0,2,0,0,0,14,0,0,0,16,0,0,1,46,0,
 2,0,0,0,4,0,0,0,12,0,0,0,68,0,0,0,
 0,0,1,0,0,0,0,0,0,0,8,0,0,0,0,0,
 1,0,0,0,0,0,0,0,144,0,0,0,0,0,1,0,
 0,0,0,0,0,0,122,0,0,0,0,0,1,0,0,0,
-0,0,0,3,204,0,0,0,0,0,1,0,0,0,0,0,
-0,0,172,0,2,0,0,0,2,0,0,0,10,0,0,3,
-244,0,0,0,0,0,1,0,0,0,0,0,0,0,194,0,
+0,0,0,3,238,0,0,0,0,0,1,0,0,0,0,0,
+0,0,172,0,2,0,0,0,2,0,0,0,10,0,0,4,
+22,0,0,0,0,0,1,0,0,0,0,0,0,0,194,0,
 0,0,0,0,1,0,0,0,0,0,0,0,242,0,0,0,
 0,0,1,0,0,0,0,0,0,1,152,0,0,0,0,0,
 1,0,0,0,0,0,0,1,62,0,0,0,0,0,1,0,
@@ -26,10 +26,11 @@ static const unsigned char qt_resource_tree[] = {
 0,0,0,0,0,2,120,0,0,0,0,0,1,0,0,0,
 0,0,0,2,242,0,0,0,0,0,1,0,0,0,0,0,
 0,2,54,0,0,0,0,0,1,0,0,0,0,0,0,3,
-68,0,0,0,0,0,1,0,0,0,0,0,0,3,134,0,
-0,0,0,0,1,0,0,0,0,0,0,3,162,0,0,0,
-0,0,1,0,0,0,0,0,0,2,184,0,0,0,0,0,
-1,0,0,0,0};
+162,0,0,0,0,0,1,0,0,0,0,0,0,3,68,0,
+0,0,0,0,1,0,0,0,0,0,0,3,134,0,0,0,
+0,0,1,0,0,0,0,0,0,3,196,0,0,0,0,0,
+1,0,0,0,0,0,0,2,184,0,0,0,0,0,1,0,
+0,0,0};
 static const unsigned char qt_resource_names[] = {
 0,
 1,0,0,0,47,0,47,0,27,5,14,82,156,0,77,0,
@@ -90,13 +91,15 @@ static const unsigned char qt_resource_names[] = {
 116,0,101,0,114,0,102,0,97,0,99,0,101,0,46,0,
 113,0,109,0,108,0,11,13,156,210,156,0,72,0,101,0,
 108,0,112,0,87,0,105,0,110,0,46,0,113,0,109,0,
-108,0,18,14,23,222,28,0,84,0,101,0,109,0,112,0,
-101,0,114,0,97,0,116,0,117,0,114,0,101,0,66,0,
-116,0,110,0,46,0,113,0,109,0,108,0,17,10,157,25,
-156,0,77,0,111,0,117,0,115,0,101,0,70,0,111,0,
-114,0,83,0,104,0,97,0,112,0,101,0,46,0,113,0,
-109,0,108,0,8,12,70,97,156,0,70,0,117,0,110,0,
-99,0,46,0,113,0,109,0,108};
+108,0,14,11,157,146,252,0,65,0,108,0,116,0,101,0,
+114,0,67,0,111,0,118,0,101,0,114,0,46,0,113,0,
+109,0,108,0,18,14,23,222,28,0,84,0,101,0,109,0,
+112,0,101,0,114,0,97,0,116,0,117,0,114,0,101,0,
+66,0,116,0,110,0,46,0,113,0,109,0,108,0,17,10,
+157,25,156,0,77,0,111,0,117,0,115,0,101,0,70,0,
+111,0,114,0,83,0,104,0,97,0,112,0,101,0,46,0,
+113,0,109,0,108,0,8,12,70,97,156,0,70,0,117,0,
+110,0,99,0,46,0,113,0,109,0,108};
 static const unsigned char qt_resource_empty_payout[] = { 0, 0, 0, 0, 0 };
 QT_BEGIN_NAMESPACE
 extern Q_CORE_EXPORT bool qRegisterResourceData(int, const unsigned char *, const unsigned char *, const unsigned char *);
@@ -121,6 +124,12 @@ namespace _main_TemperatureBtn_qml {
     };
 }
 namespace _login_LoginEdit_qml { 
+    extern const unsigned char qmlData[];
+    const QQmlPrivate::CachedQmlUnit unit = {
+        reinterpret_cast<const QV4::CompiledData::Unit*>(&qmlData), nullptr, nullptr
+    };
+}
+namespace _main_AlterCover_qml { 
     extern const unsigned char qmlData[];
     const QQmlPrivate::CachedQmlUnit unit = {
         reinterpret_cast<const QV4::CompiledData::Unit*>(&qmlData), nullptr, nullptr
@@ -270,6 +279,7 @@ Registry::Registry() {
         resourcePathToCachedUnit.insert(QStringLiteral("/MouseForShape.qml"), &QmlCacheGeneratedCode::_0x5f__MouseForShape_qml::unit);
         resourcePathToCachedUnit.insert(QStringLiteral("/main/TemperatureBtn.qml"), &QmlCacheGeneratedCode::_main_TemperatureBtn_qml::unit);
         resourcePathToCachedUnit.insert(QStringLiteral("/login/LoginEdit.qml"), &QmlCacheGeneratedCode::_login_LoginEdit_qml::unit);
+        resourcePathToCachedUnit.insert(QStringLiteral("/main/AlterCover.qml"), &QmlCacheGeneratedCode::_main_AlterCover_qml::unit);
         resourcePathToCachedUnit.insert(QStringLiteral("/main/HelpWin.qml"), &QmlCacheGeneratedCode::_main_HelpWin_qml::unit);
         resourcePathToCachedUnit.insert(QStringLiteral("/main/mainInterface.qml"), &QmlCacheGeneratedCode::_main_mainInterface_qml::unit);
         resourcePathToCachedUnit.insert(QStringLiteral("/register/RegisterInfLangMinClose.qml"), &QmlCacheGeneratedCode::_register_RegisterInfLangMinClose_qml::unit);

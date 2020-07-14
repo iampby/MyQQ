@@ -120,6 +120,7 @@ ApplicationWindow {
                                    "url": "image://history/" + tag,
                                    "index": 0
                                })
+        gradeTip.days = func.computeToUpgrade(grade, activeDays)
     }
     //利用元对象信号槽通信机制，把参数从Qtc++->qml 获取好友信息
     onRunGetFriendInfoFunction: {
@@ -159,9 +160,19 @@ ApplicationWindow {
         funcc.mkDir(("../user/" + mainWin.myqq + "/weather"))
         funcc.writeWeatherFile("../user/" + mainWin.myqq + "/weather/city")
         images.removeHistory()
+        //释放更改头像资源
         if (loaderForAlterHImg.status == Loader.Ready) {
             loaderForAlterHImg.item.close()
         }
+        //释放更改封面资源
+        if (loaderForAlterInfo.status == Loader.Ready) {
+            var lcover = loaderForAlterInfo.item.loaderForAlterCover
+            if (lcover.status === Loader.Ready) {
+                console.log("alter-cover interface could be closed")
+                lcover.item.close() //关闭altercover窗口
+            }
+        }
+
         Qt.quit()
     }
     onWeatherCanShowChanged: {
@@ -339,7 +350,7 @@ ApplicationWindow {
         target: images
         //头像被更改时
         onHistoryImageAdded: {
-            console.log("onHistoryImageAdded:url(", url, ") index(")
+            console.log("onHistoryImageAdded:url(", url, ") index(", index, ")")
             imgHead.source = ""
             // imgHead.source = "image://history/" + myqq + "101/" + Math.random()
             if (url != "") {
@@ -832,6 +843,7 @@ ApplicationWindow {
             }
             //等级提示
             ToolTip {
+                property string days: "0"
                 id: gradeTip
                 x: gradeLab.x + gradeLab.posx
                 y: gradeLab.y + gradeLab.posy + 20
@@ -842,7 +854,7 @@ ApplicationWindow {
                     id: gradeBack
                     font.pointSize: 10
                     color: "gray"
-                    text: "我的MQ等级:\n 等级:" + grade + "级\n 剩余升级天数:55天"
+                    text: "我的MQ等级:\n 等级:" + grade + "级\n 剩余升级天数:" + gradeTip.days + "天"
                     lineHeightMode: Text.FixedHeight //固定值模式
                     lineHeight: gradeMetrics.height + 5 //固定值为行高加5
                     verticalAlignment: Text.AlignVCenter
@@ -1391,7 +1403,8 @@ ApplicationWindow {
                                     w: headerRec.width
                                     h: 60
                                     headImg: r_imgPath
-                                    topText: setInfo["列表"] === "0" ? (r_tag === "" ? r_name : r_tag + "(" + r_name + ")") : r_name
+                                    name: r_name
+                                    label: r_tag
                                     bottomText: r_signature
                                 }
                             }
@@ -1788,6 +1801,10 @@ ApplicationWindow {
         onCountChanged: {
             console.log("historymodel count changed")
             imgHead.source = "image://history/" + myqq + "101" //设置头像 qimage源
+            for (var i = 0; i < histroyImgModel.count; ++i) {
+                console.log(histroyImgModel.get(i).url,
+                            histroyImgModel.get(i).index)
+            }
         }
     }
     //时钟

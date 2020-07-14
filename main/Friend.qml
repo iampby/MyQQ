@@ -7,7 +7,8 @@ Button {
     property int w: parent.width //宽度
     property int h: 60 //高度
     property alias headImg: hImg.source //头像路径
-    property alias topText: top.text //昵称+备注
+    property string name: "" //昵称+备注
+    property string label: "" //备注
     property alias bottomText: bottom.text //个性签名
     background: Rectangle {
         implicitHeight: h
@@ -21,7 +22,7 @@ Button {
                 width: 40
                 height: 40
                 clip: true
-                color: "transparent"
+                //color: "transparent" 遮罩源不能为透明
                 radius: 90
                 Image {
                     id: hImg
@@ -43,8 +44,11 @@ Button {
                 spacing: 3
                 Label {
                     id: top
+                    textFormat: Qt.RichText
                     font.pointSize: 11
                     height: 18
+                    text: name == label ? name : name + "<font style='color:gray;'>("
+                                          + label + ")</font>"
                 }
                 Label {
                     id: bottom

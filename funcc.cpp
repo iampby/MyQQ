@@ -428,8 +428,8 @@ void FuncC::login(const QString &myqq,const QString &passwd)
                     updateTimer->setMyqq(myqq);
                     updateTimer->setIp(ip);
                     updateTimer->setPort(loginPort);
-                    updateTimer->setTimerInterval(20000);//五分钟获取一次更新
-                  // emit updateTimer->startTimer();
+                    updateTimer->setTimerInterval(30000);//五分钟获取一次更新
+                    emit updateTimer->startTimer();
                     connect(updateTimer,&UpdateTimer::emitResult,this,&FuncC::updateHandle);
 
                     return;
@@ -611,8 +611,8 @@ void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,cons
 
         widget->setHeadImg(pixmap);//添加当前头像
         temp->setGeometry(x,y,widget->width(),widget->height());
-        connect(this,&FuncC::emitOpenFile,widget,&HeadImgWidget::openFile);//打开文件
-        connect(this,&FuncC::emitOKClicked,widget,[=](Images*images){
+        connect(this,&FuncC::emitHeadImgOpenFile,widget,&HeadImgWidget::openFile);//打开文件
+        connect(this,&FuncC::emitHeadImgOKClicked,widget,[=](Images*images){
             widget->okClicked(images,myqq);
         });//ok处理
         //刷新好友模型id值
@@ -636,7 +636,7 @@ void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,cons
             emit updateImgSock->start();//转移到新线程去post host
             connect(thread,&QThread::finished,updateImgSock,&BigFileSocket::deleteLater);
             //删除线程
-            connect(this,&FuncC::emitOKClicked,thread,[=](){
+            connect(this,&FuncC::emitHeadImgOKClicked,thread,[=](){
                 qDebug()<<"closed window causes a thread to exit";
                 thread->exit(0);
                 thread->quit();
@@ -650,6 +650,13 @@ void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,cons
                 pix.save(&buffer,"png");
                 QByteArray pixArray;
                 pixArray.append(buffer.data());
+                buffer.close();
+                if(pixArray.isEmpty()){
+                    qDebug()<<"warning:data of cover-image is empty";
+                    thread->exit(0);
+                    thread->quit();
+                    return;
+                }
                 updateImgSock->write(pixArray);
                 updateImgSock->loop.exec();
                 thread->exit(0);
@@ -685,7 +692,7 @@ void FuncC::openFile( QString filename)
 {
     qDebug()<<"emitopenfile";
 
-    emit emitOpenFile(filename.replace("file:///","",Qt::CaseInsensitive));
+    emit emitHeadImgOpenFile(filename.replace("file:///","",Qt::CaseInsensitive));
 }
 
 void FuncC::closeWidget()
@@ -731,18 +738,63 @@ void FuncC::updateSignature(QString signature, const QString &in)
     thread->start();
     emit updateSigSock->start();//转移到新线程去post host
     connect(thread,&QThread::finished,updateSigSock,&BigFileSocket::deleteLater);
-    //删除线程
 
+    //删除线程
     connect(thread,&QThread::finished,thread,&QThread::deleteLater);
     //获取文件结果收尾处理
     connect(updateSigSock,&BigFileSocket::writtenInstruction, updateSigSock,[=](){
 
-        updateSigSock->write(signature.toUtf8());
-        if(!signature.isEmpty())//防止空字节阻塞
+        if(!signature.isEmpty()){
+            updateSigSock->write(signature.toUtf8());
             updateSigSock->loop.exec();
+        }
         thread->exit(0);
         thread->quit();
         qDebug()<<"updating signature thread had exited";
+    });
+}
+
+void FuncC::updateCover(QString qmlFilePath)
+{
+    QString instructDescription="7 updateCover "+m_myQQ+" writedHeaderSize";//更新封面
+    BigFileSocket*updateCoverSock=new BigFileSocket();//子线程对象最好不要有父类
+    updateCoverSock->setInstruct(instructDescription);
+    updateCoverSock->setIp(ip);
+    updateCoverSock->setPort(updatePort);
+    QThread*thread=new QThread();
+    updateCoverSock->moveToThread(thread);
+    thread->start();
+    emit updateCoverSock->start();//转移到新线程去post host
+    //删除套接字
+    connect(thread,&QThread::finished,updateCoverSock,&BigFileSocket::deleteLater);
+    //删除线程
+    connect(thread,&QThread::finished,thread,&QThread::deleteLater);
+    //获取文件结果收尾处理
+    connect(updateCoverSock,&BigFileSocket::writtenInstruction, updateCoverSock,[=](){
+        qDebug()<<"writtenInstruction"<<qmlFilePath;
+        QBuffer buffer;
+        buffer.open(QIODevice::WriteOnly);
+        QPixmap pix;
+        pix.load(qmlFilePath);
+        if(pix.isNull()){
+            qDebug()<<"warning:cover-image is null";
+        }
+        pix.save(&buffer,"png");
+        QByteArray pixArray;
+        pixArray.append(buffer.data());
+        qDebug()<<pix.size();
+        buffer.close();//关闭io设备
+        if(pixArray.isEmpty()){
+            qDebug()<<"warning:data of cover-image is empty";
+            thread->exit(0);
+            thread->quit();
+            return;
+        }
+        updateCoverSock->write(pixArray);
+        updateCoverSock->loop.exec();
+        thread->exit(0);
+        thread->quit();
+        qDebug()<<"updating conver thread had exited";
     });
 }
 
@@ -752,6 +804,36 @@ void FuncC::deleteNetTimer()
         qDebug()<<"network timer had been deleted";
         delete timer,timer=nullptr;
     }
+}
+//添加头像操作界面到qml更改封面界面
+void FuncC::addCoverWidget(QWindow *w, const int &x, const int &y, QString filePath) const
+{
+    filePath.replace("file:///","");//qml路径修正
+    qDebug()<<filePath;
+    QPixmap pix;
+    pix.load(filePath);
+    if(pix.isNull()){
+        qDebug()<<"warning:cover-image is null";
+    }
+    HeadImgWidget*widget=new HeadImgWidget(nullptr,false);//关闭遮罩
+    widget->setWindowFlag(Qt::FramelessWindowHint,true);//必须去除标题栏，设置parent不会自动去除标题
+    widget->setAttribute(Qt::WA_QuitOnClose,false);
+    widget->winId();
+    QWindow*temp=widget->windowHandle();
+   //如果成功
+    if(temp){
+        temp->setParent(w);//嵌入
+        temp->setGeometry(x,y,temp->width(),temp->height());//定位
+        widget->openFile(filePath);//加载图片
+        connect(this,&FuncC::emitCloseCover,widget,&HeadImgWidget::deleteLater);//删除widget资源
+        connect(this,&FuncC::emitCoverOKClicked,widget,&HeadImgWidget::okCoverClicked);// 创建一个本地文件过渡
+        widget->show();//重新show
+    }
+}
+
+void FuncC::closeCoverWidget()
+{
+    emit emitCloseCover();//关闭信号
 }
 
 

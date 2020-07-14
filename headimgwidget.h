@@ -13,16 +13,17 @@ class HeadImgWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit HeadImgWidget(QWidget *parent = nullptr);
-    void setHeadImg(QPixmap &head);
+    explicit HeadImgWidget(QWidget *parent = nullptr,const bool&b=true);
     ~HeadImgWidget();
+    void setHeadImg(QPixmap &head);
 signals:
     void getFocus();//Widget获得焦点 发送到qml关闭历史头像选中标签
     void updateRemoteHeadImg(const QPixmap&);
     void updateMyself(const QString &number);
 public slots:
     void openFile(const QString&filename);
-    void okClicked(Images *images, const QString &myqq);
+    void okClicked(Images *images, const QString &myqq);//更改头像界面专用
+    void okCoverClicked(const QString&myqq);//更改封面界面专用
 protected:
     bool eventFilter(QObject *watched, QEvent *event);
     void transColor(QImage&img, const QHash<QPoint, QRgb> &colors);
@@ -43,7 +44,7 @@ private:
     QHash<QPoint,QRgb> rgbCw[3];//顺时针图片图像信息
     QHash<QPoint,QRgb> rgbAcw[3];//逆时针图片图像信息
     QPixmap imgHead;//头像
-    bool isread;
+
 };
 
 #endif // HEADIMGWIDGET_H

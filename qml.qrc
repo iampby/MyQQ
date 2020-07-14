@@ -111,5 +111,6 @@
         <file>images/mainInterface/userInfoPerson.png</file>
         <file>images/mainInterface/loadPhoto.png</file>
         <file>images/mainInterface/wallBack.png</file>
+        <file>main/AlterCover.qml</file>
     </qresource>
 </RCC>

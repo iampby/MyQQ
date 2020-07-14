@@ -4,10 +4,12 @@ import QtQuick.Layouts 1.12
 import QtQuick.Controls 2.5
 import QtGraphicalEffects 1.12
 import QtGraphicalEffects 1.12
+import Qt.labs.platform 1.1
 import "../"
 
 //用户个人资料
 Window {
+    property alias loaderForAlterCover: loaderForAlterCover
     id: win
     width: 722
     height: 522
@@ -15,6 +17,18 @@ Window {
     title: "个人资料"
     flags: Qt.FramelessWindowHint | Qt.Window //显示任务栏
     color: "lightgray" //边界颜色
+
+    Connections {
+        target: loaderForAlterCover.item
+        onUpdateCover: {
+            console.log("updateCover() function has been called")
+            var path = "../user/" + funcc.myQQ + "/cover"
+            leftImg.source = "file:" + path
+            funcc.updateCover(path)
+            console.log("updated Cover")
+        }
+    }
+
     onClosing: {
         console.log("invidualData onClosing")
         win.hide() //躲藏避免关闭主事件圈
@@ -57,7 +71,9 @@ Window {
                 MouseArea {
                     anchors.fill: parent
                     hoverEnabled: true
-
+                    onClicked: {
+                        fDlog.open()
+                    }
                     onPositionChanged: {
                         if (!renewCover.visible) {
                             renewCover.xTip = mouseX
@@ -162,6 +178,7 @@ Window {
                                 //如果可以 个性签名编辑就能完成
                                 signatureTF.focus = !signatureTF.focus
                             }
+                            actions.openAlterHImgAct.trigger()
                         }
                         onHoveredChanged: {
                             if (containsMouse) {
@@ -756,6 +773,28 @@ Window {
                     }
                 }
             }
+        }
+    }
+    //界面
+    //更改封面
+    Loader {
+        id: loaderForAlterCover
+        visible: loaderForAlterCover.status == Loader.Ready
+    }
+
+    //文件打开框，不要用Qtc++的静态调用文件对话框，Qtc++的静态调用文件对话框不会自动释放资源，应该是里面有指针实现部分，我用这个可是异常延迟一天爆发
+    FileDialog {
+        id: fDlog
+        title: "打开"
+        fileMode: FileDialog.OpenFile
+        defaultSuffix: "../"
+        nameFilters: ["图像文件(*.jpeg;*.jpg;*.png)"]
+        onAccepted: {
+            console.log("You chose: " + fDlog.file)
+            actions.alterCoverAct.trigger(fDlog)
+        }
+        onRejected: {
+            console.log("Canceled")
         }
     }
     //时钟

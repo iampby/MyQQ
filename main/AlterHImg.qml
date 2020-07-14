@@ -170,6 +170,7 @@ Window {
         id: leftBtn
         x: 3
         y: label.y + label.height + 5
+        visible: false
         height: 58
         width: 12
         onClicked: {
@@ -333,7 +334,7 @@ Window {
                 id: okBtn
                 text: "确认"
                 onClicked: {
-                    funcc.emitOKClicked(images) //fa发送信号给头像视图区
+                    funcc.emitHeadImgOKClicked(images) //fa发送信号给头像视图区
                     console.log("clicked okBtn,now win will be closed")
                     win.close()
                 }

@@ -16,7 +16,7 @@ protected:
         Right
     };
 public:
-    HeadImgView(QWidget *parent = nullptr);
+    HeadImgView(QWidget *parent = nullptr, const bool &b=true);
     void setImage(QPixmap &image);
     void setSlider(QSlider*);
 
@@ -44,6 +44,7 @@ private:
     QPoint posPreScene;//当开始按下时scene所在的位置
     bool control;//控制slider在最小|最大时继续拖动不反响
     QPoint rangPos;
+    bool hasMask;//默认开启遮罩
 };
 
 #endif // HEADIMGVIEW_H

@@ -59,13 +59,14 @@ Item {
         }
     }
     //初始化qqmainwin坐标为右贴任务栏
-//qqmainwin的初始化x坐标
+    //qqmainwin的初始化x坐标
     function qqMainX() {
         var x
         if (funcc.taskDirection() !== 3) {
             x = mainWin.desktopAvailableWidth - inCenterLoader.item.width - 1
         } else {
-            x = mainWin.desktopAvailableWidth - inCenterLoader.item.width + funcc.taskBarWidth() - 1
+            x = mainWin.desktopAvailableWidth - inCenterLoader.item.width + funcc.taskBarWidth(
+                        ) - 1
         }
         console.log("qqMainX->", x)
         return x
@@ -76,8 +77,8 @@ Item {
         if (funcc.taskDirection() !== 1) {
             y = 10
         } else {
-            y = mainWin.desktopAvailableHeight - inCenterLoader.item.height
-                    +funcc.taskBarWidth() + 10
+            y = mainWin.desktopAvailableHeight - inCenterLoader.item.height + funcc.taskBarWidth(
+                        ) + 10
         }
         console.log("qqMainY->", y)
         return y
@@ -149,16 +150,16 @@ Item {
     function enter(direct, win) {
         funcc.setMyCursor(direct, win)
     }
-//按下时做按标识
+    //按下时做按标识
     function press(mouse, win) {
         win.isPressed = true
         win.customPoint = Qt.point(mouse.x, mouse.y)
     }
-//离开鼠标区域 重置按标识
+    //离开鼠标区域 重置按标识
     function release(win) {
         win.isPressed = false
     }
-//拖拽移动处理
+    //拖拽移动处理
     function positionChange(newPosition, directX, directY, win/*x轴方向*/ /*y轴方向*/ ) {
         if (!win.isPressed)
             return
@@ -176,7 +177,7 @@ Item {
         } else {
             tmpH = win.height - delta.y
         }
-        sizeChanged(tmpW, tmpH, delta, directX, directY)//发送变化后的大小，鼠标偏差，鼠标所在区域
+        sizeChanged(tmpW, tmpH, delta, directX, directY) //发送变化后的大小，鼠标偏差，鼠标所在区域
     }
 
     //用于化帆布的边界虚线
@@ -220,27 +221,32 @@ Item {
                 context.lineTo(sx + w / horLength * i, ey)
             }
         }
-        context.stroke()//画轮廓
+        context.stroke() //画轮廓
     }
     //获取字符串字节数
-    function getCharByteLength(str){
-        var bytesCount=0
-    for (var i = 0; i < str.length; i++)
-    {
-      var c = str.charAt(i);
-      if (/^[\u0000-\u00ff]$/.test(c)) //匹配双字节
-      {
-      bytesCount += 1;
-      }
-      else
-      {
-      bytesCount += 2;
-      }
+    function getCharByteLength(str) {
+        var bytesCount = 0
+        for (var i = 0; i < str.length; i++) {
+            var c = str.charAt(i)
+            if (/^[\u0000-\u00ff]$/.test(c)) //匹配双字节
+            {
+                bytesCount += 1
+            } else {
+                bytesCount += 2
+            }
+        }
+        return bytesCount
     }
-    return bytesCount;
-    }
-    function addHeadUrl(){
+    function addHeadUrl() {
         console.log("addhandlehead")
         images.readHistory()
+    }
+    //返回升级天数
+    function computeToUpgrade(grade, activeDays) {
+        grade += 1
+        var sum = (grade + 4) * grade
+        var remain = sum - parseInt(activeDays)
+        console.log("remain=", remain)
+        return remain
     }
 }

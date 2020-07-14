@@ -6,13 +6,14 @@
 #include<qpaintengine.h>
 #include<qslider.h>
 
-HeadImgView::HeadImgView(QWidget *parent):QGraphicsView(parent)
+HeadImgView::HeadImgView(QWidget *parent,const bool&b):QGraphicsView(parent),hasMask(b)
 {
     setFixedSize(350,350);
     control=true;
     direct=Top;//初始化为向上
-    //setFrameShape(QFrame::NoFrame);
-    setStyleSheet("QFrame{border-width:1px solid rgba(155,155,155);}");
+    if(hasMask)
+    setStyleSheet("QFrame{border-width:1px solid rgba(155,155,155);}");//开启遮罩则画边线
+    else  setFrameShape(QFrame::NoFrame);//关闭fram外套
     QGraphicsScene*scene=new QGraphicsScene(this);
     setScene(scene);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -94,15 +95,18 @@ void HeadImgView::setSlider(QSlider *s)
 void HeadImgView::drawBackground(QPainter *painter, const QRectF &rect)
 {
     //重画场景背景
-    QRegion r1(rect.x(),rect.y(),350,350,QRegion::Ellipse);
-    QRegion r2(rect.x(),rect.y(),350,350);
-    QRegion r= r2.subtracted(r1);
-    QPainterPath path;
-    path.addRegion(r);
     painter->drawPixmap(sceneRect().left(),sceneRect().top(),img);//在场景的起点位置开始画图片
-    painter->setPen( QColor(177,177,177,0));
-    painter->setBrush(QColor(177,177,177,155));
-    painter->drawPath(path);
+   //画遮罩
+    if(hasMask){
+        QRegion r1(rect.x(),rect.y(),350,350,QRegion::Ellipse);
+        QRegion r2(rect.x(),rect.y(),350,350);
+        QRegion r= r2.subtracted(r1);
+        QPainterPath path;
+        path.addRegion(r);
+        painter->setPen( QColor(177,177,177,0));
+        painter->setBrush(QColor(177,177,177,155));
+        painter->drawPath(path);
+    }
 }
 
 void HeadImgView::wheelEvent(QWheelEvent *event)
@@ -193,7 +197,7 @@ void HeadImgView::valueChanged(int value)
     qint32 nowh=img.height();
     qDebug()<<"value changed"<<scale;
     rangPos=QPoint(-(noww-348.0)/2,-(nowh-348.0)/2);
-   scene()->setSceneRect(sceneRect().x()-(noww-prew)/2.0,sceneRect().y()-(nowh-preh)/2.0,img.width(),img.height());
+    scene()->setSceneRect(sceneRect().x()-(noww-prew)/2.0,sceneRect().y()-(nowh-preh)/2.0,img.width(),img.height());
     viewport()->update();
 }
 

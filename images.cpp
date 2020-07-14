@@ -74,10 +74,11 @@ void Images::insert(QPixmap& pix)
 {
     QHash<QString,QPixmap>&imgs= provider1->images;
   QHash<QString,QPixmap>newImas;
-    QHash<QString, QPixmap>::iterator i = imgs.begin();
+    QHash<QString, QPixmap>::const_iterator i = imgs.cbegin();
+    QHash<QString, QPixmap>::const_iterator end = imgs.cend();
     newImas.insert(myqq+"101",pix);
     qint64 max=0;
-    while (i !=imgs.constEnd()) {
+    while (i !=end) {
         qint64 name;
        try{
             bool b;
@@ -98,8 +99,8 @@ void Images::insert(QPixmap& pix)
         url=QString("%1").arg(++max);
     }
  provider1->images=newImas;
- qDebug()<<"ok clicked is finished"<<url;
- emit historyImageAdded(url,newImas.size());
+ qDebug()<<"ok clicked is finished";
+ emit historyImageAdded(url,newImas.size()-1);
 }
 
 void Images::setPixmap2(const QString &id, const QString &pix)

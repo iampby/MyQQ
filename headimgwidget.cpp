@@ -7,6 +7,7 @@
 #include <qpushbutton.h>
 #include<QApplication>
 #include<qlabel.h>
+#include<qdir.h>
 //#pragma comment(lib,"qtquickcontrols2plugind.dll")//载入qml插件库
 
 //qpoint的静态qhash本地方法 用于qhash
@@ -16,11 +17,10 @@ static uint qHash(const QPoint &key, uint seed)
 }
 
 
-HeadImgWidget::HeadImgWidget(QWidget *parent) : QWidget(parent)
+HeadImgWidget::HeadImgWidget(QWidget *parent, const bool &b) : QWidget(parent)
 {
     qDebug()<<"init headimgwidget";
     //初始化图片
-    isread=false;
     imgOut.load(":/images/QWidget/headImgSubtraction.png","png");
     imgIn.load(":/images/QWidget/headImgAddition.png","png");
     imgCw.load(":/images/QWidget/headImgCw.png","png");
@@ -94,8 +94,8 @@ HeadImgWidget::HeadImgWidget(QWidget *parent) : QWidget(parent)
     this->setPalette(p);
     setFixedSize(350,390);
     //视图
-    view=new HeadImgView(this);
-
+    view=new HeadImgView(this,b);
+qDebug()<<"Opened mask or not?"<<b;
     zoomout=new QPushButton(this);
     zoomout->setFixedSize(18,16);
     zoomout->setFlat(true);
@@ -168,19 +168,18 @@ connect(view,&HeadImgView::getFocus,this,[=](){emit getFocus();});//
 }
 
 
-void HeadImgWidget::setHeadImg( QPixmap &head)
-{
-    qDebug()<<"image of head is loaded";
-    view->setImage(head);
-}
-
-
-
 
 
 HeadImgWidget::~HeadImgWidget()
 {
     qDebug()<<"delete view";
+}
+
+
+void HeadImgWidget::setHeadImg( QPixmap &head)
+{
+    qDebug()<<"image of head is loaded";
+    view->setImage(head);
 }
 
 
@@ -190,6 +189,9 @@ void HeadImgWidget::openFile(const QString &filename)
     qDebug()<<"opened a file,named: "<<filename;
     QPixmap img;
     img.load(filename);
+    if(img.isNull()){
+        qDebug()<<"warning: loaded image of QWidget is null";
+    }
     view->setImage(img);
 }
 
@@ -207,6 +209,15 @@ void HeadImgWidget::okClicked(Images*images,const QString&myqq)
         updateMyself(myqq);
     }
 
+}
+
+void HeadImgWidget::okCoverClicked(const QString &myqq)
+{
+    QPixmap newHeadImg= view->getGrabPixmap();
+    qDebug()<<"new cover-image has been  got";
+    QDir dir("../user/"+myqq);
+    if(!dir.exists())dir.mkpath("./");
+    newHeadImg.save(dir.absoluteFilePath("cover"),"png");
 }
 
 

@@ -71,10 +71,13 @@ public:
     Q_INVOKABLE void openTempMesWin()const;//打开一个升级提示框
     Q_INVOKABLE void addHeadWidget(QWindow *w, const int&x, const int&y, QPixmap pixmap, const QString&myqq, const bool isgot)const;//更改头像框打开时添加一个QWidget控件到qml控件w
     Q_INVOKABLE void openFile(QString filename);//打开更改头像界面
-    Q_INVOKABLE void closeWidget();//发送信号删除widget控件
+    Q_INVOKABLE void closeWidget();//发送信号删除更改头像视图的widget控件
     Q_INVOKABLE void getHistoryHeadImg(const QString&myqq) const;//获取历史头像 this常量调用
     Q_INVOKABLE void updateSignature(QString signature, const QString&in);//更新个性签名
+    Q_INVOKABLE void updateCover(QString qmlFilePath);//更新 用户资料封面
     Q_INVOKABLE void deleteNetTimer();//删除网络监测器
+    Q_INVOKABLE void addCoverWidget(QWindow *w, const int&x, const int&y,QString filePath)const;//更改封面界面打开时添加一个QWidget控件到qml控件w
+    Q_INVOKABLE void closeCoverWidget();//发送信号删除更改封面界面的widget控件
 
 
     Q_INVOKABLE void startAddFriendsProcess(QQuickWindow*arg, QMap<QString, QVariant> obj);//添加好友进程
@@ -126,9 +129,11 @@ Q_SIGNALS://使用第三方源码解析时相当有用 这里用来给qml传递信号比较好
     void crawWeatherUrlFinished();
     void updateFriendsModel(const QString&value,const qint32& role,const QString&number)const;//刷新好友模型数据
 Q_SIGNALS:
-    void emitOpenFile(const QString& filename);//更改头像界面打开一个文件
+    void emitHeadImgOpenFile(const QString& filename);//更改头像界面打开一个文件
     void emitCloseHead();//释放更改头像界面
-    void emitOKClicked(Images*images );//更改头像 ok 信号
+    void emitCloseCover();//释放更改封面界面
+    void emitHeadImgOKClicked(Images*images );//更改头像 ok 信号
+    void emitCoverOKClicked(const QString&myqq);//更改头像 ok 信号
     void emitReadHistory(int code)const;//更改头像界面点击
     void emitSelectedImg( QPixmap pixmap);//添加qml选中头像到widget
 private slots:
@@ -149,8 +154,8 @@ private:
     quint16 registerPort;
 
     LoginSocket*loginSock;
-    quint16 loginPort;
-    quint16 updatePort;
+    quint16 loginPort;//一些界面数据获取
+    quint16 updatePort;//更新远程数据 如签名、备注、历史头像、资料封面
     //记载MyQQ信息
     //用户的 name（昵称） sex（性别） signature（个性签名） days（活跃天数） grade（等级) status(状态） 所在地 故乡
     QMap<QString, QVariant>userInfo;
