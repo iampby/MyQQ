@@ -46,7 +46,7 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
     bool sucessful=false;
     query.prepare("declare @myqq bigint,@sucessful bit=0 "
                   "exec registerMyQQ_pro :name,:passwd, @myqq  output,@sucessful output "
-                  "select @myqq,@sucessful ");
+                  "select @myqq,@sucessful");
     query.bindValue(":name",name);
     query.bindValue(":passwd",passwd);
     if(query.exec()){
@@ -62,9 +62,10 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
                         QImage img(":/img/init.png");
                         if(img.save(headPath,nullptr,0)){
                             qDebug()<<"IMG is saved£¡";
-                            query.prepare(" update userInfo set headimgpath=? where myqq=? ");
+                            query.prepare(" update userInfo set headimgpath=?,photoWallPath=? where myqq=? ");
                             query.bindValue(0,QVariant(headPath));
-                            query.bindValue(1,QVariant(myqq));
+                            query.bindValue(1,QVariant(QString("../userData/%1/photoWall").arg(myqq)));
+                            query.bindValue(2,QVariant(myqq));
                             if(query.exec()){
                                 qDebug()<<"updating the headImgPath of myqq sucessfully,myqq equal to "+QString("%1").arg( myqq);
                                 dir.mkpath(QString("../userData/%1/friendsInfo").arg(myqq));

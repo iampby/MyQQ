@@ -282,6 +282,20 @@ infoxml.close();
     }
     return ok;
 }
+//保存资料封面
+bool WriteThread::updateCover(QByteArray &bytes)
+{
+    QPixmap pix;
+   if(! pix.loadFromData(bytes)){
+        qDebug()<<"warning:cover is not loaded,the number is equal to "<<myqq;
+        return false;
+    }
+   if(!pix.save("../userData/"+myqq+"/cover","png")){
+       qDebug()<<"warning:cover is not saved suffix is png,the number is equal to "<<myqq;
+       return false;
+   }
+   return true;
+}
 
 void WriteThread::timer()
 {
@@ -323,7 +337,7 @@ void WriteThread::readD()
                         myqq=obj.value("myqq").toString();
                         if(myqq.isEmpty()){
                             tcpsocket->disconnectFromHost();
-                            return;
+                            return;//退出线程
                         }
                         fileName="../userData/"+myqq+"/historyHeadImg/01.png";
                         FT=HistoryHeadImage;
@@ -343,6 +357,20 @@ void WriteThread::readD()
                         size=1;
                         continue;
                     }
+                    //更新用户资料封面
+                }else if(in=="7"){
+                    QString content=obj.value("content").toString();
+                    if(content=="updateCover"){
+                        myqq=obj.value("myqq").toString();
+                        if(myqq.isEmpty()){
+                            qDebug()<<"warning:myqq.isEmpty()";
+                            tcpsocket->disconnectFromHost();
+                            return;//退出线程
+                        }
+                        FT=CoverImage;
+                        size=1;
+                        continue;
+                    }
                 }
             }
         }else{
@@ -352,6 +380,9 @@ void WriteThread::readD()
                 bytes.append(data);
                 break;
             case Signature:
+                bytes.append(data);
+                break;
+            case CoverImage:
                 bytes.append(data);
                 break;
             default:
@@ -374,6 +405,11 @@ void WriteThread::disconnected()
     case Signature:
         if(updateSignature(bytes)){
             qDebug()<<"updated signature successfully";
+        }
+        break;
+    case CoverImage:
+        if(updateCover(bytes)){
+            qDebug()<<"updated cover-image successfully";
         }
         break;
     default:

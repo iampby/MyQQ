@@ -12,10 +12,10 @@
         <我的设备 set="none"></我的设备>
         <我的好友 set="none">
             <friend myqq="10001">
-                <昵称>hello world!</昵称>
+                <昵称>潘佰远</昵称>
                 <个性签名></个性签名>
                 <头像路径>../userData/10001/historyHeadImg/01.png</头像路径>
-                <备注></备注>
+                <备注>潘佰远</备注>
                 <等级>0</等级>
                 <状态>0</状态>
                 <set status="0" info="0"></set>

@@ -12,8 +12,10 @@
 #include <QJsonArray>
 #include <qtimer.h>
 #include<qthread.h>
+#include<qdir.h>
 //因为套接字发送数据可能是粘在一起的，所以要先发送个数据大小
 //最好是在发送头字节加个int标记大小，这里用int8标记json数据，因为发送数据的最小单位就是字节了，保证接收到，同时json字节小于256
+//当然uint32 是最好的因为一般计算机的输出位宽为一般为32位以上
 //大数据的大小就用json标记大小
 //开始不懂，写了个json过去，不过json数据量很小，发送很快，几乎不粘包，所以服务器这边就用json处理,就不改了
 LoginThread::LoginThread(qintptr socketDescriptor, qint64 count, QObject *parent)
@@ -314,19 +316,7 @@ void LoginThread::readD()
                                     }
                                 }
                             }
-                            //传图片 图片名 myqq+1
-                            QJsonDocument imgJson;
-                            QJsonObject imgObj;
-                            imgObj.insert("instruct",QJsonValue("20"));
-                            imgObj.insert("result",QJsonValue("writing"));
-                            imgJson.setObject(imgObj);
-                            quint8 s=imgJson.toJson().size();
-                            QByteArray size;
-                            QDataStream stream(&size,QIODevice::WriteOnly);
-                            stream.setVersion(QDataStream::Qt_4_0);
-                            stream<<s;
-                            tcpsocket->write(size+imgJson.toJson());
-                            loop.exec();
+
                             foreach (QString v, list.keys()) {
                                 QFile img(list.value(v));
                                 if(img.open(QIODevice::ReadOnly)){
@@ -336,20 +326,21 @@ void LoginThread::readD()
                                     if(img.read(imgData.data(),byteSize)==-1){
                                         qDebug()<<"read "<<writeObj.value("name").toString()+".png had failed";
                                     }
-                                    QJsonDocument tempJson;
-                                    QJsonObject tempObj;
-                                    tempObj.insert("name",QJsonValue(v+"1"+".png"));
-                                    tempObj.insert("size",QJsonValue(byteSize));
-                                    tempJson.setObject(tempObj);
-                                    s=tempJson.toJson().size();
-                                    QByteArray tempSize;
-                                    QDataStream tempStream(&tempSize,QIODevice::WriteOnly);
-                                    tempStream.setVersion(QDataStream::Qt_4_0);
-                                    tempStream<<s;
-
-                                    tcpsocket->write(tempSize+tempJson.toJson());
+                                    //传图片 图片名 myqq+1
+                                    QJsonDocument imgJson;
+                                    QJsonObject imgObj;
+                                    imgObj.insert("instruct",QJsonValue("20"));
+                                    imgObj.insert("result",QJsonValue("writing"));
+                                    imgObj.insert("name",QJsonValue(v+"1"+".png"));
+                                    imgObj.insert("size",QJsonValue(byteSize));
+                                    imgJson.setObject(imgObj);
+                                    quint8 s=imgJson.toJson().size();
+                                    QByteArray size;
+                                    QDataStream stream(&size,QIODevice::WriteOnly);
+                                    stream.setVersion(QDataStream::Qt_4_0);
+                                    stream<<s;
+                                    tcpsocket->write(size+imgJson.toJson());
                                     loop.exec();
-
                                     qDebug()<<v<<list.value(v);
                                     tcpsocket->write(imgData);
                                     loop.exec();
@@ -742,16 +733,7 @@ table1_1.name as location1,table1_2.name as location2,table1_3.name as location3
                             qDebug()<<"it's is empty for dir of history-image";
                             goto label;//跳转结尾
                         }
-                        writeObj.insert("instruct",QJsonValue("40"));
-                        writeObj.insert("result",QJsonValue("writing"));
-                        writeJson.setObject(writeObj);
-                        QByteArray headData;
-                        quint8 l=writeJson.toJson().size();
-                        QDataStream headStr(&headData,QIODevice::WriteOnly);
-                        headStr.setVersion(QDataStream::Qt_4_0);
-                        headStr<<l;
-                        tcpsocket->write(headData+writeJson.toJson());
-                        loop.exec();
+
                         qDebug()<<filelist.length()<<"filelist";
                         for (QString& v : filelist) {
                             qDebug()<<"found a file,named: "<<v;
@@ -772,10 +754,10 @@ table1_1.name as location1,table1_2.name as location2,table1_3.name as location3
                                 break;
                             };
                             //每次要清空
-                            writeObj=QJsonObject();
-                            writeJson=QJsonDocument();
                             writeObj.insert("name",QJsonValue(v));
                             writeObj.insert("size",QJsonValue(byteSize));
+                            writeObj.insert("instruct",QJsonValue("40"));
+                            writeObj.insert("result",QJsonValue("writing"));
                             writeJson.setObject(writeObj);
                             QByteArray sizedata;
                             quint8 l=writeJson.toJson().size();
@@ -820,8 +802,8 @@ label:
                         QDir dir("../userData/"+myqq+"/friendsInfo");
                         if(dir.exists()){
                             if(historyImgFiles.contains(myqq)){
-                               QMutex*muter=historyImgMuter.value(myqq);
-                               muter->lock();
+                                QMutex*muter=historyImgMuter.value(myqq);
+                                muter->lock();
                                 QFile* headimg=historyImgFiles.value(myqq);
                                 if(headimg->exists()){
                                     qDebug()<<headimg->fileName()<<" is found";
@@ -836,7 +818,8 @@ label:
                                         QJsonArray arr=obj.value("myqq").toArray();
                                         if(arr.isEmpty())ok=false;
                                         else{
-                                            for (int var = 0; var < arr.size(); ++var) {
+                                            qint64 length= arr.size();
+                                            for (int var = 0; var < length; ++var) {
                                                 QJsonObject temp= arr.at(var).toObject();
                                                 if(temp.isEmpty()){
                                                     qDebug()<<"warning:occured a empty obj in markedHeadImg.json";
@@ -847,7 +830,8 @@ label:
                                                 if(!tempFile.open(QIODevice::ReadOnly)){
                                                     qDebug()<<"warning:opened a file unsuccessful,named "<<tempFile.fileName();
                                                     continue;
-                                                }
+                                                }else
+                                                    qDebug()<<"friend's MyQQ is "<<mq;
                                                 QByteArray data=tempFile.readAll();
                                                 tempFile.close();
                                                 QJsonDocument tempDoc;
@@ -863,6 +847,7 @@ label:
                                                 stream<<size;
                                                 tcpsocket->write(sizeData+tempDoc.toJson());
                                                 loop.exec();
+                                                qDebug()<<size;
                                                 tcpsocket->write(data);
                                                 loop.exec();
                                             }
@@ -899,7 +884,6 @@ label:
                                         stream<<size;
                                         tcpsocket->write(sizeData+tempDoc.toJson());
                                         loop.exec();
-                                       // QJsonDocument json=QJsonDocument::fromJson(data);
                                         tcpsocket->write(data);
                                         loop.exec();
                                     }
@@ -911,10 +895,36 @@ label:
                                 emit delayedSigAndNameDeletion(myqq);
                             }
                         }else ok=false;
-                        //成功处理
                         qDebug()<<"result is "<<ok;
+                        if(ok){
+                            //成功处理
+                            writeObj.insert("content",QJsonValue("end"));
+                            writeObj.insert("result",QJsonValue("true"));
+                            writeJson.setObject(writeObj);
+                            QByteArray sizedata;
+                            quint8 l=writeJson.toJson().size();
+                            QDataStream sizeStr(&sizedata,QIODevice::WriteOnly);
+                            sizeStr.setVersion(QDataStream::Qt_4_0);
+                            sizeStr<<l;
+                            tcpsocket->write(sizedata+ writeJson.toJson());
+                            loop.exec();
+                            tcpsocket->disconnectFromHost();
+                        }else{
+                            writeObj.insert("content",QJsonValue("end"));
+                            writeObj.insert("result",QJsonValue("false"));
+                            writeJson.setObject(writeObj);
+                            QByteArray sizedata;
+                            quint8 l=writeJson.toJson().size();
+                            QDataStream sizeStr(&sizedata,QIODevice::WriteOnly);
+                            sizeStr.setVersion(QDataStream::Qt_4_0);
+                            sizeStr<<l;
+                            tcpsocket->write(sizedata+ writeJson.toJson());
+                            loop.exec();
+                            tcpsocket->disconnectFromHost();
+                        }
+                    }else{
                         writeObj.insert("content",QJsonValue("end"));
-                        writeObj.insert("result",QJsonValue("true"));
+                        writeObj.insert("result",QJsonValue("false"));
                         writeJson.setObject(writeObj);
                         QByteArray sizedata;
                         quint8 l=writeJson.toJson().size();
@@ -924,7 +934,158 @@ label:
                         tcpsocket->write(sizedata+ writeJson.toJson());
                         loop.exec();
                         tcpsocket->disconnectFromHost();
+                    }
+                    return;
+                }else if(in.toString()=="8"){
+                    QString value=obj.value("content").toString();
+                    QString myqq=obj.value("myqq").toString();
+                    qDebug()<<"value=="<<value;
+                    //传myself个性资料
+                    if(value=="getPersonalData"){
+                        bool ok=true;
+                        if(query.exec(" exec myselfInformation "+myqq)){
+
+                            qDebug()<<"query is of success for personal information";
+                            query.next();
+                            if(query.isValid()){
+                                writeObj.insert("birthday",query.value("birthday").toString());
+                                writeObj.insert("registerDateTime",query.value("registerDateTime").toString());
+                                writeObj.insert("bloodGroup",query.value("bloodGroup").toString());
+                                writeObj.insert("education",query.value("education").toString());
+                                writeObj.insert("profession",query.value("profession").toString());
+                                writeObj.insert("corporation",query.value("corporation").toString());
+                                writeObj.insert("location1",query.value("location1").toString());
+                                writeObj.insert("location2",query.value("location2").toString());
+                                writeObj.insert("location3",query.value("location3").toString());
+                                writeObj.insert("location4",query.value("location4").toString());
+                                writeObj.insert("home1",query.value("home1").toString());
+                                writeObj.insert("home2",query.value("home2").toString());
+                                writeObj.insert("home3",query.value("home3").toString());
+                                writeObj.insert("home4",query.value("home4").toString());
+                                writeObj.insert("personalStatement",query.value("personalStatement").toString());
+                                writeObj.insert("phone",query.value("phone").toString());
+                                QString wallPath= query.value("photoWallPath").toString();
+                                writeJson.setObject(writeObj);//添加json文本内容
+                                QJsonDocument doc;
+                                QJsonObject temp;
+                                temp.insert("instruct",QJsonValue("80"));
+                                temp.insert("result",QJsonValue("writingJson"));
+                                temp.insert("size",QJsonValue(writeJson.toJson().size()));
+                                doc.setObject(temp);
+                                QByteArray sizeData;
+                                quint8 l=doc.toJson().size();
+                                QDataStream sizeStr(&sizeData,QIODevice::WriteOnly);
+                                sizeStr.setVersion(QDataStream::Qt_4_0);
+                                sizeStr<<l;
+                                tcpsocket->write(sizeData+doc.toJson());
+                                loop.exec();
+                                tcpsocket->write(writeJson.toJson());
+                                loop.exec();
+                                //照片墙
+                                QDir wall(wallPath);
+                                if(wall.exists()){
+                                    if(!wall.isEmpty()){
+                                       QStringList list=wall.entryList(QStringList("*"),QDir::Files,QDir::Name|QDir::Reversed);
+                                       qint32 length=list.length();
+                                       for (int var = 0; var <length; ++var) {
+                                           QString fname=list.at(var);
+                                           QFile tempF(wall.filePath(fname));
+                                           if(tempF.open(QIODevice::ReadOnly)){
+                                               qDebug()<<"a file is opened,named "<<fname;
+                                               QByteArray fdata=tempF.readAll();
+                                               if(fdata.isEmpty()){
+                                                   qDebug()<<"a photowall file was readed unsuccessfully";
+                                                   continue;
+                                               }
+                                               QJsonDocument ftempDoc;
+                                               QJsonObject ftempObj;
+                                               ftempObj.insert("instruct",QJsonValue("80"));
+                                               ftempObj.insert("result",QJsonValue("writingPhotoWall"));
+                                               ftempObj.insert("name",QJsonValue(fname));
+                                               ftempObj.insert("size",QJsonValue(fdata.size()));
+                                               ftempDoc.setObject(ftempObj);
+                                               QByteArray tempData;
+                                               quint8 tl=ftempDoc.toJson().size();
+                                               QDataStream tempStr(&tempData,QIODevice::WriteOnly);
+                                               tempStr.setVersion(QDataStream::Qt_4_0);
+                                               tempStr<<tl;
+                                               tcpsocket->write(tempData+ftempDoc.toJson());
+                                               loop.exec();
+                                               tcpsocket->write(fdata);
+                                               loop.exec();
+                                           }
+                                       }
+                                    }else{
+                                       qDebug()<<"photo wall is empty";
+                                    }
+                                }else{
+                                    wall.mkpath("./");//创建当前目录
+                                }
+                            }else ok=false;
+                        }else{
+                            ok=false;
+                            qDebug()<<"query is of failure for personal information";
+                        }
+                        QFile cover("../userData/"+myqq+"/cover");
+                        if(cover.exists()){
+                            qDebug()<<"cover-image is found";
+                            if( cover.open(QIODevice::ReadOnly)){
+                                QByteArray coverData;
+                                coverData=  cover.readAll();
+                                if(!coverData.isEmpty()){
+                                    QJsonDocument jsonCover;
+                                    QJsonObject objCover;
+                                    objCover.insert("instruct",QJsonValue("80"));
+                                    objCover.insert("result",QJsonValue("writingCover"));
+                                    objCover.insert("name",QJsonValue("cover"));
+                                    objCover.insert("size",QJsonValue(coverData.size()));
+                                    jsonCover.setObject(objCover);
+                                    QByteArray sizeData;
+                                    quint8 l=jsonCover.toJson().size();
+                                    QDataStream sizeStr(&sizeData,QIODevice::WriteOnly);
+                                    sizeStr.setVersion(QDataStream::Qt_4_0);
+                                    sizeStr<<l;
+                                    tcpsocket->write(sizeData+jsonCover.toJson());
+                                    loop.exec();
+                                    tcpsocket->write(coverData);
+                                    loop.exec();
+                                }else{
+                                    qDebug()<<"warning: readed cover-image file is of failure ";
+                                    ok=false;
+                                }
+                            }else{
+                                qDebug()<<"warning:data of cover-image is not got";
+                                ok=false;
+                            }
+                        }
+                        //成功或失败处理
+                        QJsonDocument json;
+                        QJsonObject jsonObj;
+                        if(ok){
+                            jsonObj.insert("instruct",QJsonValue("80"));
+                            jsonObj.insert("result",QJsonValue("true"));
+                            json.setObject(jsonObj);
+                            QByteArray sizeData;
+                            quint8 l=json.toJson().size();
+                            QDataStream sizeStr(&sizeData,QIODevice::WriteOnly);
+                            sizeStr.setVersion(QDataStream::Qt_4_0);
+                            sizeStr<<l;
+                            tcpsocket->write(sizeData+json.toJson());
+                            loop.exec();
+                        }else{
+                            jsonObj.insert("instruct",QJsonValue("80"));
+                            jsonObj.insert("result",QJsonValue("false"));
+                            json.setObject(jsonObj);
+                            QByteArray sizeData;
+                            quint8 l=json.toJson().size();
+                            QDataStream sizeStr(&sizeData,QIODevice::WriteOnly);
+                            sizeStr.setVersion(QDataStream::Qt_4_0);
+                            sizeStr<<l;
+                            tcpsocket->write(sizeData+json.toJson());
+                            loop.exec();
+                        }
                     }else{
+                        //失败
                         writeObj.insert("content",QJsonValue("end"));
                         writeObj.insert("result",QJsonValue("false"));
                         writeJson.setObject(writeObj);

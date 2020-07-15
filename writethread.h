@@ -12,12 +12,14 @@ public:
     enum FileType{
         NoFile,
         HistoryHeadImage,
-        Signature
+        Signature,
+        CoverImage
     };
     WriteThread(qintptr socketDescriptor,qint64 count,QObject *parent = nullptr);
     ~WriteThread();
     bool adjustHistoryImg(QByteArray&bytes,const QString&filePath,const QString&fileType);
     bool updateSignature(QByteArray&bytes);
+    bool updateCover(QByteArray&bytes);
 signals:
     void error(QAbstractSocket::SocketError);
     void finished();

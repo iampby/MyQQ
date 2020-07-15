@@ -35,6 +35,7 @@ void MyQQLoginServer::incomingConnection(qintptr socketDescriptor)
     connect(loginHandle,&LoginThread::delayedHeadImgDeletion,this,[=](const QString number){
         //延迟5s删除
         QTimer::singleShot(5000,this,[=](){
+            qDebug()<<"delayed deletion";
             if(!historyImgFiles.contains(number)){
                 QMutex*muter=historyImgMuter.value(number);
                 historyImgMuter.remove(number);//如果没有更新标记文件，正常删除锁
@@ -46,6 +47,7 @@ void MyQQLoginServer::incomingConnection(qintptr socketDescriptor)
     connect(loginHandle,&LoginThread::delayedSigAndNameDeletion,this,[=](const QString number){
         //延迟5s删除
         QTimer::singleShot(5000,this,[=](){
+             qDebug()<<"delayed deletion";
             if(!sigFiles.contains(number)){
                  QMutex*muter=sigMuter.value(number);
                 sigMuter.remove(number);//如果没有更新标记文件，正常删除锁
