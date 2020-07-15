@@ -13,7 +13,7 @@ Rectangle {
     property alias nodebookAct: nodebookAction //记录号码
 
     property alias mesWinForOkAct: mesWinForOkAction //切换账号接收键
-    property alias alterCoverAct:alterCoverAction //更改封面界面打开
+    property alias alterCoverAct: alterCoverAction //更改封面界面打开
 
     property alias mainMenuAct: mainMenuAction //底部菜单
     property alias addFriendsAct: addFriendsAction //添加好友按钮
@@ -437,21 +437,31 @@ Rectangle {
             if (!(Loader.Ready === loader.status)) {
                 console.log("loaded")
                 loader.source = "qrc:/main/IndividualData.qml"
-            }
-            while (true) {
-                if (loader.status === Loader.Ready) {
-                    console.log("start show")
-                    console.log("opened the IndividualData.qml")
-                    loader.item.x = (mainWin.desktopAvailableWidth - loader.item.width) / 2
-                    loader.item.y = (mainWin.desktopAvailableHeight - loader.item.height) / 2
-                    loader.item.show()
-                    loader.item.raise()
-                    loader.item.requestActivate()
-                    break
-                } else if (loader.status === Loader.Error) {
-                    console.log("loaderForAlterInfo  occured a error")
-                    break
+                while (true) {
+                    if (loader.status === Loader.Ready) {
+                        funcc.getIndividualData() //远程获取数据，初始化界面
+                        console.log("start show")
+                        console.log("opened the IndividualData.qml")
+                        loader.item.x = (mainWin.desktopAvailableWidth - loader.item.width) / 2
+                        loader.item.y = (mainWin.desktopAvailableHeight - loader.item.height) / 2
+
+                        loader.item.showNormal()
+                        loader.item.raise()
+                        loader.item.requestActivate()
+                        break
+                    } else if (loader.status === Loader.Error) {
+                        console.log("loaderForAlterInfo  occured a error")
+                        break
+                    }
                 }
+            } else {
+                //显示窗口
+                //  loader.item.x = (mainWin.desktopAvailableWidth - loader.item.width) / 2
+                // loader.item.y = (mainWin.desktopAvailableHeight - loader.item.height) / 2
+                loader.item.opacity = 1.0
+                loader.item.showNormal()
+                loader.item.raise()
+                loader.item.requestActivate()
             }
         }
     }
@@ -477,29 +487,27 @@ Rectangle {
         id: alterCoverAction
         onTriggered: {
             console.log("alterCoverAction")
-            var loader=inCenterLoader.item.loaderForAlterInfo.item.loaderForAlterCover
+            var loader = inCenterLoader.item.loaderForAlterInfo.item.loaderForAlterCover
             if (loader === undefined)
                 return
             if (!(Loader.Ready === loader.status)) {
                 console.log("loaded")
                 loader.source = "qrc:/main/AlterCover.qml"
-                while (true) {
-                    if (loader.status === Loader.Ready) {
-                        console.log("start show")
-                        console.log("first,opened the AlterCover.qml")
-                        loader.item.x = (mainWin.desktopAvailableWidth - loader.item.width) / 2
-                        loader.item.y = (mainWin.desktopAvailableHeight - loader.item.height) / 2
-                        funcc.addCoverWidget(
-                                    loader.item, 19, 84,source.file
-                                    )
-                        loader.item.show()
-                        loader.item.raise()
-                        loader.item.requestActivate()
-                        break
-                    } else if (loader.status === Loader.Error) {
-                        console.log("loaderForAlterInfo  occured a error")
-                        break
-                    }
+            }
+            while (true) {
+                if (loader.status === Loader.Ready) {
+                    console.log("start show")
+                    console.log("first,opened the AlterCover.qml")
+                    loader.item.x = (mainWin.desktopAvailableWidth - loader.item.width) / 2
+                    loader.item.y = (mainWin.desktopAvailableHeight - loader.item.height) / 2
+                    funcc.addCoverWidget(loader.item, 35, 60, source.file)
+                    loader.item.show()
+                    loader.item.raise()
+                    loader.item.requestActivate()
+                    break
+                } else if (loader.status === Loader.Error) {
+                    console.log("loaderForAlterInfo  occured a error")
+                    break
                 }
             }
         }

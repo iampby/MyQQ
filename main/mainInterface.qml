@@ -11,6 +11,7 @@ import "../"
 //注意，qqMainWin是通过加载器从Component清零后用文件的方式加载的，这会导致，在初始化时通过加载器访问的属性异常
 //即在刚刚初始化期间，通过对象直接访问属性才是安全的，所以这里所有的初始化的涉及属性相关的处理过程都在qqmainwin内进行
 ApplicationWindow {
+
     property alias menuPop: menuPop //左下角菜单弹出窗
     property alias loaderForAbout: loaderForAbout //关于小窗口
     property alias loaderForMesWin: loaderForMesWin //切换小提示窗口
@@ -1777,6 +1778,7 @@ ApplicationWindow {
     //修改用户资料界面
     Loader {
         id: loaderForAlterInfo
+        focus: true
         visible: Loader.Ready === loaderForAlterInfo.status
     }
 

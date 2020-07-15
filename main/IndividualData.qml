@@ -10,14 +10,14 @@ import "../"
 //用户个人资料
 Window {
     property alias loaderForAlterCover: loaderForAlterCover
-    id: win
+    id: indivadualWin
     width: 722
     height: 522
-    visible: true
-    title: "个人资料"
+    visible: true //显示图标
+    title: "我的资料"
     flags: Qt.FramelessWindowHint | Qt.Window //显示任务栏
     color: "lightgray" //边界颜色
-
+    //更改封面完成处理
     Connections {
         target: loaderForAlterCover.item
         onUpdateCover: {
@@ -28,17 +28,36 @@ Window {
             console.log("updated Cover")
         }
     }
+    //获取my个人数据
+    Connections {
+        target: funcc
+        //(QVariantMap obj)
+        onEmitPersonalJsonInfo: {
+            console.log("onEmitPersonalJsonInfo", obj)
+        }
+        //QVector<QString> names
+        onEmitPersonalCoverAndPhoto: {
+            console.log(" onEmitPersonalCoverAndPhoto")
+            var length = names.length
+            for (var i = 0; i < length; ++i) {
+                if (names[i] === "cover") {
+                    leftImg.source = "file:../user/" + mainWin.myqq + "/cover"
+                }
+            }
+        }
+    }
 
+    //关闭处理
     onClosing: {
         console.log("invidualData onClosing")
-        win.hide() //躲藏避免关闭主事件圈
-        loaderForAlterInfo.source = ""
+         indivadualWin.opacity = 0.0 //躲藏 不释放资源
+        //close.accepted = false
     }
     //移动鼠标
     MouseCustomForWindow {
         onSendPos: {
-            win.x += movedCoordinate.x
-            win.y += movedCoordinate.y
+            indivadualWin.x += movedCoordinate.x
+            indivadualWin.y += movedCoordinate.y
         }
     }
     //躯干
@@ -46,8 +65,8 @@ Window {
         id: body
         x: 1
         y: 1
-        width: win.width - 2
-        height: win.height - 2
+        width: indivadualWin.width - 2
+        height: indivadualWin.height - 2
         //左边封面
         Rectangle {
             id: leftRec
@@ -128,8 +147,8 @@ Window {
             }
             ToolTip {
                 id: renewCoverTip
-                x: renewCover.xTip
-                y: renewCover.yTip + 25
+                x: renewCover.x + renewCover.xTip
+                y: renewCover.x + renewCover.yTip + 25
                 width: 60
                 height: 22
                 delay: 1000
@@ -146,7 +165,7 @@ Window {
             id: lfetBRec
             y: 358
             width: leftRec.width
-            height: win.height - 2 - leftRec.height
+            height: indivadualWin.height - 2 - leftRec.height
             color: "#5a898a"
             //头像区
             Rectangle {
@@ -420,7 +439,7 @@ Window {
                 width: 32
                 height: 33
                 onClicked: {
-                    win.showMinimized()
+                    indivadualWin.showMinimized()
                 }
 
                 MouseArea {
@@ -491,7 +510,7 @@ Window {
                 width: 32
                 height: 33
                 onClicked: {
-                    win.close()
+                    indivadualWin.close()
                 }
 
                 MouseArea {

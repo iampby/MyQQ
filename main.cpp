@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<FriendModel>("Model",1,0,"FriendModel");
     // qmlRegisterType<HeadImgWidget>("HeadWidget",1,0,"HeadWidget");
 
-
+app.setQuitOnLastWindowClosed(false);
 
 
     QQmlApplicationEngine engine;

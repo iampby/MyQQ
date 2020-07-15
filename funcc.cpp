@@ -630,11 +630,13 @@ void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,cons
             updateImgSock->setInstruct(instructDescription);
             updateImgSock->setIp(ip);
             updateImgSock->setPort(updatePort);
+            updateImgSock->setTimeout(20000);//20s超时
             QThread*thread=new QThread();
             updateImgSock->moveToThread(thread);
             thread->start();
             emit updateImgSock->start();//转移到新线程去post host
             connect(thread,&QThread::finished,updateImgSock,&BigFileSocket::deleteLater);
+            connect(updateImgSock,&BigFileSocket::finished,thread,&QThread::quit);//超时放弃
             //删除线程
             connect(this,&FuncC::emitHeadImgOKClicked,thread,[=](){
                 qDebug()<<"closed window causes a thread to exit";
@@ -733,12 +735,13 @@ void FuncC::updateSignature(QString signature, const QString &in)
     updateSigSock->setInstruct(in);
     updateSigSock->setIp(ip);
     updateSigSock->setPort(updatePort);
+    updateSigSock->setTimeout(10000);//10s超时
     QThread*thread=new QThread();
     updateSigSock->moveToThread(thread);
     thread->start();
     emit updateSigSock->start();//转移到新线程去post host
     connect(thread,&QThread::finished,updateSigSock,&BigFileSocket::deleteLater);
-
+connect(updateSigSock,&BigFileSocket::finished,thread,&QThread::quit);//超时放弃
     //删除线程
     connect(thread,&QThread::finished,thread,&QThread::deleteLater);
     //获取文件结果收尾处理
@@ -761,6 +764,7 @@ void FuncC::updateCover(QString qmlFilePath)
     updateCoverSock->setInstruct(instructDescription);
     updateCoverSock->setIp(ip);
     updateCoverSock->setPort(updatePort);
+    updateCoverSock->setTimeout(20000);//20s超时
     QThread*thread=new QThread();
     updateCoverSock->moveToThread(thread);
     thread->start();
@@ -769,6 +773,7 @@ void FuncC::updateCover(QString qmlFilePath)
     connect(thread,&QThread::finished,updateCoverSock,&BigFileSocket::deleteLater);
     //删除线程
     connect(thread,&QThread::finished,thread,&QThread::deleteLater);
+    connect(updateCoverSock,&BigFileSocket::finished,thread,&QThread::quit);//超时放弃
     //获取文件结果收尾处理
     connect(updateCoverSock,&BigFileSocket::writtenInstruction, updateCoverSock,[=](){
         qDebug()<<"writtenInstruction"<<qmlFilePath;
@@ -834,6 +839,62 @@ void FuncC::addCoverWidget(QWindow *w, const int &x, const int &y, QString fileP
 void FuncC::closeCoverWidget()
 {
     emit emitCloseCover();//关闭信号
+}
+//获取远程个人资料
+void FuncC::getIndividualData()
+{
+    qDebug()<<"getIndividualData()";
+    QString instructDescription="8 getPersonalData "+m_myQQ;//更新封面
+    BigFileSocket*getPersonalDataSock=new BigFileSocket();//子线程对象最好不要有父类
+    getPersonalDataSock->setInstruct(instructDescription);
+    getPersonalDataSock->setIp(ip);
+   getPersonalDataSock->setPort(loginPort);
+   getPersonalDataSock->setTimeout(50000);//超时50s
+   QThread*thread=new QThread();
+   getPersonalDataSock->moveToThread(thread);
+    thread->start();
+    emit getPersonalDataSock->start();//转移到新线程去post host
+    connect(getPersonalDataSock,&BigFileSocket::finished,getPersonalDataSock,[=](){
+        qDebug()<<"personal data is got or timeout";
+        QVariantMap jsonObj=(QJsonDocument::fromJson(getPersonalDataSock->carrier)).object().toVariantMap();
+        if(!jsonObj.isEmpty()){
+            qDebug()<<"the most personal  json-data would be dispatched ";
+            emit emitPersonalJsonInfo(jsonObj);
+        }else{
+             qDebug()<<"the most personal  json-data is not got ";
+        }
+        if(!getPersonalDataSock->img.isEmpty()){
+             qDebug()<<"the user's cover and photowall would be dispatched ";
+            QMap<QString,QByteArray>::const_iterator i=getPersonalDataSock->img.cbegin();
+            QMap<QString,QByteArray>::const_iterator end=getPersonalDataSock->img.cend();
+            QVector<QString>names;
+            while (i!=end) {
+                QString name=i.key();
+                qDebug()<<"a file name is "<<name;
+                QPixmap pix;
+                pix.loadFromData(i.value(),"png");
+                if(name!="cover"){
+               if(!pix.save("../user/"+m_myQQ+"/photowall/"+name,"png"))
+                   qDebug()<<"warning:file is not save,named "<<name;
+               else names.append(name);
+                }else{
+                   if(!pix.save("../user/"+m_myQQ+"/cover","png")){
+                       qDebug()<<"warning:file is not save,named "<<name;
+                   }else
+                       names.append(name);
+                }
+                ++i;
+            }
+            emit emitPersonalCoverAndPhoto(names);
+        }else{
+            qDebug()<<"the user's cover and photowall would be not set";
+        }
+        //超时放弃或完成结束线程
+      thread->exit(0);
+      thread->quit();
+      getPersonalDataSock->deleteLater();
+      thread->deleteLater();
+    });
 }
 
 

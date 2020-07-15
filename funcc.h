@@ -78,7 +78,7 @@ public:
     Q_INVOKABLE void deleteNetTimer();//删除网络监测器
     Q_INVOKABLE void addCoverWidget(QWindow *w, const int&x, const int&y,QString filePath)const;//更改封面界面打开时添加一个QWidget控件到qml控件w
     Q_INVOKABLE void closeCoverWidget();//发送信号删除更改封面界面的widget控件
-
+    Q_INVOKABLE void getIndividualData();//获取远程个人资料
 
     Q_INVOKABLE void startAddFriendsProcess(QQuickWindow*arg, QMap<QString, QVariant> obj);//添加好友进程
     unsigned short addFriendsProcessCount()const;
@@ -99,7 +99,7 @@ public:
     Q_INVOKABLE QString indexForCityList(int r,int c)const;
     Q_INVOKABLE void clearForCityList();
     Q_INVOKABLE int getCityCount()const;
-    Q_INVOKABLE template<class T>//获取简单数组长度的模板函数
+     template<class T>//获取简单数组长度的模板函数
     int getArrayLenth(T&array){
         return sizeof (array)/sizeof (array[0]);
     }
@@ -136,6 +136,8 @@ Q_SIGNALS:
     void emitCoverOKClicked(const QString&myqq);//更改头像 ok 信号
     void emitReadHistory(int code)const;//更改头像界面点击
     void emitSelectedImg( QPixmap pixmap);//添加qml选中头像到widget
+    void emitPersonalJsonInfo(QVariantMap obj);//添加d大部分信息到qml
+    void emitPersonalCoverAndPhoto(QVector<QString> names);//添加封面和照片到qml
 private slots:
     void analysisWh(QString totalGeoAddr);//解析本地IP获取地理位置及Url
     void handleProcessStarted();
