@@ -829,10 +829,12 @@ void FuncC::addCoverWidget(QWindow *w, const int &x, const int &y, QString fileP
     if(temp){
         temp->setParent(w);//嵌入
         temp->setGeometry(x,y,temp->width(),temp->height());//定位
-        widget->openFile(filePath);//加载图片
         connect(this,&FuncC::emitCloseCover,widget,&HeadImgWidget::deleteLater);//删除widget资源
         connect(this,&FuncC::emitCoverOKClicked,widget,&HeadImgWidget::okCoverClicked);// 创建一个本地文件过渡
         widget->show();//重新show
+        //注意：不知名原因导致更改封面（也就是无遮罩）的图像坐标总是大100左右，这里是通过观测纠正的具体原因不知道
+        //原因 必须先show再设置图片
+        widget->openFile(filePath);//加载图片
     }
 }
 

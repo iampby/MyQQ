@@ -1,4 +1,3 @@
-
 RC_FILE+=MyQQ.rc
 RC_ICONS=MyQQ.ico
 OTHER_FILES+=\
@@ -9,6 +8,7 @@ CONFIG += resources_big
 CONIFG += qtquickcompiler
 #资源过大使用它
 QT += widgets network sql
+
 # The following define makes your compiler emit warnings if you use
 DEFINES += QT_DEPRECATED_WARNINGS
 

@@ -22,13 +22,14 @@ ApplicationWindow {
     property alias cityWeatherModel: cityWeatherModel //保存3天天气信息
     property int weatherCanShow: 0 //2表示准备好
     property bool isinit: true //用来避免第一次用户信息变化是发送更新信号
-    property alias friendGroupModel: friendGroupModel
+    property alias friendGroupModel: friendGroupModel //好友组模型
     property alias histroyImgModel: histroyImgModel //历史头像model
-    property alias viewFriend: viewFriend
+    property alias gradeModel: gradeModel //用户等级模型
+    property alias viewFriend: viewFriend //好友视图
 
     property var friendsModel: [] //保存好友模型，用来过渡且便于使用
     //好友代理数，由于代理动态加载，在friendGroupModel添加数据过程中一直处于线程忙碌，无法直接构造，所以标记是否构造完用来加载好友模型
-    property int friendDelegateCount: 0
+    property int friendDelegateCount: 0 //好友组实例化数，用于有效添加好友数据
     property var setInfo: ({}) //初始化空对象，用来保存设置信息
     property var arrayWea: {
         "temperature"//天气的主要数据
@@ -112,6 +113,7 @@ ApplicationWindow {
         signature = obj["signature"]
         activeDays = obj["days"]
         grade = obj["grade"]
+        grade = 600
         status = obj["status"]
         where = obj["所在地"]
         townmans = obj["故乡"]
@@ -122,6 +124,35 @@ ApplicationWindow {
                                    "index": 0
                                })
         gradeTip.days = func.computeToUpgrade(grade, activeDays)
+        gradeModel.clear() //重置模型数据
+        var crown = parseInt(grade / 64), cur //JS除法默认为浮点数运算，需显示认定为整型
+        cur = parseInt(grade - crown * 64)
+        var sun = parseInt(cur / 16) //显示认定为整型
+        cur = cur - sun * 16
+        var moon = parseInt(cur / 4)
+        var star = parseInt(cur - moon * 4)
+        console.log(crown, sun, moon, star)
+        //添加皇冠图像路径
+        for (var i = 0; i < crown; i++) {
+            gradeModel.append({
+                                  "img": "qrc:/images/mainInterface/crown.png"
+                              })
+        }
+        for (i = 0; i < sun; i++) {
+            gradeModel.append({
+                                  "img": "qrc:/images/mainInterface/sun.png"
+                              })
+        }
+        for (i = 0; i < moon; i++) {
+            gradeModel.append({
+                                  "img": "qrc:/images/mainInterface/moon.png"
+                              })
+        }
+        for (i = 0; i < star; i++) {
+            gradeModel.append({
+                                  "img": "qrc:/images/mainInterface/star.png"
+                              })
+        }
     }
     //利用元对象信号槽通信机制，把参数从Qtc++->qml 获取好友信息
     onRunGetFriendInfoFunction: {
@@ -352,7 +383,7 @@ ApplicationWindow {
         //头像被更改时
         onHistoryImageAdded: {
             console.log("onHistoryImageAdded:url(", url, ") index(", index, ")")
-            imgHead.source = ""
+            imgHead.source = "" //刷新
             // imgHead.source = "image://history/" + myqq + "101/" + Math.random()
             if (url != "") {
                 histroyImgModel.append({
@@ -1808,6 +1839,10 @@ ApplicationWindow {
                             histroyImgModel.get(i).index)
             }
         }
+    }
+    //等级图标模型
+    ListModel {
+        id: gradeModel
     }
     //时钟
     //延迟关闭提示

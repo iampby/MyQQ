@@ -11,7 +11,6 @@ Window {
     property string name: ""
     property int grade: -1
     property string signature: ""
-    property alias model: model
     id: win
     width: 292
     height: 109
@@ -180,7 +179,7 @@ Window {
         rowSpacing: 3
         Repeater {
             id: rep
-            model: model
+            model: qqMainWin.gradeModel
             ToolButton {
                 background: Image {
                     sourceSize: Qt.size(19, 19)
@@ -192,7 +191,7 @@ Window {
         ToolTip {
             id: gradeimgTip
             x: gridLay.posx
-            y: gridLay.y - 20 //tip不能超过界面这里反方向掩饰一下
+            y: gridLay.posy - 20 //tip不能超过界面这里反方向掩饰一下
             visible: false
             delay: 1000
             background: Label {
@@ -232,9 +231,7 @@ Window {
             }
         }
     }
-    ListModel {
-        id: model
-    }
+
     //延迟1s关闭个性签名提示
     Timer {
         id: timer1sForSig

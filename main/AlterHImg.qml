@@ -254,6 +254,7 @@ Window {
                 background: Image {
                     sourceSize: Qt.size(56, 56)
                     asynchronous: true
+                    cache: false//更新就写入
                     source: url
                 }
             }

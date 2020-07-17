@@ -249,4 +249,78 @@ Item {
         console.log("remain=", remain)
         return remain
     }
+    //数组 年 月 日 返回年龄
+    function getAge(date){
+        var cur=new Date().toJSON().substring(0, 10)
+        var curarr=cur.split("-")
+        var age=0;
+        age=parseInt(curarr[0])-parseInt(date[0])
+        console.log("age=",age)
+        if(parseInt(curarr[1])<parseInt(date[1])){
+            age-=1;
+        }else if(parseInt(curarr[1])===parseInt(date[1])){
+            if(parseInt(curarr[2])<parseInt(date[2]))
+                age-=1;
+        }
+        console.log("age=",age)
+        return age;
+    }
+    //birarr包含日期的数组  xxxx xx xx 返回星座
+    function getConstellation(birArr){
+        var m=parseInt(birArr[1])
+        var d=parseInt(birArr[2])
+        var constellation
+        switch(m){
+          case 1:
+              if(d>19)constellation="水瓶座"
+              else constellation="摩羯座"
+              break;
+          case 2:
+              if(d>18)constellation="双鱼座"
+              else constellation="水瓶座"
+              break;
+          case 3:
+              if(d>20)constellation="白羊座"
+              else constellation="双鱼座"
+              break;
+          case 4:
+              if(d>19)constellation="金牛座"
+              else constellation="白羊座"
+              break;
+          case 5:
+              if(d>20)constellation="双子座"
+              else constellation="金牛座"
+              break;
+          case 6:
+              if(d>20)constellation="巨蟹座"
+              else constellation="双子座"
+              break;
+          case 7:
+              if(d>22)constellation="狮子座"
+              else constellation="巨蟹座"
+              break;
+          case 8:
+              if(d>22)constellation="处女座"
+              else constellation="狮子座"
+              break;
+          case 9:
+              if(d>22)constellation="天秤座"
+              else constellation="处女座"
+              break;
+          case 10:
+              if(d>22)constellation="天蝎座"
+              else constellation="天秤座"
+              break;
+          case 11:
+              if(d>22)constellation="射手座"
+              else constellation="天蝎座"
+              break;
+          case 12:
+              if(d>21)constellation="摩羯座"
+              else constellation="射手座"
+              break;
+        }
+        return constellation
+    }
+
 }

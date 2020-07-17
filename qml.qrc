@@ -112,5 +112,7 @@
         <file>images/mainInterface/loadPhoto.png</file>
         <file>images/mainInterface/wallBack.png</file>
         <file>main/AlterCover.qml</file>
+        <file>main/InfoSmallLabel.qml</file>
+        <file>chinese-lunar.js</file>
     </qresource>
 </RCC>

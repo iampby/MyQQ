@@ -6,6 +6,7 @@ import QtGraphicalEffects 1.12
 import QtGraphicalEffects 1.12
 import Qt.labs.platform 1.1
 import "../"
+import "../chinese-lunar.js" as CLunar
 
 //用户个人资料
 Window {
@@ -23,6 +24,7 @@ Window {
         onUpdateCover: {
             console.log("updateCover() function has been called")
             var path = "../user/" + funcc.myQQ + "/cover"
+            leftImg.source = "" //刷新
             leftImg.source = "file:" + path
             funcc.updateCover(path)
             console.log("updated Cover")
@@ -33,7 +35,40 @@ Window {
         target: funcc
         //(QVariantMap obj)
         onEmitPersonalJsonInfo: {
+
+
+            /*writeObj.insert("birthday",query.value("birthday").toString());
+            writeObj.insert("registerDateTime",query.value("registerDateTime").toString());
+            writeObj.insert("bloodGroup",query.value("bloodGroup").toString());
+            writeObj.insert("education",query.value("education").toString());
+            writeObj.insert("profession",query.value("profession").toString());
+            writeObj.insert("corporation",query.value("corporation").toString());
+            writeObj.insert("location1",query.value("location1").toString());
+            writeObj.insert("location2",query.value("location2").toString());
+            writeObj.insert("location3",query.value("location3").toString());
+            writeObj.insert("location4",query.value("location4").toString());
+            writeObj.insert("home1",query.value("home1").toString());
+            writeObj.insert("home2",query.value("home2").toString());
+            writeObj.insert("home3",query.value("home3").toString());
+            writeObj.insert("home4",query.value("home4").toString());
+            writeObj.insert("personalStatement",query.value("personalStatement").toString());
+            writeObj.insert("phone",query.value("phone").toString());*/
             console.log("onEmitPersonalJsonInfo", obj)
+            var birarr = obj["birthday"].split("-")
+            if (birarr.length < 3)
+                console.log("birthday format is not normal")
+            var age = func.getAge(birarr)
+            labMyQQ.text = qqMainWin.myqq //MyQQ
+            labSex.text = qqMainWin.sex
+            labAge.text = age
+            labBirthday.text = birarr[1] + "月" + birarr[2] + "日(公历)"
+            labConstellation.text = func.getConstellation(birarr)
+            var f = CLunar._chineseLunar
+            var clyear = f.solarToLunar(new Date(birarr[0], birarr[1],
+                                                 birarr[2])) //农历对象
+            clyear = clyear["year"] //农历年
+            var zodiac = f.animalName(clyear)
+            labZodiac.text = zodiac //生肖
         }
         //QVector<QString> names
         onEmitPersonalCoverAndPhoto: {
@@ -50,9 +85,11 @@ Window {
     //关闭处理
     onClosing: {
         console.log("invidualData onClosing")
-         indivadualWin.opacity = 0.0 //躲藏 不释放资源
-        //close.accepted = false
+        indivadualWin.opacity = 0.0 //躲藏 不释放资源
+        close.accepted = false //拒绝close
+        indivadualWin.flags = Qt.FramelessWindowHint | Qt.Widget
     }
+    //露出资料按钮
     //移动鼠标
     MouseCustomForWindow {
         onSendPos: {
@@ -75,6 +112,7 @@ Window {
             Image {
                 id: leftImg
                 anchors.fill: parent
+                cache: false
                 sourceSize: Qt.size(358, 358)
                 source: "qrc:/images/mainInterface/userInfoDefault.png"
             }
@@ -636,7 +674,8 @@ Window {
                                 width: 62
                                 height: 16
                                 text: "编辑资料"
-                                font.pointSize: 11
+                                font.family: "宋体"
+                                font.pointSize: 10
                                 color: editMaterialBtn.hovered ? Qt.lighter(
                                                                      "#009bdb",
                                                                      1.15) : "#009bdb"
@@ -653,6 +692,12 @@ Window {
                             id: labSex
                             font.pointSize: 10
                             text: "男"
+                        }
+
+                        Label {
+                            id: labAge
+                            font.pointSize: 10
+                            text: "22岁"
                         }
                         Label {
                             id: labBirthday
@@ -673,16 +718,79 @@ Window {
                     //grade bar
                     RowLayout {
                         spacing: 10
+                        height: gridLay.height
+                        Layout.alignment: Qt.AlignTop | Qt.AlignLeft //顶部对其，多行等级图标显示
+                        //等级指示图标
                         Image {
+
                             source: "qrc:/images/mainInterface/userInfoGrade.png"
                         }
-                        Repeater {
-                            id: rep
-                            model: gradeModel
-                            ToolButton {
-                                background: Image {
-                                    sourceSize: Qt.size(19, 19)
-                                    source: img
+                        //等级图标
+                        GridLayout {
+                            property int posx: 0
+                            property int posy: 0
+                            id: gridLay
+                            columns: 10
+                            rowSpacing: 3
+                            Repeater {
+                                id: gradeRep
+                                model: qqMainWin.gradeModel
+                                ToolButton {
+                                    background: Image {
+                                        sourceSize: Qt.size(19, 19)
+                                        source: img
+                                    }
+                                }
+                            }
+                            ToolTip {
+
+                                id: gradeimgTip
+                                x: gridLay.posx
+                                y: gridLay.posy + 20
+                                visible: false
+                                // timeout: 1000
+                                delay: 1000
+                                background: Label {
+                                    font.pointSize: 11
+                                    text: "等级:" + grade
+                                    verticalAlignment: Text.AlignVCenter
+                                    background: Rectangle {
+                                        height: parent.height
+                                        width: parent.width
+                                        color: "#fefee1"
+                                    }
+                                }
+                            }
+                            //等级区域鼠标
+                            MouseArea {
+                                id: gridMouse
+                                x: gridLay.x
+                                y: gridLay.y
+                                width: gridLay.width //占用一行
+                                height: gridLay.height
+                                hoverEnabled: true
+                                onContainsMouseChanged: {
+                                    if (containsMouse) {
+                                        //归零
+                                        gradeimgTip.visible = false //刷新
+                                        gradeimgTip.timeout = -1
+                                        gradeimgTip.delay = 1000
+                                        gradeimgTip.visible = true
+                                    } else {
+                                        //立即显示 超时1秒关闭
+                                        gradeimgTip.timeout = 1000
+                                        gradeimgTip.delay = 0
+                                        gradeimgTip.visible = false //刷新状态
+                                        gradeimgTip.show(
+                                                    gradeimgTip.text) //显示超时一秒
+                                    }
+                                }
+
+                                onPositionChanged: {
+                                    if (!gradeimgTip.visible) {
+                                        gridLay.posx = mouseX
+                                        gridLay.posy = mouseY
+                                    }
                                 }
                             }
                         }
@@ -694,23 +802,57 @@ Window {
                         color: "lightgray"
                     }
 
-                    //MyQQ age bar
+                    //MyQQ information set
                     Item {
                         width: 200
-                        height: 20
+                        height: infoColumn.height
                         Image {
                             source: "qrc:/images/mainInterface/userInfoQAge.png"
                         }
-                        Label {
-                            x: 35
-                            font.pointSize: 10
-                            text: "Q龄"
-                        }
-                        Label {
-                            id: labQAge
-                            x: 105
-                            font.pointSize: 10
-                            text: "0年"
+                        ColumnLayout {
+                            id: infoColumn
+                            x: 30
+                            spacing: 15
+                            InfoSmallLabel {
+                                id: whereInfo
+                                preLabel.text: "所在地"
+                                aftLabel.text: "北京 东城"
+                            }
+                            InfoSmallLabel {
+                                id: phoneInfo
+                                preLabel.text: "手机"
+                                aftLabel.text: "15334184810"
+                            }
+                            InfoSmallLabel {
+                                id: qAgeInfo
+                                preLabel.text: "Q龄"
+                                aftLabel.text: "0年"
+                            }
+                            InfoSmallLabel {
+                                id: homeInfo
+                                preLabel.text: "家乡"
+                                aftLabel.text: "阿富汗 卡萨丁"
+                            }
+                            InfoSmallLabel {
+                                id: professInfo
+                                preLabel.text: "职业"
+                                aftLabel.text: "生产/工艺/制造"
+                            }
+                            InfoSmallLabel {
+                                id: corporationInfo
+                                preLabel.text: "公司"
+                                aftLabel.text: "天宝有限公司"
+                            }
+                            InfoSmallLabel {
+                                id: educationInfo
+                                preLabel.text: "教育经历"
+                                aftLabel.text: "南开大学\n2019级 硕士"
+                            }
+                            InfoSmallLabel {
+                                id: statementInfo
+                                preLabel.text: "个人说明"
+                                aftLabel.text: "天空如此栏 十大山东快书是的撒"
+                            }
                         }
                     }
                     //separator
@@ -741,7 +883,7 @@ Window {
                                 width: 62
                                 height: 16
                                 text: "上传照片"
-                                font.pointSize: 11
+                                font.pointSize: 10
                                 color: loadPhotoBtn1.hovered ? Qt.lighter(
                                                                    "#009bdb",
                                                                    1.15) : "#009bdb"

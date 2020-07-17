@@ -12,6 +12,7 @@ Window {
     id: win
     width: 386
     height: 507
+
     flags: Qt.FramelessWindowHint | Qt.Window //显示任务栏
     color: "lightgray" //边界颜色
     visible: true

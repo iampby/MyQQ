@@ -18,7 +18,7 @@ HeadImgView::HeadImgView(QWidget *parent,const bool&b):QGraphicsView(parent),has
     setScene(scene);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    setCacheMode(CacheBackground);
+    //setCacheMode(CacheBackground);
     //全部更新，消除背景残留
     this->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     // setWindowState(Qt::WindowMaximized);
@@ -35,7 +35,7 @@ void HeadImgView::setImage(QPixmap &image)
     imgBackup=image;
     QMatrix m;
     qreal s=0;
-    qint16 width=imgBackup.width(),height=imgBackup.height();
+    qint32 width=imgBackup.width(),height=imgBackup.height();
     if(width>height){
         s=348.0/height;
     }else{
@@ -52,7 +52,7 @@ void HeadImgView::setImage(QPixmap &image)
     rangPos=QPoint(-(img.width()-348.0)/2,-(img.height()-348.0)/2);
     scene()->setSceneRect( rangPos.x(), rangPos.y(),0,0);//刷新
     scene()->setSceneRect( rangPos.x(), rangPos.y(),img.width(),img.height());//中心对齐
-    qDebug()<<"start draw"<<viewport()->pos();;
+    qDebug()<<"start draw"<<scene()->sceneRect().topLeft()<<img.size();
     switch (direct) {
     case Left:
         rotate(90);
@@ -70,7 +70,6 @@ void HeadImgView::setImage(QPixmap &image)
         break;
     }
     viewport()->update();//只有调用视距口更新才能更新scene 这里主动调用避免有时不会画背景
-    // drawBackground( this->paintEngine()->painter(),QRectF(mapToScene(0,0),QSizeF(348.0,348.0)));
 }
 
 void HeadImgView::setSlider(QSlider *s)
@@ -165,7 +164,6 @@ void HeadImgView::mousePressEvent(QMouseEvent *event)
         posPreScene=sceneRect().topLeft().toPoint();
         qDebug()<<"position of starting to press where equal to "<<posBegin;
     }
-
 }
 
 const QPixmap HeadImgView::getGrabPixmap()
@@ -174,6 +172,7 @@ const QPixmap HeadImgView::getGrabPixmap()
     QPoint newPos=sceneRect().topLeft().toPoint();
     QPoint movePos=rangPos-newPos;
     QPoint pos= movePos-rangPos;//移动-起点=新图片起点
+
     qDebug()<<"current image is location "<<pos<<" in old image";
     newPix=img.copy(QRect(pos,QSize(348,348)));
     if(newPix.isNull()){qDebug()<<"newpix is null";}

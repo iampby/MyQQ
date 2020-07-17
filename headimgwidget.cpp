@@ -208,7 +208,6 @@ void HeadImgWidget::okClicked(Images*images,const QString&myqq)
         qDebug()<<"images->provider2->images[id]=newHeadImg";
         updateMyself(myqq);
     }
-
 }
 
 void HeadImgWidget::okCoverClicked(const QString &myqq)

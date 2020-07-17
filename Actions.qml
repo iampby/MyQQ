@@ -354,36 +354,7 @@ Rectangle {
                     loader.item.signature = main.signature
                     loader.item.grade = 122 //main.grade
                     loader.item.headImgHovered = true //初始化悬浮在头像
-                    loader.item.model.clear() //重置模型数据
-                    var crown = parseInt(
-                                loader.item.grade / 64), cur //JS除法默认为浮点数运算，需显示认定为整型
-                    cur = parseInt(loader.item.grade - crown * 64)
-                    var sun = parseInt(cur / 16) //显示认定为整型
-                    cur = cur - sun * 16
-                    var moon = parseInt(cur / 4)
-                    var star = parseInt(cur - moon * 4)
-                    console.log(crown, sun, moon, star)
-                    //添加皇冠图像路径
-                    for (var i = 0; i < crown; i++) {
-                        loader.item.model.append({
-                                                     "img": "qrc:/images/mainInterface/crown.png"
-                                                 })
-                    }
-                    for (i = 0; i < sun; i++) {
-                        loader.item.model.append({
-                                                     "img": "qrc:/images/mainInterface/sun.png"
-                                                 })
-                    }
-                    for (i = 0; i < moon; i++) {
-                        loader.item.model.append({
-                                                     "img": "qrc:/images/mainInterface/moon.png"
-                                                 })
-                    }
-                    for (i = 0; i < star; i++) {
-                        loader.item.model.append({
-                                                     "img": "qrc:/images/mainInterface/star.png"
-                                                 })
-                    }
+
                     loader.item.show()
                     break
                 } else if (loader.status === Loader.Error) {
@@ -444,7 +415,6 @@ Rectangle {
                         console.log("opened the IndividualData.qml")
                         loader.item.x = (mainWin.desktopAvailableWidth - loader.item.width) / 2
                         loader.item.y = (mainWin.desktopAvailableHeight - loader.item.height) / 2
-
                         loader.item.showNormal()
                         loader.item.raise()
                         loader.item.requestActivate()
@@ -456,11 +426,11 @@ Rectangle {
                 }
             } else {
                 //显示窗口
-                //  loader.item.x = (mainWin.desktopAvailableWidth - loader.item.width) / 2
-                // loader.item.y = (mainWin.desktopAvailableHeight - loader.item.height) / 2
+                loader.item.x = (mainWin.desktopAvailableWidth - loader.item.width) / 2
+                loader.item.y = (mainWin.desktopAvailableHeight - loader.item.height) / 2
                 loader.item.opacity = 1.0
-                loader.item.showNormal()
-                loader.item.raise()
+                loader.item.flags = Qt.FramelessWindowHint | Qt.Window //显示任务栏
+                loader.item.raise() //弹出来
                 loader.item.requestActivate()
             }
         }
@@ -500,7 +470,7 @@ Rectangle {
                     console.log("first,opened the AlterCover.qml")
                     loader.item.x = (mainWin.desktopAvailableWidth - loader.item.width) / 2
                     loader.item.y = (mainWin.desktopAvailableHeight - loader.item.height) / 2
-                    funcc.addCoverWidget(loader.item, 35, 60, source.file)
+                    funcc.addCoverWidget(loader.item, 16, 60, source.file)
                     loader.item.show()
                     loader.item.raise()
                     loader.item.requestActivate()
