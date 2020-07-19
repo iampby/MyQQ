@@ -741,7 +741,7 @@ void FuncC::updateSignature(QString signature, const QString &in)
     thread->start();
     emit updateSigSock->start();//转移到新线程去post host
     connect(thread,&QThread::finished,updateSigSock,&BigFileSocket::deleteLater);
-connect(updateSigSock,&BigFileSocket::finished,thread,&QThread::quit);//超时放弃
+    connect(updateSigSock,&BigFileSocket::finished,thread,&QThread::quit);//超时放弃
     //删除线程
     connect(thread,&QThread::finished,thread,&QThread::deleteLater);
     //获取文件结果收尾处理
@@ -825,7 +825,7 @@ void FuncC::addCoverWidget(QWindow *w, const int &x, const int &y, QString fileP
     widget->setAttribute(Qt::WA_QuitOnClose,false);
     widget->winId();
     QWindow*temp=widget->windowHandle();
-   //如果成功
+    //如果成功
     if(temp){
         temp->setParent(w);//嵌入
         temp->setGeometry(x,y,temp->width(),temp->height());//定位
@@ -850,10 +850,10 @@ void FuncC::getIndividualData()
     BigFileSocket*getPersonalDataSock=new BigFileSocket();//子线程对象最好不要有父类
     getPersonalDataSock->setInstruct(instructDescription);
     getPersonalDataSock->setIp(ip);
-   getPersonalDataSock->setPort(loginPort);
-   getPersonalDataSock->setTimeout(50000);//超时50s
-   QThread*thread=new QThread();
-   getPersonalDataSock->moveToThread(thread);
+    getPersonalDataSock->setPort(loginPort);
+    getPersonalDataSock->setTimeout(50000);//超时50s
+    QThread*thread=new QThread();
+    getPersonalDataSock->moveToThread(thread);
     thread->start();
     emit getPersonalDataSock->start();//转移到新线程去post host
     connect(getPersonalDataSock,&BigFileSocket::finished,getPersonalDataSock,[=](){
@@ -863,39 +863,117 @@ void FuncC::getIndividualData()
             qDebug()<<"the most personal  json-data would be dispatched ";
             emit emitPersonalJsonInfo(jsonObj);
         }else{
-             qDebug()<<"the most personal  json-data is not got ";
+            qDebug()<<"the most personal  json-data is not got ";
         }
+        QDir dir;
+        dir.mkpath("../user/"+m_myQQ+"/photowall");
         if(!getPersonalDataSock->img.isEmpty()){
-             qDebug()<<"the user's cover and photowall would be dispatched ";
+            qDebug()<<"the user's cover and photowall would be dispatched ";
             QMap<QString,QByteArray>::const_iterator i=getPersonalDataSock->img.cbegin();
             QMap<QString,QByteArray>::const_iterator end=getPersonalDataSock->img.cend();
             QVector<QString>names;
+            QString cover;
             while (i!=end) {
                 QString name=i.key();
-                qDebug()<<"a file name is "<<name;
+                qDebug()<<"a file name is "<<name<<i.value().size();
                 QPixmap pix;
-                pix.loadFromData(i.value(),"png");
+                pix.loadFromData(i.value());
+                //注意保存时指定格式
                 if(name!="cover"){
-               if(!pix.save("../user/"+m_myQQ+"/photowall/"+name,"png"))
-                   qDebug()<<"warning:file is not save,named "<<name;
-               else names.append(name);
+                    if(!pix.save("../user/"+m_myQQ+"/photowall/"+name,"png"))
+                        qDebug()<<"warning:file is not save,named "<<name;
+                    else {
+                        names.append(name);
+                    }
                 }else{
-                   if(!pix.save("../user/"+m_myQQ+"/cover","png")){
-                       qDebug()<<"warning:file is not save,named "<<name;
-                   }else
-                       names.append(name);
+                    if(!pix.save("../user/"+m_myQQ+"/"+name,"png")){
+                        qDebug()<<"warning:file is not save,named "<<name;
+                    }else
+                        cover=name;
                 }
                 ++i;
             }
-            emit emitPersonalCoverAndPhoto(names);
+            emit emitPersonalCoverAndPhoto(names,cover);
         }else{
             qDebug()<<"the user's cover and photowall would be not set";
         }
         //超时放弃或完成结束线程
-      thread->exit(0);
-      thread->quit();
-      getPersonalDataSock->deleteLater();
-      thread->deleteLater();
+        thread->exit(0);
+        thread->quit();
+        getPersonalDataSock->deleteLater();
+        thread->deleteLater();
+    });
+}
+//更新用户远程照片墙
+void FuncC::updatePhotoWall(quint8 length)
+{
+    QString instructDescription="9 updatePhotoWall "+m_myQQ+" writedHeaderSize";//更新封面
+    BigFileSocket*updateWallSock=new BigFileSocket();//子线程对象最好不要有父类
+    updateWallSock->setInstruct(instructDescription);
+    updateWallSock->setIp(ip);
+    updateWallSock->setPort(updatePort);
+    updateWallSock->setTimeout(20000);//20s超时
+    QThread*thread=new QThread();
+    updateWallSock->moveToThread(thread);
+    thread->start();
+    emit updateWallSock->start();//转移到新线程去post host
+    //删除套接字
+    connect(thread,&QThread::finished,updateWallSock,&BigFileSocket::deleteLater);
+    //删除线程
+    connect(thread,&QThread::finished,thread,&QThread::deleteLater);
+    connect(updateWallSock,&BigFileSocket::finished,thread,&QThread::quit);//超时放弃
+    //获取文件结果收尾处理
+    connect(updateWallSock,&BigFileSocket::writtenInstruction, updateWallSock,[=]()mutable{
+        qDebug()<<"writtenInstruction";
+        //由于服务端的updateport只有一个解析json接受一个数据、处理数据的功能,这里把图片数据全部打包发送
+        //数据结构 length(quint8) 各个数据的数据长度(quint32) 各个数据
+        QByteArray totalData;//全部数据
+        QByteArray lengthData;
+        QDataStream stream(&lengthData,QIODevice::WriteOnly);
+        stream.setVersion(QDataStream::Qt_4_0);
+        stream<<length;
+        totalData.append(lengthData);//记录长度
+        qDebug()<<"length="<<length;
+        QVector<quint32>sizeVector;//记录各个数据大小
+        QVector<QByteArray>dataVector;//记录图片数据
+        for (quint8 var = 0; var < length; ++var) {
+            QPixmap temp=images->provider3->images.value(QString("%1").arg(var));//获取最新添加的数据
+            if(temp.isNull())qDebug()<<"provider3 not found a pixmap";
+            QBuffer buffer;
+            buffer.open(QIODevice::WriteOnly);
+
+            if(!temp.save(&buffer,"png")){
+                qDebug()<<"warning:a pixmap is not dispatched because readed data is of failure";
+                buffer.close();//关闭io设备
+                continue;
+            }
+            QByteArray  pixdata=buffer.data();
+            if(pixdata.isEmpty())qDebug()<<"warning:a empty pixmap is dispatched";
+            sizeVector.append(pixdata.size());
+            dataVector.append(pixdata);
+            buffer.close();//关闭io设备
+        }
+       length=sizeVector.size();
+       for (quint8 var = 0; var < length; ++var) {
+           QByteArray data;
+           QDataStream temp(&data,QIODevice::WriteOnly);
+           temp.setVersion(QDataStream::Qt_4_0);
+           temp<<sizeVector.at(var);
+           qDebug()<<"data size="<<data.data()<<sizeVector.at(var);
+           totalData.append(data);//记录长度
+       }
+       length=dataVector.size();
+       //保存数据
+       for (quint8 var = 0; var < length; ++var) {
+           totalData.append(dataVector[var]);
+           qDebug()<<"size?"<<dataVector[var].size();
+       }
+       updateWallSock->write(totalData);
+       if(!totalData.isEmpty())
+       updateWallSock->loop.exec();
+       thread->exit(0);
+       thread->quit();
+        qDebug()<<"updating photo wall thread had exited";
     });
 }
 

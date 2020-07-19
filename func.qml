@@ -255,7 +255,6 @@ Item {
         var curarr=cur.split("-")
         var age=0;
         age=parseInt(curarr[0])-parseInt(date[0])
-        console.log("age=",age)
         if(parseInt(curarr[1])<parseInt(date[1])){
             age-=1;
         }else if(parseInt(curarr[1])===parseInt(date[1])){
@@ -263,6 +262,21 @@ Item {
                 age-=1;
         }
         console.log("age=",age)
+        return age;
+    }
+    //数组 年 月 日 返回Q龄
+    function getQAge(date){
+        var cur=new Date().toJSON().substring(0, 10)
+        var curarr=cur.split("-")
+        var age=0;
+        age=parseInt(curarr[0])-parseInt(date[0])
+        if(parseInt(curarr[1])<parseInt(date[1])){
+            age-=1;
+        }else if(parseInt(curarr[1])===parseInt(date[1])){
+            if(parseInt(curarr[2])<parseInt(date[2]))
+                age-=1;
+        }
+        console.log("Q age=",age)
         return age;
     }
     //birarr包含日期的数组  xxxx xx xx 返回星座

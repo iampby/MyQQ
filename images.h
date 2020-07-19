@@ -18,6 +18,9 @@ public:
     void insert(QPixmap& pix);
     //provider2 use
     Q_INVOKABLE void setPixmap2(const QString&id, const QString&pix);
+    //provider3 use
+    Q_INVOKABLE qint32 insertPixmap3(const int&count, QVector<QString> files);//插入 图片集到开头， 图片id重新排列
+    Q_INVOKABLE bool setPixmap3(const QString& id, const QString&filename);//添加图片到图片集合
 
 
  Q_SIGNALS:
@@ -27,7 +30,8 @@ signals:
 public:
     QmlImageProvider*provider1;//历史头像
     QmlImageProvider*provider2;//好友头像
-     QString myqq;
+    QmlImageProvider*provider3;//用户照片墙
+    QString myqq;
 };
 
 #endif // IMAGES_H

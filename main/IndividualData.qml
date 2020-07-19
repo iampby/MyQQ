@@ -6,11 +6,13 @@ import QtGraphicalEffects 1.12
 import QtGraphicalEffects 1.12
 import Qt.labs.platform 1.1
 import "../"
+//加载js
 import "../chinese-lunar.js" as CLunar
 
 //用户个人资料
 Window {
     property alias loaderForAlterCover: loaderForAlterCover
+    property int infoCount: 0
     id: indivadualWin
     width: 722
     height: 522
@@ -35,27 +37,9 @@ Window {
         target: funcc
         //(QVariantMap obj)
         onEmitPersonalJsonInfo: {
-
-
-            /*writeObj.insert("birthday",query.value("birthday").toString());
-            writeObj.insert("registerDateTime",query.value("registerDateTime").toString());
-            writeObj.insert("bloodGroup",query.value("bloodGroup").toString());
-            writeObj.insert("education",query.value("education").toString());
-            writeObj.insert("profession",query.value("profession").toString());
-            writeObj.insert("corporation",query.value("corporation").toString());
-            writeObj.insert("location1",query.value("location1").toString());
-            writeObj.insert("location2",query.value("location2").toString());
-            writeObj.insert("location3",query.value("location3").toString());
-            writeObj.insert("location4",query.value("location4").toString());
-            writeObj.insert("home1",query.value("home1").toString());
-            writeObj.insert("home2",query.value("home2").toString());
-            writeObj.insert("home3",query.value("home3").toString());
-            writeObj.insert("home4",query.value("home4").toString());
-            writeObj.insert("personalStatement",query.value("personalStatement").toString());
-            writeObj.insert("phone",query.value("phone").toString());*/
             console.log("onEmitPersonalJsonInfo", obj)
             var birarr = obj["birthday"].split("-")
-            if (birarr.length < 3)
+            if (birarr.length < 3 | birarr === undefined)
                 console.log("birthday format is not normal")
             var age = func.getAge(birarr)
             labMyQQ.text = qqMainWin.myqq //MyQQ
@@ -63,22 +47,219 @@ Window {
             labAge.text = age
             labBirthday.text = birarr[1] + "月" + birarr[2] + "日(公历)"
             labConstellation.text = func.getConstellation(birarr)
+            var buttonCount = 0 //计数，如果大于4显示资料按钮
+            //所在地
+            var location1 = obj["location1"]
+            var temp = ""
+            if (location1 !== undefined && location1 !== "") {
+                var location2 = obj["location2"]
+                var location3 = obj["location3"]
+                var location4 = obj["location4"]
+                if (location2.length !== 0)
+                    temp = location2
+                if (location3.length !== 0)
+                    temp += " " + location3
+                if (location4.length !== 0)
+                    temp += " " + location4
+                whereInfo.aftLabel.text = temp
+                whereInfo.isEmpty = false
+                buttonCount += 1
+            }
+            console.log("where is ", temp)
+            //手机
+            var phone = obj["phone"]
+            if (phone !== undefined && phone !== "0") {
+                phoneInfo.aftLabel.text = phone
+                phoneInfo.isEmpty = false
+                buttonCount += 1
+            }
+            console.log("phone number is ", phone)
+            //Q龄
+            var QAge = obj["registerDateTime"].split("-") //分割日期
+            if (QAge != undefined && QAge.length > 2) {
+                QAge = func.getQAge(QAge)
+                qAgeInfo.aftLabel.text = QAge + "龄"
+                qAgeInfo.isEmpty = false
+                buttonCount += 1
+            } else {
+                console.log("Q age is not normal or null")
+            }
+            console.log("Q age is ", QAge)
+            //家乡
+            var home1 = obj["home1"]
+            if (home1 !== undefined && home1 !== "") {
+                var home2 = obj["home2"]
+                var home3 = obj["home3"]
+                var home4 = obj["home4"]
+                temp = "" //归零
+                if (home2.length !== 0)
+                    temp = home2
+                if (home3.length !== 0)
+                    temp += " " + home3
+                if (lhome4.length !== 0)
+                    temp += " " + home4
+                homeInfo.aftLabel.text = temp
+                homeInfo.isEmpty = false
+                buttonCount += 1
+            }
+            console.log("home is ", temp)
+            //职业
+            var prof = obj["profession"]
+            if (prof !== undefined && prof !== "") {
+                professInfo.aftLabel.text = prof
+                professInfo.isEmpty = false
+                buttonCount += 1
+            }
+            console.log("profession is ", prof)
+            //公司
+            var corp = obj["corporation"]
+            if (corp !== undefined && corp !== "") {
+                corporationInfo.aftLabel.text = corp
+                corporationInfo.isEmpty = false
+                buttonCount += 1
+            }
+            console.log("corporation is ", corp)
+            //教育经历
+            var edu = obj["education"]
+            if (edu !== undefined && edu !== "") {
+                educationInfo.aftLabel.text = edu
+                educationInfo.isEmpty = false
+                buttonCount += 1
+            }
+            console.log("education experience is ", edu)
+            //个人说明
+            var perss = obj["personalStatement"]
+            if (perss !== undefined && perss !== "") {
+                statementInfo.aftLabel.text = perss
+                statementInfo.isEmpty = false
+                buttonCount += 1
+            }
+            console.log("personalStatement is ", perss)
+            //获取生肖
             var f = CLunar._chineseLunar
             var clyear = f.solarToLunar(new Date(birarr[0], birarr[1],
                                                  birarr[2])) //农历对象
             clyear = clyear["year"] //农历年
             var zodiac = f.animalName(clyear)
-            labZodiac.text = zodiac //生肖
+            labZodiac.text = "属" + zodiac //生肖
+            console.log("zodiac is ", zodiac)
+            infoCount = buttonCount
+            //是否显示资料按钮
+            if (buttonCount > 4) {
+                //显示资料按钮
+                separInfo.visible = false
+                moreInfoItem.visible = true
+                showInfoBtn = true
+            } else {
+                showNotEmptyInfo() //显示所有非空资料卡
+            }
         }
         //QVector<QString> names
         onEmitPersonalCoverAndPhoto: {
             console.log(" onEmitPersonalCoverAndPhoto")
-            var length = names.length
+            if (cover != "")
+                leftImg.source = "file:../user/" + mainWin.myqq + "/" + cover
+            var length = walls.length
+            var id = 0
             for (var i = 0; i < length; ++i) {
-                if (names[i] === "cover") {
-                    leftImg.source = "file:../user/" + mainWin.myqq + "/cover"
+                if (images.setPixmap3(
+                            id,
+                            "../user/" + mainWin.myqq + "/photoWall/" + walls[i])) {
+                    ++id
+                } else {
+                    console.log("initialization failed to add a photo wall pixmap")
                 }
             }
+            length = id //更新图片个数
+            if (length === 0)
+                return
+            //0 个返回
+            wallContiner.setCurrentIndex(1) //显示照片墙视图
+            if (length % 3 == 0) {
+                imgHeader1.sourceSize = Qt.size(216, 216)
+                imgHeader1.source = "image://wall/0"
+                imgHeader1.x = 0
+                imgHeader1.y = 0
+                imgHeader2.sourceSize = Qt.size(108, 108)
+                imgHeader2.source = "image://wall/1"
+                imgHeader2.x = 216
+                imgHeader2.y = 0
+                imgHeader3.sourceSize = Qt.size(108, 108)
+                imgHeader3.source = "image://wall/2"
+                imgHeader3.x = 216
+                imgHeader3.y = 108
+                imgHeader1.visible = true
+                imgHeader2.visible = true
+                imgHeader3.visible = true
+                //第二部分添加图片
+                if (length > 3) {
+                    var h = 108 * parseInt(
+                                (length % 3 != 0 ? length / 3 : length / 3 - 1))
+                    twoPartWall.height = h
+                    wallContiner.contentHeight = h + 216
+                    console.log(h)
+                    twoPartWall.visible = true
+                    for (i = 3; i < length; ++i) {
+                        twoPartPhoWallModel.append({
+                                                       "url": "image://wall/" + i
+                                                   })
+                    }
+                }
+            } else if (length % 3 == 2) {
+                imgHeader1.sourceSize = Qt.size(160, 216)
+                imgHeader1.source = "image://wall/0"
+                imgHeader1.x = 0
+                imgHeader1.y = 0
+                imgHeader2.sourceSize = Qt.size(160, 216)
+                imgHeader2.source = "image://wall/1"
+                imgHeader2.x = 160
+                imgHeader2.y = 0
+                imgHeader1.visible = true
+                imgHeader2.visible = true
+                imgHeader3.visible = false
+                imgHeader3.source = "" //归零
+                //第二部分添加图片
+                if (length > 2) {
+                    h = 108 * parseInt(
+                                (length % 3 != 0 ? length / 3 : length / 3 - 1))
+                    twoPartWall.height = h
+                    wallContiner.contentHeight = h + 216
+                    console.log(h)
+                    twoPartWall.visible = true
+                    for (i = 2; i < length; ++i) {
+                        twoPartPhoWallModel.append({
+                                                       "url": "image://wall/" + i
+                                                   })
+                    }
+                }
+            } else if (length % 3 == 1) {
+                imgHeader1.sourceSize = Qt.size(320, 216)
+                imgHeader1.source = "image://wall/0"
+                imgHeader1.x = 0
+                imgHeader1.y = 0
+
+                imgHeader1.visible = true
+                imgHeader2.visible = false
+                imgHeader3.visible = false
+                imgHeader2.source = "" //归零
+                imgHeader3.source = "" //归零
+                //第二部分添加图片
+                if (length > 1) {
+                    h = 108 * parseInt(
+                                (length % 3 != 0 ? length / 3 : length / 3 - 1))
+                    twoPartWall.height = h
+                    wallContiner.contentHeight = h + 216
+                    console.log(h)
+                    twoPartWall.visible = true
+                    for (i = 1; i < length; ++i) {
+                        twoPartPhoWallModel.append({
+                                                       "url": "image://wall/" + i
+                                                   })
+                    }
+                }
+            }
+            console.log("photo wall initialization is of success")
+            cont2.count = length
         }
     }
 
@@ -89,7 +270,38 @@ Window {
         close.accepted = false //拒绝close
         indivadualWin.flags = Qt.FramelessWindowHint | Qt.Widget
     }
-    //露出资料按钮
+    //窗口可视化变化处理
+    onOpacityChanged: {
+        if (opacity == 1.0) {
+            console.log("invidiualData win is visible")
+            if (infoCount > 4) {
+                infoBtn.text = qsTr("更多资料")
+                infoBtn.rightText = "▼"
+                separInfo.visible = false
+                moreInfoItem.visible = true
+            } else {
+                moreInfoItem.visible = false
+                showNotEmptyInfo()
+            }
+        } else {
+            console.log("invidiualData win is't  visible")
+        }
+    }
+
+    //显示所有非空资料
+    function showNotEmptyInfo() {
+        separInfo.visible = true
+        whereInfo.visible = !whereInfo.isEmpty
+        phoneInfo.visible = !phoneInfo.isEmpty
+        qAgeInfo.visible = !qAgeInfo.isEmpty
+        homeInfo.visible = !homeInfo.isEmpty
+        professInfo.visible = !professInfo.isEmpty
+        educationInfo.visible = !educationInfo
+        statementInfo.visible = !statementInfo.isEmpty
+    }
+
+    //资料按钮初始化处理
+    function showInformationButton() {}
     //移动鼠标
     MouseCustomForWindow {
         onSendPos: {
@@ -649,7 +861,7 @@ Window {
                     spacing: 15
                     //penguin bar
                     Item {
-                        width: 320
+                        width: 324
                         height: 16
                         Image {
                             source: "qrc:/images/mainInterface/userInfoPenguin.png"
@@ -658,12 +870,11 @@ Window {
                             id: labMyQQ
                             x: 30
                             font.pointSize: 10
-                            text: "2567469480"
                         }
 
                         Button {
                             id: editMaterialBtn
-                            x: 320 - width
+                            x: 324 - width
                             width: 62
                             height: 16
                             onClicked: {
@@ -691,28 +902,23 @@ Window {
                         Label {
                             id: labSex
                             font.pointSize: 10
-                            text: "男"
                         }
 
                         Label {
                             id: labAge
                             font.pointSize: 10
-                            text: "22岁"
                         }
                         Label {
                             id: labBirthday
                             font.pointSize: 10
-                            text: "6月1日"
                         }
                         Label {
                             id: labConstellation
                             font.pointSize: 10
-                            text: "巨蟹座"
                         }
                         Label {
                             id: labZodiac
                             font.pointSize: 10
-                            text: "属鼠"
                         }
                     }
                     //grade bar
@@ -797,16 +1003,21 @@ Window {
                     }
                     //separator
                     Rectangle {
-                        width: 320
+                        id: separInfo
+                        width: 324
                         height: 1
                         color: "lightgray"
                     }
 
                     //MyQQ information set
                     Item {
+                        id: infoItem
+                        visible: separInfo.visible
                         width: 200
                         height: infoColumn.height
+                                > imgInfo.height ? infoColumn.height : imgInfo.height
                         Image {
+                            id: imgInfo
                             source: "qrc:/images/mainInterface/userInfoQAge.png"
                         }
                         ColumnLayout {
@@ -816,48 +1027,103 @@ Window {
                             InfoSmallLabel {
                                 id: whereInfo
                                 preLabel.text: "所在地"
-                                aftLabel.text: "北京 东城"
                             }
                             InfoSmallLabel {
                                 id: phoneInfo
                                 preLabel.text: "手机"
-                                aftLabel.text: "15334184810"
                             }
                             InfoSmallLabel {
                                 id: qAgeInfo
                                 preLabel.text: "Q龄"
-                                aftLabel.text: "0年"
                             }
                             InfoSmallLabel {
                                 id: homeInfo
                                 preLabel.text: "家乡"
-                                aftLabel.text: "阿富汗 卡萨丁"
                             }
                             InfoSmallLabel {
                                 id: professInfo
                                 preLabel.text: "职业"
-                                aftLabel.text: "生产/工艺/制造"
                             }
                             InfoSmallLabel {
                                 id: corporationInfo
                                 preLabel.text: "公司"
-                                aftLabel.text: "天宝有限公司"
                             }
                             InfoSmallLabel {
                                 id: educationInfo
                                 preLabel.text: "教育经历"
-                                aftLabel.text: "南开大学\n2019级 硕士"
                             }
                             InfoSmallLabel {
                                 id: statementInfo
                                 preLabel.text: "个人说明"
-                                aftLabel.text: "天空如此栏 十大山东快书是的撒"
                             }
                         }
                     }
+                    //资料按钮
+                    Item {
+                        id: moreInfoItem
+                        visible: false
+                        width: 220
+                        height: infoBtn.height
+                        ToolButton {
+                            property string rightText: "▼"
+                            id: infoBtn
+                            x: 110
+                            text: qsTr("更多资料")
+                            width: 80
+                            height: 26
+                            rightPadding: 0
+                            leftPadding: 0
+                            onClicked: {
+                                if (rightText === "▼") {
+                                    rightText = "▲"
+                                    text = qsTr("收起资料")
+                                    showNotEmptyInfo()
+                                } else {
+                                    rightText = "▼"
+                                    text = qsTr("更多资料")
+                                    separInfo.visible = false
+                                }
+                            }
+                            contentItem: Item {
+                                width: infoBtn.width
+                                height: infoBtn.height
+
+                                Text {
+                                    //右贴 间距10
+                                    id: infoBtnLeft
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 10
+                                    text: infoBtn.text
+                                    font: infoBtn.font
+                                    color: "gray"
+                                    horizontalAlignment: Text.AlignLeft
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                                Text {
+                                    //右贴 间距10
+                                    y: (infoBtnLeft.height - height) / 2 + infoBtn.y
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 10
+                                    text: infoBtn.rightText
+                                    font.pointSize: 5
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    color: "gray"
+                                }
+                            }
+
+                            background: Rectangle {
+                                implicitWidth: 80
+                                implicitHeight: 26
+                                radius: 3
+                                color: infoBtn.hovered ? infoBtn.pressed ? "#f0f0f0" : "#f8f8f8" : "transparent"
+                            }
+                        }
+                    }
+
                     //separator
                     Rectangle {
-                        width: 320
+                        width: 324
                         height: 1
                         color: "lightgray"
                     }
@@ -872,11 +1138,14 @@ Window {
                         }
                         Button {
                             id: loadPhotoBtn1
-                            x: 320 - width
+                            x: 324 - width
                             width: 62
                             height: 16
+                            visible: !loadPhotoBtn2.visible
+
                             onClicked: {
                                 console.log("editMaterialBtn clicked")
+                                mFDlog.open()
                             }
 
                             background: Label {
@@ -893,26 +1162,40 @@ Window {
                     //照片墙内容
                     Container {
                         id: wallContiner
-                        width: 320
-                        height: 220
+                        width: contentWidth
+                        height: contentHeight
+                        contentWidth: 324
+                        contentHeight: 220
                         currentIndex: 0
+                        onCurrentIndexChanged: {
+                            if (currentIndex == 0) {
+                                con1.visible = true
+                                cont2.visible = false
+                            } else {
+                                con1.visible = false
+                                cont2.visible = true
+                            }
+                        }
+
                         contentItem: Item {}
                         //无照片时状态
                         Rectangle {
                             id: con1
-                            width: 320
+                            width: 324
                             height: 220
                             visible: true
                             Image {
-                                sourceSize: Qt.size(320, 220)
+                                sourceSize: Qt.size(324, 220)
                                 source: "qrc:/images/mainInterface/wallBack.png"
                             }
                             Button {
                                 id: loadPhotoBtn2
                                 x: 71
                                 y: 86
+                                visible: true
                                 width: 178
                                 height: 46
+                                onClicked: mFDlog.open()
                                 background: Rectangle {
                                     implicitHeight: 46
                                     implicitWidth: 178
@@ -926,10 +1209,63 @@ Window {
                                 }
                             }
                         }
-                        //有照片时状态
-                        GridView {
+                        //有照片时状态 这里限制只设置最多8个图片 采用手工布局
+                        Item {
+                            property int count: 0 //图片个数
                             id: cont2
+                            width: 324
+                            height: 216
                             visible: false
+                            //照片墙头部，最多显示三个
+                            Item {
+                                id: headerWall
+                                width: 324
+                                height: 216
+                                clip: true
+                                Image {
+                                    id: imgHeader1
+                                    fillMode: Image.Stretch
+                                    asynchronous: true
+                                    visible: false
+                                    width: sourceSize.width
+                                    height: sourceSize.height
+                                }
+                                Image {
+                                    id: imgHeader2
+                                    asynchronous: true
+                                    fillMode: Image.Stretch
+                                    visible: false
+                                    width: sourceSize.width
+                                    height: sourceSize.height
+                                }
+                                Image {
+                                    id: imgHeader3
+                                    asynchronous: true
+                                    fillMode: Image.Stretch
+                                    visible: false
+                                    width: sourceSize.width
+                                    height: sourceSize.height
+                                }
+                            }
+                            GridView {
+                                id: twoPartWall
+                                y: 216
+                                width: 324
+                                height: 0
+                                interactive: false
+                                displayMarginBeginning: 0
+                                displayMarginEnd: 0
+                                visible: false
+                                model: twoPartPhoWallModel
+                                cellHeight: 108
+                                cellWidth: 108
+                                delegate: Image {
+                                    source: url
+                                    sourceSize: Qt.size(108, 108)
+                                    width: 108
+                                    height: 108
+                                }
+                            }
                         }
                     }
                 }
@@ -951,8 +1287,124 @@ Window {
         defaultSuffix: "../"
         nameFilters: ["图像文件(*.jpeg;*.jpg;*.png)"]
         onAccepted: {
+            loadPhotoBtn2.visible = false
             console.log("You chose: " + fDlog.file)
             actions.alterCoverAct.trigger(fDlog)
+        }
+        onRejected: {
+            console.log("Canceled")
+        }
+    }
+    //上传照片文件对话框 多个
+    FileDialog {
+        property string temp: "" //一个中转属性  用于qjsvalue 到 qurl的过度
+        id: mFDlog
+        title: "打开"
+        fileMode: FileDialog.OpenFiles
+        defaultSuffix: "../"
+        nameFilters: ["图像文件(*.jpeg;*.jpg;*.png)"]
+        onAccepted: {
+            var files = mFDlog.files
+            var length = files.length
+            var sum = length + cont2.count //总图片数，这个app设计为最大9个图片
+            if (sum > 9) {
+                length = 9 - cont2.count //允许添加的个数
+                sum = 9
+            }
+            var addFiles = []
+            if (length === 0)
+                return
+            for (var i = length - 1; i >= 0; --i) {
+                addFiles[i] = files[i].substring(8, files[i].length)
+                console.log("photo wall added a file:", addFiles[i])
+            }
+            length = images.insertPixmap3(length, addFiles) //获取实际插入的图片数
+            sum = length + cont2.count //重置总图片数
+            twoPartPhoWallModel.clear() //归零第二部分
+            wallContiner.setCurrentIndex(1) //显示照片墙视图
+            if (sum % 3 == 0) {
+                imgHeader1.sourceSize = Qt.size(216, 216)
+                imgHeader1.source = "image://wall/0"
+                imgHeader1.x = 0
+                imgHeader1.y = 0
+                imgHeader2.sourceSize = Qt.size(108, 108)
+                imgHeader2.source = "image://wall/1"
+                imgHeader2.x = 216
+                imgHeader2.y = 0
+                imgHeader3.sourceSize = Qt.size(108, 108)
+                imgHeader3.source = "image://wall/2"
+                imgHeader3.x = 216
+                imgHeader3.y = 108
+                imgHeader1.visible = true
+                imgHeader2.visible = true
+                imgHeader3.visible = true
+                //第二部分添加图片
+                if (sum > 3) {
+                    var h = 108 * parseInt(
+                                (sum % 3 != 0 ? sum / 3 : sum / 3 - 1))
+                    twoPartWall.height = h
+                    wallContiner.contentHeight = h + 216
+                    console.log(h)
+                    twoPartWall.visible = true
+                    for (i = 3; i < sum; ++i) {
+                        twoPartPhoWallModel.append({
+                                                       "url": "image://wall/" + i
+                                                   })
+                    }
+                }
+            } else if (sum % 3 == 2) {
+                imgHeader1.sourceSize = Qt.size(160, 216)
+                imgHeader1.source = "image://wall/0"
+                imgHeader1.x = 0
+                imgHeader1.y = 0
+                imgHeader2.sourceSize = Qt.size(160, 216)
+                imgHeader2.source = "image://wall/1"
+                imgHeader2.x = 160
+                imgHeader2.y = 0
+                imgHeader1.visible = true
+                imgHeader2.visible = true
+                imgHeader3.visible = false
+                imgHeader3.source = "" //归零
+                //第二部分添加图片
+                if (sum > 2) {
+                    h = 108 * parseInt((sum % 3 != 0 ? sum / 3 : sum / 3 - 1))
+                    twoPartWall.height = h
+                    wallContiner.contentHeight = h + 216
+                    console.log(h)
+                    twoPartWall.visible = true
+                    for (i = 2; i < sum; ++i) {
+                        twoPartPhoWallModel.append({
+                                                       "url": "image://wall/" + i
+                                                   })
+                    }
+                }
+            } else if (sum % 3 == 1) {
+                imgHeader1.sourceSize = Qt.size(320, 216)
+                imgHeader1.source = "image://wall/0"
+                imgHeader1.x = 0
+                imgHeader1.y = 0
+
+                imgHeader1.visible = true
+                imgHeader2.visible = false
+                imgHeader3.visible = false
+                imgHeader2.source = "" //归零
+                imgHeader3.source = "" //归零
+                //第二部分添加图片
+                if (sum > 1) {
+                    h = 108 * parseInt((sum % 3 != 0 ? sum / 3 : sum / 3 - 1))
+                    twoPartWall.height = h
+                    wallContiner.contentHeight = h + 216
+                    console.log(h)
+                    twoPartWall.visible = true
+                    for (i = 1; i < sum; ++i) {
+                        twoPartPhoWallModel.append({
+                                                       "url": "image://wall/" + i
+                                                   })
+                    }
+                }
+            }
+            cont2.count = sum
+            funcc.updatePhotoWall(length) //更新照片墙
         }
         onRejected: {
             console.log("Canceled")
@@ -968,8 +1420,8 @@ Window {
             sigTip.close()
         }
     }
-    //等级图标模型
+    //照片墙第一行之外图片模型
     ListModel {
-        id: gradeModel
+        id: twoPartPhoWallModel
     }
 }

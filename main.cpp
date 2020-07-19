@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("images",images);
     engine.addImageProvider("history",images->provider1);
     engine.addImageProvider("friends",images->provider2);
+    engine.addImageProvider("wall",images->provider3);
     QTranslator tran;
     tran.load("./qt_zh_CN.qm");
     app.installTranslator(&tran);

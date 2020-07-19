@@ -1754,7 +1754,7 @@ ApplicationWindow {
                         sendLeaveForMenuBtnItems()
                 }
                 onClicked: {
-                    Qt.quit()
+                    qqMainWin.close() //呼叫关闭槽释放资源
                 }
                 background: Rectangle {
                     implicitWidth: 140

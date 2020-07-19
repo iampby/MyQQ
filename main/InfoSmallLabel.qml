@@ -6,8 +6,10 @@ import "../"
 Item {
     property alias preLabel: preLabel
     property alias aftLabel: aftLabel
+    property bool isEmpty: true
     width: aftLabel.width + 70
     height: aftLabel.height
+    visible: false
     Label {
         id: preLabel
         leftPadding: 0
