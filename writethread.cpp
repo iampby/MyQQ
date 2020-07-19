@@ -10,6 +10,7 @@
 #include <qjsonarray.h>
 #include <qdatetime.h>
 #include<QDomDocument>
+#include<qbuffer.h>
 WriteThread::WriteThread(qintptr socketDescriptor, qint64 count,  QObject *parent)
     :QObject(parent),socketDescriptor(socketDescriptor),count(count)
 {
@@ -297,11 +298,77 @@ bool WriteThread::updateCover(QByteArray &bytes)
    return true;
 }
 
+bool WriteThread::updateWall(QByteArray &bytes)
+{
+    QDataStream stream(&bytes,QIODevice::ReadOnly);
+    quint8 length;
+    stream>>length;
+    if(length>9)return false;
+    QVector<quint32>sizeVctor;
+    QVector<QPixmap>pixVector;
+    for (quint8 var = 0; var < length; ++var) {
+        quint32 temp;
+        stream>>temp;
+        qDebug()<<"size"<<var<<"="<<temp;
+        sizeVctor.append(temp);
+    }
+   QBuffer buff(&bytes);
+   if(!buff.open(QIODevice::ReadOnly)){
+       qDebug()<<" data of photo-wall acquisition failed";
+       return false;
+   }
+   qint64 pos=1+length*4;
+   if(bytes.size()<pos)return false;
+   buff.seek(pos);//移动到数据段
+   //获取图片数据
+  for(quint8 i=0;i<length;i++){
+      QByteArray temp;
+      temp.resize(sizeVctor.at(i));
+      temp=buff.read(sizeVctor.at(i));
+      QPixmap pix;
+      pix.loadFromData(temp);
+     if(pix.isNull()){
+         qDebug()<<" data is null for a pixmap of photo wall ";
+         continue;
+     }
+     pixVector.append(pix);
+  }
+  length=pixVector.size();
+   QDir dir("../userData/"+myqq+"/photoWall");
+   if(!dir.exists()){
+       dir.mkpath("./");//创建当前目录
+   }
+   QStringList list;
+   list =dir.entryList(QStringList("*"),QDir::Files);
+   if(list.length()>0)
+   for (quint8 var = list.length()-1; var >=0; --var) {
+       QFile file(dir.relativeFilePath(QString("%1").arg(var)));
+       quint8 temp=var+length;
+       if(temp>8){
+           qDebug()<<"warning: photo wall is acquired more planed data,the number is"<<myqq<<var;
+           file.remove();
+          return false;
+       }
+       file.rename(QString("%1").arg(temp));
+   }
+   bool ok=true;
+   for (quint8 var = 0; var < length; ++var) {
+      QPixmap& temp=pixVector[var];
+      qDebug()<<temp.size();
+      if(!temp.save(dir.absoluteFilePath(QString("%1").arg(var)),"png")){
+          qDebug()<<"warning:photo wall is of failure to update a piamap";
+          ok=false;
+      }
+
+   }
+   return ok;
+}
+
 void WriteThread::timer()
 {
     //子线程调用定时器
-    QTimer::singleShot(60000,Qt::CoarseTimer,this,[=](){
-        qDebug()<<"timer 60s exit";
+    QTimer::singleShot(50000,Qt::CoarseTimer,this,[=](){
+        qDebug()<<"timer 50s exit";
         emit finished();
         qDebug()<<"thread had exited";
     });
@@ -371,6 +438,20 @@ void WriteThread::readD()
                         size=1;
                         continue;
                     }
+                    //9 updatePhotoWall
+                }else if(in=="9"){
+                    QString content=obj.value("content").toString();
+                    if(content=="updatePhotoWall"){
+                        myqq=obj.value("myqq").toString();
+                        if(myqq.isEmpty()){
+                            qDebug()<<"warning:myqq.isEmpty()";
+                            tcpsocket->disconnectFromHost();
+                            return;//退出线程
+                        }
+                        FT=PhotoWall;
+                        size=1;
+                        continue;
+                    }
                 }
             }
         }else{
@@ -385,6 +466,9 @@ void WriteThread::readD()
             case CoverImage:
                 bytes.append(data);
                 break;
+            case PhotoWall:
+                bytes.append(data);
+                break;
             default:
                 return;
             }
@@ -397,19 +481,28 @@ void WriteThread::disconnected()
     qDebug()<<"  Write QTcpSocket disconnected";
     size=0;
     switch (FT) {
+    //更新历史头像
     case HistoryHeadImage:
         if(adjustHistoryImg(bytes,fileName,"png")){
             qDebug()<<"added history image successfully";
         }
         break;
+        //更新个性签名
     case Signature:
         if(updateSignature(bytes)){
             qDebug()<<"updated signature successfully";
         }
         break;
+        //更新封面
     case CoverImage:
         if(updateCover(bytes)){
             qDebug()<<"updated cover-image successfully";
+        }
+        break;
+        //更新照片墙
+    case PhotoWall:
+        if(updateWall(bytes)){
+            qDebug()<<"updated photo wall successfully";
         }
         break;
     default:

@@ -13,13 +13,15 @@ public:
         NoFile,
         HistoryHeadImage,
         Signature,
-        CoverImage
+        CoverImage,
+        PhotoWall
     };
     WriteThread(qintptr socketDescriptor,qint64 count,QObject *parent = nullptr);
     ~WriteThread();
     bool adjustHistoryImg(QByteArray&bytes,const QString&filePath,const QString&fileType);
     bool updateSignature(QByteArray&bytes);
     bool updateCover(QByteArray&bytes);
+    bool updateWall(QByteArray&bytes);
 signals:
     void error(QAbstractSocket::SocketError);
     void finished();

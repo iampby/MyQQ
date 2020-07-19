@@ -985,7 +985,7 @@ label:
                                 QDir wall(wallPath);
                                 if(wall.exists()){
                                     if(!wall.isEmpty()){
-                                       QStringList list=wall.entryList(QStringList("*"),QDir::Files,QDir::Name|QDir::Reversed);
+                                       QStringList list=wall.entryList(QStringList("*"),QDir::Files,QDir::Name);
                                        qint32 length=list.length();
                                        for (int var = 0; var <length; ++var) {
                                            QString fname=list.at(var);
