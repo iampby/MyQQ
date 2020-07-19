@@ -309,7 +309,6 @@ bool WriteThread::updateWall(QByteArray &bytes)
     for (quint8 var = 0; var < length; ++var) {
         quint32 temp;
         stream>>temp;
-        qDebug()<<"size"<<var<<"="<<temp;
         sizeVctor.append(temp);
     }
    QBuffer buff(&bytes);
@@ -341,25 +340,23 @@ bool WriteThread::updateWall(QByteArray &bytes)
    QStringList list;
    list =dir.entryList(QStringList("*"),QDir::Files);
    if(list.length()>0)
-   for (quint8 var = list.length()-1; var >=0; --var) {
-       QFile file(dir.relativeFilePath(QString("%1").arg(var)));
+   for (qint8 var = list.length()-1; var >=0; --var) {
+       QFile file(dir.filePath(QString("%1").arg(var)));
        quint8 temp=var+length;
        if(temp>8){
            qDebug()<<"warning: photo wall is acquired more planed data,the number is"<<myqq<<var;
            file.remove();
           return false;
        }
-       file.rename(QString("%1").arg(temp));
+       file.rename(dir.filePath(QString("%1").arg(temp)));
    }
    bool ok=true;
    for (quint8 var = 0; var < length; ++var) {
       QPixmap& temp=pixVector[var];
-      qDebug()<<temp.size();
       if(!temp.save(dir.absoluteFilePath(QString("%1").arg(var)),"png")){
           qDebug()<<"warning:photo wall is of failure to update a piamap";
           ok=false;
       }
-
    }
    return ok;
 }
