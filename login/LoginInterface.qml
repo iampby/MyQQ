@@ -504,8 +504,7 @@ Rectangle {
             btnR.action: actions.passwdRAct
             btnRMouse.shapeInside: Qt.PointingHandCursor
             Keys.onTabPressed: {
-                console.log(edit.inputMethodComposing, "???",
-                            edit.inputMethodHints == Qt.ImhHiddenText)
+
                 canvasRem.bw = 1
                 canvasRem.requestPaint()
                 rememberC.forceActiveFocus()

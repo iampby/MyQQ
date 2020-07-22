@@ -4,16 +4,16 @@ import QtQuick.Controls 2.5
 import QtQuick.Layouts 1.1
 import QtGraphicalEffects 1.0
 import QtWinExtras 1.0
-import "../"
-
+import "qrc:/"
+//关于界面
 ApplicationWindow {
     id: aboutWin
     visible: true
     width: 378
     height: 284
     title: qsTr("关于MyQQ")
-    // modality: Qt.ApplicationModal
-    flags: Qt.Window | Qt.FramelessWindowHint
+    modality: Qt.ApplicationModal
+    flags: Qt.Window | Qt.FramelessWindowHint|Qt.WindowStaysOnTopHint
     x: qqMainWin.x + qqMainWin.width / 2 - width / 2
     y: qqMainWin.y + qqMainWin.height / 2 - height / 2
     onClosing: {

@@ -87,5 +87,9 @@
         <file alias="images/mainInterface/userInfoPerson.png">../images/mainInterface/userInfoPerson.png</file>
         <file alias="images/mainInterface/loadPhoto.png">../images/mainInterface/loadPhoto.png</file>
         <file alias="images/mainInterface/wallBack.png">../images/mainInterface/wallBack.png</file>
+        <file alias="images/mainInterface/alterCover.png">../images/mainInterface/alterCover.png</file>
+        <file alias="images/mainInterface/alterEditInfo.png">../images/mainInterface/alterEditInfo.png</file>
+        <file alias="images/mainInterface/pen.png">../images/mainInterface/pen.png</file>
+        <file alias="images/mainInterface/trashCan.png">../images/mainInterface/trashCan.png</file>
     </qresource>
 </RCC>

@@ -14,6 +14,7 @@ Rectangle {
 
     property alias mesWinForOkAct: mesWinForOkAction //切换账号接收键
     property alias alterCoverAct: alterCoverAction //更改封面界面打开
+    property alias editMyInfoAct: editMyInfoAction //编辑资料界面打开
 
     property alias mainMenuAct: mainMenuAction //底部菜单
     property alias addFriendsAct: addFriendsAction //添加好友按钮
@@ -477,6 +478,41 @@ Rectangle {
                     break
                 } else if (loader.status === Loader.Error) {
                     console.log("loaderForAlterInfo  occured a error")
+                    break
+                }
+            }
+        }
+    }
+    Action {
+        //编辑资料界面打开
+        id: editMyInfoAction
+        onTriggered: {
+            console.log("editMyInfoAction")
+            var loader = inCenterLoader.item.loaderForAlterInfo.item.loaderForEditInfo
+            if (loader === undefined)
+                return
+            if (!(Loader.Ready === loader.status)) {
+                console.log("loaded")
+                loader.source = "qrc:/main/EditInfo.qml"
+            }
+            while (true) {
+                if (loader.status === Loader.Ready) {
+                    console.log("start show edit info interface")
+
+                    //居中显示
+                    var tx = (mainWin.desktopAvailableWidth - loader.item.width) / 2
+                    var ty = (mainWin.desktopAvailableHeight - loader.item.height) / 2
+                    loader.item.x = tx < 0 ? -tx : tx
+                    loader.item.y = ty < 0 ? -ty : ty
+                    //初始化数据
+                    loader.item.inintHandleData()
+                    //弹出来
+                    loader.item.show()
+                    loader.item.raise()
+                    loader.item.requestActivate()
+                    break
+                } else if (loader.status === Loader.Error) {
+                    console.log("loaderForEditInfo  occured a error")
                     break
                 }
             }

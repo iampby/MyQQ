@@ -5,13 +5,38 @@ import QtQuick.Controls 2.5
 import QtGraphicalEffects 1.12
 import QtGraphicalEffects 1.12
 import Qt.labs.platform 1.1
-import "../"
+import "qrc:/"
 //加载js
 import "../chinese-lunar.js" as CLunar
 
 //用户个人资料
 Window {
     property alias loaderForAlterCover: loaderForAlterCover
+    property alias loaderForEditInfo: loaderForEditInfo
+    property alias countryModel: countryModel
+    property alias provinceModel: provinceModel
+    property alias cityModel: cityModel
+    property alias countyModel: countyModel
+    property var bir: [] //生日 3length
+    property string birthday: "" //生日 x年x月（公历）
+    property string age: "" //年纪
+    property string bloodGroup: "" //血型
+    property string constellation: "" //星座
+    property string zodiac: "" //生肖
+    property string qage: "" //Q龄
+    property string personalStatement: "" //个人说明
+    property string educationExperence: "" //教育经历
+    property string profession: "" //职业
+    property string corporation: "" //公司
+    property string phone: "" //电话号码
+    property string location1: "" //所在地1
+    property string location2: "" //所在地2
+    property string location3: "" //所在地3
+    property string location4: "" //所在地4
+    property string home1: "" //故乡1
+    property string home2: "" //故乡2
+    property string home3: "" //故乡3
+    property string home4: "" //故乡4
     property int infoCount: 0
     id: indivadualWin
     width: 722
@@ -41,20 +66,26 @@ Window {
             var birarr = obj["birthday"].split("-")
             if (birarr.length < 3 | birarr === undefined)
                 console.log("birthday format is not normal")
-            var age = func.getAge(birarr)
+            else {
+                for (var i = 0; i < birarr.length; ++i) {
+                    bir[i] = parseInt(birarr[i])
+                    console.log(indivadualWin.bir[i])
+                }
+            }
+            birthday = bir[1] + "月" + bir[2] + "日(公历)"
             labMyQQ.text = qqMainWin.myqq //MyQQ
             labSex.text = qqMainWin.sex
-            labAge.text = age
-            labBirthday.text = birarr[1] + "月" + birarr[2] + "日(公历)"
-            labConstellation.text = func.getConstellation(birarr)
+            age = func.getAge(birarr)
+            //生日
+            constellation = func.getConstellation(birarr) //星座
             var buttonCount = 0 //计数，如果大于4显示资料按钮
             //所在地
-            var location1 = obj["location1"]
+            location1 = obj["location1"]
             var temp = ""
             if (location1 !== undefined && location1 !== "") {
-                var location2 = obj["location2"]
-                var location3 = obj["location3"]
-                var location4 = obj["location4"]
+                location2 = obj["location2"]
+                location3 = obj["location3"]
+                location4 = obj["location4"]
                 if (location2.length !== 0)
                     temp = location2
                 if (location3.length !== 0)
@@ -67,10 +98,9 @@ Window {
             }
             console.log("where is ", temp)
             //手机
-            var phone = obj["phone"]
-            if (phone !== undefined && phone !== "0") {
-                phoneInfo.aftLabel.text = phone
-                phoneInfo.isEmpty = false
+            temp = obj["phone"]
+            if (temp !== undefined && temp !== "0") {
+                phone = temp
                 buttonCount += 1
             }
             console.log("phone number is ", phone)
@@ -78,25 +108,24 @@ Window {
             var QAge = obj["registerDateTime"].split("-") //分割日期
             if (QAge != undefined && QAge.length > 2) {
                 QAge = func.getQAge(QAge)
-                qAgeInfo.aftLabel.text = QAge + "龄"
-                qAgeInfo.isEmpty = false
+                qage = QAge + "龄"
                 buttonCount += 1
             } else {
                 console.log("Q age is not normal or null")
             }
             console.log("Q age is ", QAge)
             //家乡
-            var home1 = obj["home1"]
+            home1 = obj["home1"]
             if (home1 !== undefined && home1 !== "") {
-                var home2 = obj["home2"]
-                var home3 = obj["home3"]
-                var home4 = obj["home4"]
+                home2 = obj["home2"]
+                home3 = obj["home3"]
+                home4 = obj["home4"]
                 temp = "" //归零
                 if (home2.length !== 0)
                     temp = home2
                 if (home3.length !== 0)
                     temp += " " + home3
-                if (lhome4.length !== 0)
+                if (home4.length !== 0)
                     temp += " " + home4
                 homeInfo.aftLabel.text = temp
                 homeInfo.isEmpty = false
@@ -106,32 +135,29 @@ Window {
             //职业
             var prof = obj["profession"]
             if (prof !== undefined && prof !== "") {
-                professInfo.aftLabel.text = prof
-                professInfo.isEmpty = false
+                profession = prof
                 buttonCount += 1
             }
             console.log("profession is ", prof)
             //公司
             var corp = obj["corporation"]
             if (corp !== undefined && corp !== "") {
-                corporationInfo.aftLabel.text = corp
-                corporationInfo.isEmpty = false
+                corporation = corp
                 buttonCount += 1
             }
             console.log("corporation is ", corp)
             //教育经历
             var edu = obj["education"]
             if (edu !== undefined && edu !== "") {
-                educationInfo.aftLabel.text = edu
-                educationInfo.isEmpty = false
+                educationExperence = edu
+
                 buttonCount += 1
             }
             console.log("education experience is ", edu)
             //个人说明
             var perss = obj["personalStatement"]
             if (perss !== undefined && perss !== "") {
-                statementInfo.aftLabel.text = perss
-                statementInfo.isEmpty = false
+                personalStatement = perss
                 buttonCount += 1
             }
             console.log("personalStatement is ", perss)
@@ -141,7 +167,7 @@ Window {
                                                  birarr[2])) //农历对象
             clyear = clyear["year"] //农历年
             var zodiac = f.animalName(clyear)
-            labZodiac.text = "属" + zodiac //生肖
+            indivadualWin.zodiac = "属" + zodiac //生肖
             console.log("zodiac is ", zodiac)
             infoCount = buttonCount
             //是否显示资料按钮
@@ -302,6 +328,78 @@ Window {
 
     //资料按钮初始化处理
     function showInformationButton() {}
+    //处理国家数据
+    function addCountryData(arr) {
+        console.log("addCountryData()")
+        var length = arr.length
+        if ((length & 1) == 1) {
+            console.log("warning:country data is not normal")
+            return
+        }
+
+        for (var i = 0; i < length; ) {
+            countryModel.append({
+                                    "id": arr[i],
+                                    "name": arr[i + 1]
+                                })
+            i += 2
+        }
+    }
+    //处理省级数据
+    function addProvinceData(arr) {
+        console.log("addProvinceData()")
+        var length = arr.length
+        if ((length % 3) != 0) {
+            console.log("warning:province data is not normal")
+            return
+        }
+
+        for (var i = 0; i < length; ) {
+            provinceModel.append({
+                                     "id": arr[i],
+                                     "name": arr[i + 1],
+                                     "fid": arr[i + 2]
+                                 })
+            i += 3
+        }
+    }
+    //处理市级数据
+    function addCityData(arr) {
+        console.log("addCityData()")
+        var length = arr.length
+        if ((length % 3) != 0) {
+            console.log("warning:city data is not normal")
+            return
+        }
+
+        for (var i = 0; i < length; ) {
+            cityModel.append({
+                                 "id": arr[i],
+                                 "name": arr[i + 1],
+                                 "fid": arr[i + 2]
+                             })
+            i += 3
+        }
+    }
+    //处理县级数据
+    function addCountyData(arr) {
+        console.log("addCountyData()")
+        var length = arr.length
+        if ((length % 3) != 0) {
+            console.log("warning:county data is not normal")
+            return
+        }
+
+        for (var i = 0; i < length; ) {
+            countyModel.append({
+                                   "id": arr[i],
+                                   "name": arr[i + 1],
+                                   "fid": arr[i + 2]
+                               })
+            i += 3
+        }
+    }
+
     //移动鼠标
     MouseCustomForWindow {
         onSendPos: {
@@ -871,7 +969,7 @@ Window {
                             x: 30
                             font.pointSize: 10
                         }
-
+                        //编辑资料按钮
                         Button {
                             id: editMaterialBtn
                             x: 324 - width
@@ -879,6 +977,7 @@ Window {
                             height: 16
                             onClicked: {
                                 console.log("editMaterialBtn clicked")
+                                actions.editMyInfoAct.trigger(indivadualWin)
                             }
 
                             background: Label {
@@ -907,17 +1006,21 @@ Window {
                         Label {
                             id: labAge
                             font.pointSize: 10
+                            text: indivadualWin.age
                         }
                         Label {
                             id: labBirthday
                             font.pointSize: 10
+                            text: indivadualWin.birthday
                         }
                         Label {
                             id: labConstellation
                             font.pointSize: 10
+                            text: indivadualWin.constellation
                         }
                         Label {
                             id: labZodiac
+                            text: indivadualWin.zodiac
                             font.pointSize: 10
                         }
                     }
@@ -1031,10 +1134,25 @@ Window {
                             InfoSmallLabel {
                                 id: phoneInfo
                                 preLabel.text: "手机"
+                                aftLabel.text: indivadualWin.phone
+                                aftLabel.onTextChanged: {
+                                    if (aftLabel.text !== "0"
+                                            && aftLabel.text != "") {
+                                        isEmpty = false
+                                    } else
+                                        isEmpty = true
+                                }
                             }
                             InfoSmallLabel {
                                 id: qAgeInfo
                                 preLabel.text: "Q龄"
+                                aftLabel.text: indivadualWin.qage
+                                aftLabel.onTextChanged: {
+                                    if (aftLabel.text != "") {
+                                        isEmpty = false
+                                    } else
+                                        isEmpty = true
+                                }
                             }
                             InfoSmallLabel {
                                 id: homeInfo
@@ -1043,18 +1161,46 @@ Window {
                             InfoSmallLabel {
                                 id: professInfo
                                 preLabel.text: "职业"
+                                aftLabel.text: indivadualWin.profession
+                                aftLabel.onTextChanged: {
+                                    if (aftLabel.text != "") {
+                                        isEmpty = false
+                                    } else
+                                        isEmpty = true
+                                }
                             }
                             InfoSmallLabel {
                                 id: corporationInfo
                                 preLabel.text: "公司"
+                                aftLabel.text: indivadualWin.corporation
+                                aftLabel.onTextChanged: {
+                                    if (aftLabel.text != "") {
+                                        isEmpty = false
+                                    } else
+                                        isEmpty = true
+                                }
                             }
                             InfoSmallLabel {
                                 id: educationInfo
                                 preLabel.text: "教育经历"
+                                aftLabel.text: indivadualWin.educationExperence
+                                aftLabel.onTextChanged: {
+                                    if (aftLabel.text != "") {
+                                        isEmpty = false
+                                    } else
+                                        isEmpty = true
+                                }
                             }
                             InfoSmallLabel {
                                 id: statementInfo
                                 preLabel.text: "个人说明"
+                                aftLabel.text: indivadualWin.personalStatement
+                                aftLabel.onTextChanged: {
+                                    if (aftLabel.text != "") {
+                                        isEmpty = false
+                                    } else
+                                        isEmpty = true
+                                }
                             }
                         }
                     }
@@ -1278,6 +1424,11 @@ Window {
         id: loaderForAlterCover
         visible: loaderForAlterCover.status == Loader.Ready
     }
+    //编辑资料
+    Loader {
+        id: loaderForEditInfo
+        visible: loaderForAlterCover.status == Loader.Ready
+    }
 
     //文件打开框，不要用Qtc++的静态调用文件对话框，Qtc++的静态调用文件对话框不会自动释放资源，应该是里面有指针实现部分，我用这个可是异常延迟一天爆发
     FileDialog {
@@ -1423,5 +1574,21 @@ Window {
     //照片墙第一行之外图片模型
     ListModel {
         id: twoPartPhoWallModel
+    }
+    //城市模型，用于编辑资料界面
+    ListModel {
+        id: countryModel
+    }
+    ListModel {
+        id: provinceModel
+    }
+    ListModel {
+        id: cityModel
+    }
+    ListModel {
+        id: countyModel
+    }
+    Component.onCompleted: {
+        funcc.inintCityData(indivadualWin)
     }
 }

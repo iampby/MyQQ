@@ -114,5 +114,11 @@
         <file>main/AlterCover.qml</file>
         <file>main/InfoSmallLabel.qml</file>
         <file>chinese-lunar.js</file>
+        <file>main/EditInfo.qml</file>
+        <file>images/mainInterface/alterCover.png</file>
+        <file>images/mainInterface/alterEditInfo.png</file>
+        <file>images/mainInterface/pen.png</file>
+        <file>images/mainInterface/trashCan.png</file>
+        <file>main/EduInfo.qml</file>
     </qresource>
 </RCC>

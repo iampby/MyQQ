@@ -2,12 +2,11 @@ RC_FILE+=MyQQ.rc
 RC_ICONS=MyQQ.ico
 OTHER_FILES+=\
 MyQQ.rc
-QT += quick winextras network xml
+QT += quick winextras network xml  widgets network sql
 CONFIG += c++11
+#资源过大使用它
 CONFIG += resources_big
 CONIFG += qtquickcompiler
-#资源过大使用它
-QT += widgets network sql
 
 # The following define makes your compiler emit warnings if you use
 DEFINES += QT_DEPRECATED_WARNINGS

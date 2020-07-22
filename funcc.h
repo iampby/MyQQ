@@ -80,6 +80,7 @@ public:
     Q_INVOKABLE void closeCoverWidget();//发送信号删除更改封面界面的widget控件
     Q_INVOKABLE void getIndividualData();//获取远程个人资料
     Q_INVOKABLE void updatePhotoWall(quint8 length);//更新用户远程照片墙
+    Q_INVOKABLE void inintCityData(QQuickWindow*w);//初始化城市数据 数据源sqlite
 
     Q_INVOKABLE void startAddFriendsProcess(QQuickWindow*arg, QMap<QString, QVariant> obj);//添加好友进程
     unsigned short addFriendsProcessCount()const;
@@ -139,6 +140,7 @@ Q_SIGNALS:
     void emitSelectedImg( QPixmap pixmap);//添加qml选中头像到widget
     void emitPersonalJsonInfo(QVariantMap obj);//添加d大部分信息到qml
     void emitPersonalCoverAndPhoto(QVector<QString> walls,QString cover);//添加封面和照片到qml
+
 private slots:
     void analysisWh(QString totalGeoAddr);//解析本地IP获取地理位置及Url
     void handleProcessStarted();

@@ -6,7 +6,7 @@ import QtQuick.Layouts 1.3
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
 import Model 1.0
-import "../"
+import "qrc:/"
 
 //注意，qqMainWin是通过加载器从Component清零后用文件的方式加载的，这会导致，在初始化时通过加载器访问的属性异常
 //即在刚刚初始化期间，通过对象直接访问属性才是安全的，所以这里所有的初始化的涉及属性相关的处理过程都在qqmainwin内进行

@@ -2,7 +2,7 @@
 import QtQuick.Controls 2.5
 import QtQuick.Layouts 1.1
 import QtGraphicalEffects 1.0
-import "../"
+import "qrc:/"
 
 //只是界面,没有设计功能
 Rectangle {

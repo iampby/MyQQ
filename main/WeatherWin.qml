@@ -2,7 +2,7 @@
 import QtQuick.Controls 2.5
 import QtQuick.Window 2.11
 import QtQuick.Layouts 1.1
-import "../"
+import "qrc:/"
 
 Window {
     property alias setAn: setAn

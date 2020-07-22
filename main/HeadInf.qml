@@ -2,7 +2,7 @@
 import QtQuick.Window 2.11
 import QtQuick.Controls 2.5
 import QtQuick.Layouts 1.12
-import "../"
+import "qrc:/"
 
 //头像悬浮时弹出的界面
 Window {

@@ -2,7 +2,7 @@
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.5
 import QtGraphicalEffects 1.0
-import "../"
+import "qrc:/"
 
 //账号与密码输入组件
 FocusScope {

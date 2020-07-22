@@ -4,9 +4,9 @@ import QtQuick.Controls 2.5
 import QtQuick.Layouts 1.12
 import QtGraphicalEffects 1.12
 import Qt.labs.platform 1.1
-import "../"
+import "qrc:/"
 
-//头像悬浮时弹出的界面
+//资料界面的更改封面界面
 Window {
     signal updateCover
     id: win
@@ -48,7 +48,7 @@ Window {
             Image {
                 id: headerImg
                 sourceSize: Qt.size(384, 30)
-                source: "qrc:/images/mainInterface/alterHImgHeader.png"
+                source: "qrc:/images/mainInterface/alterCover.png"
             }
             RowLayout {
                 x: header.width - 58

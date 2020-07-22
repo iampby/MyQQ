@@ -1,6 +1,6 @@
 ﻿import QtQuick 2.0
 import QtQuick.Controls 2.5
-import "../"
+import "qrc:/"
 
 //资料界面的更多信息小部件 ，如公司 xxx 标签
 Item {

@@ -953,28 +953,122 @@ void FuncC::updatePhotoWall(quint8 length)
             dataVector.append(pixdata);
             buffer.close();//关闭io设备
         }
-       length=sizeVector.size();
-       for (quint8 var = 0; var < length; ++var) {
-           QByteArray data;
-           QDataStream temp(&data,QIODevice::WriteOnly);
-           temp.setVersion(QDataStream::Qt_4_0);
-           temp<<sizeVector.at(var);
-           qDebug()<<"data size="<<data.data()<<sizeVector.at(var);
-           totalData.append(data);//记录长度
-       }
-       length=dataVector.size();
-       //保存数据
-       for (quint8 var = 0; var < length; ++var) {
-           totalData.append(dataVector[var]);
-           qDebug()<<"size?"<<dataVector[var].size();
-       }
-       updateWallSock->write(totalData);
-       if(!totalData.isEmpty())
-       updateWallSock->loop.exec();
-       thread->exit(0);
-       thread->quit();
+        length=sizeVector.size();
+        for (quint8 var = 0; var < length; ++var) {
+            QByteArray data;
+            QDataStream temp(&data,QIODevice::WriteOnly);
+            temp.setVersion(QDataStream::Qt_4_0);
+            temp<<sizeVector.at(var);
+            qDebug()<<"data size="<<data.data()<<sizeVector.at(var);
+            totalData.append(data);//记录长度
+        }
+        length=dataVector.size();
+        //保存数据
+        for (quint8 var = 0; var < length; ++var) {
+            totalData.append(dataVector[var]);
+            qDebug()<<"size?"<<dataVector[var].size();
+        }
+        updateWallSock->write(totalData);
+        if(!totalData.isEmpty())
+            updateWallSock->loop.exec();
+        thread->exit(0);
+        thread->quit();
         qDebug()<<"updating photo wall thread had exited";
     });
+}
+
+void FuncC::inintCityData(QQuickWindow*w)
+{
+    QSqlDatabase db=QSqlDatabase::addDatabase("QSQLITE","city_data");
+    db.setDatabaseName("../city.db");
+    db.setHostName("MyQQ");
+    db.setUserName("sa");
+    db.setPassword("@123456x");
+    if(db.open())
+        qDebug()<<QStringLiteral("打开数据库成功！");
+    else {
+        qDebug()<<QStringLiteral("打开数据库失败！");
+        return;
+    }
+    QSqlQuery query2(db);
+    qDebug()<<"open:"<<db.connectionName()<<db.databaseName();
+    QVariantList countryList,provinceList,cityList,countyList;//顺序储存id name fid
+     if(!query2.exec(" begin transaction ")){
+         qDebug()<<"warning:begin transaction is of failure";
+     }
+ if(!query2.exec(" select*from country ")){
+     qDebug()<<"warning:city.db is not found";
+ }
+    query2.next();
+    while (query2.isValid()) {
+        qint32 id=query2.value("id").toLongLong();
+        QString name=query2.value("name").toString();
+        if(name.isEmpty()){
+             query2.next();
+            continue;
+        }
+       countryList.append(id);
+       countryList.append(name);
+        query2.next();
+    }
+    if(!query2.exec(" select*from province ")){
+               qDebug()<<"warning:province table is not found";
+           }
+    query2.next();
+    while (query2.isValid()) {
+        qint32 id=query2.value("id").toLongLong();
+        QString name=query2.value("name").toString();
+        qint32 fid=query2.value("belongCountryId").toLongLong();
+        if(name.isEmpty()){
+             query2.next();
+            continue;
+        }
+provinceList.append(id);
+provinceList.append(name);
+provinceList.append(fid);
+        query2.next();
+    }
+    if(!query2.exec(" select*from city ")){
+        qDebug()<<"warning:city table is not found";
+    }
+    query2.next();
+    while (query2.isValid()) {
+        qint32 id=query2.value("id").toLongLong();
+        QString name=query2.value("name").toString();
+        qint32 fid=query2.value("belongProvinceId").toLongLong();
+        if(name.isEmpty()){
+             query2.next();
+            continue;
+        }
+cityList.append(id);
+cityList.append(name);
+cityList.append(fid);
+        query2.next();
+    }
+    if(!query2.exec(" select*from county ")){
+        qDebug()<<"warning:county table is not found";
+    }
+    query2.next();
+    while (query2.isValid()) {
+        qint32 id=query2.value("id").toLongLong();
+        QString name=query2.value("name").toString();
+        qint32 fid=query2.value("belongCityId").toLongLong();
+        if(name.isEmpty()){
+             query2.next();
+            continue;
+        }
+countyList.append(id);
+countyList.append(name);
+countyList.append(fid);
+        query2.next();
+    }
+    if(!query2.exec(" end transaction ")){
+        qDebug()<<"warning:end transaction is of failure";
+    }
+    QMetaObject::invokeMethod(w," addCountryData",Qt::DirectConnection,Q_ARG(QVariant,QVariant::fromValue(countryList)));
+    QMetaObject::invokeMethod(w," addProvinceData",Qt::DirectConnection,Q_ARG(QVariant,QVariant::fromValue(provinceList)));
+    QMetaObject::invokeMethod(w," addCityData",Qt::DirectConnection,Q_ARG(QVariant,QVariant::fromValue(cityList)));
+    QMetaObject::invokeMethod(w," addCountyData",Qt::DirectConnection,Q_ARG(QVariant,QVariant::fromValue(countyList)));
 }
 
 
