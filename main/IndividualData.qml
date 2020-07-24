@@ -37,7 +37,7 @@ Window {
     property string home2: "" //故乡2
     property string home3: "" //故乡3
     property string home4: "" //故乡4
-    property int infoCount: 0
+    signal updateInfo(var obj)
     id: indivadualWin
     width: 722
     height: 522
@@ -69,7 +69,6 @@ Window {
             else {
                 for (var i = 0; i < birarr.length; ++i) {
                     bir[i] = parseInt(birarr[i])
-                    console.log(indivadualWin.bir[i])
                 }
             }
             birthday = bir[1] + "月" + bir[2] + "日(公历)"
@@ -93,7 +92,6 @@ Window {
                 if (location4.length !== 0)
                     temp += " " + location4
                 whereInfo.aftLabel.text = temp
-                whereInfo.isEmpty = false
                 buttonCount += 1
             }
             console.log("where is ", temp)
@@ -128,7 +126,6 @@ Window {
                 if (home4.length !== 0)
                     temp += " " + home4
                 homeInfo.aftLabel.text = temp
-                homeInfo.isEmpty = false
                 buttonCount += 1
             }
             console.log("home is ", temp)
@@ -150,7 +147,6 @@ Window {
             var edu = obj["education"]
             if (edu !== undefined && edu !== "") {
                 educationExperence = edu
-
                 buttonCount += 1
             }
             console.log("education experience is ", edu)
@@ -169,13 +165,11 @@ Window {
             var zodiac = f.animalName(clyear)
             indivadualWin.zodiac = "属" + zodiac //生肖
             console.log("zodiac is ", zodiac)
-            infoCount = buttonCount
             //是否显示资料按钮
             if (buttonCount > 4) {
                 //显示资料按钮
                 separInfo.visible = false
                 moreInfoItem.visible = true
-                showInfoBtn = true
             } else {
                 showNotEmptyInfo() //显示所有非空资料卡
             }
@@ -324,10 +318,15 @@ Window {
         professInfo.visible = !professInfo.isEmpty
         educationInfo.visible = !educationInfo
         statementInfo.visible = !statementInfo.isEmpty
+        console.log(" whereInfo.visible", whereInfo.visible)
+        console.log(" phoneInfo.visible", phoneInfo.visible)
+        console.log("  qAgeInfo.visible", qAgeInfo.visible)
+        console.log(" homeInfo.visible ", homeInfo.visible)
+        console.log(" professInfo.visible ", professInfo.visible)
+        console.log(" educationInfo.visible ", educationInfo.visible)
+        console.log(" statementInfo.visible ", statementInfo.visible)
     }
 
-    //资料按钮初始化处理
-    function showInformationButton() {}
     //处理国家数据
     function addCountryData(arr) {
         console.log("addCountryData()")
@@ -399,7 +398,155 @@ Window {
             i += 3
         }
     }
+    //更新修改的资料
+    onUpdateInfo: {
+        var temp = obj["birthday"]
+        var index
+        console.log(temp)
+        if (temp.length < 8) {
+            console.log("warning:altered  birthday information is not corrected")
+        } else {
+            bir[0] = temp.substring(0, 4)
+            index = temp.indexOf("月")
+            if (index === -1) {
+                console.log("warning:altered  birthday information is not corrected")
+            } else {
+                bir[1] = parseInt(temp.substring(5, index))
+                bir[2] = parseInt(temp.substring(index + 1, temp.length - 1))
+            }
+        }
+        birthday = bir[1] + "月" + bir[2] + "日(公历)"
+        qqMainWin.sex = obj["sex"]
+        qqMainWin.signature = obj["signature"]
+        labSex.text = qqMainWin.sex
+        age = func.getAge(bir)
+        //生日
+        constellation = func.getConstellation(bir) //星座
+        var buttonCount = 0 //计数，如果大于4显示资料按钮
+        //所在地
+        location1 = obj["where1"]
+        temp = ""
+        if (location1 !== undefined && location1 !== "") {
+            location2 = obj["where2"]
+            location3 = obj["where3"]
+            location4 = obj["where4"]
+            if (location2.length !== 0)
+                temp = location2
+            if (location3.length !== 0)
+                temp += " " + location3
+            if (location4.length !== 0)
+                temp += " " + location4
+            whereInfo.aftLabel.text = temp
+            buttonCount += 1
+        } else {
+            whereInfo.aftLabel.text = ""
+            location1 = ""
+            location2 = ""
+            location3 = ""
+            location4 = ""
+        }
+        console.log("where is ", temp)
+        //手机
+        temp = obj["phone"]
+        if (temp !== undefined && temp !== "0" && temp !== "") {
+            phone = temp
+            buttonCount += 1
+        } else {
+            phone = "0"
+        }
+        console.log("phone number is ", phone)
+        //Q龄
+        buttonCount += 1
+        //家乡
+        home1 = obj["home1"]
+        if (home1 !== undefined && home1 !== "") {
+            home2 = obj["home2"]
+            home3 = obj["home3"]
+            home4 = obj["home4"]
+            temp = "" //归零
+            if (home2.length !== 0)
+                temp = home2
+            if (home3.length !== 0)
+                temp += " " + home3
+            if (home4.length !== 0)
+                temp += " " + home4
+            homeInfo.aftLabel.text = temp
+            buttonCount += 1
+        } else {
+            homeInfo.aftLabel.text = ""
+            home1 = ""
+            home2 = ""
+            home3 = ""
+            home4 = ""
+        }
 
+        console.log("home is ", temp)
+        //职业
+        var prof = obj["profession"]
+        if (prof !== undefined && prof !== "") {
+            profession = prof
+            buttonCount += 1
+        } else {
+            profession = ""
+        }
+
+        console.log("profession is ", prof)
+        //公司
+        var corp = obj["corporation"]
+        if (corp !== undefined && corp !== "") {
+            corporation = corp
+            buttonCount += 1
+        } else {
+            corporation = ""
+        }
+
+        console.log("corporation is ", corp)
+        //教育经历
+
+
+        /* var edu = obj["education"]
+      if (edu !== undefined && edu !== "") {
+          educationExperence = edu
+          buttonCount += 1
+      }else{
+          educationExperence = " "
+      }
+*/
+        // console.log("education experience is ", edu)
+        //个人说明
+        var perss = obj["statement"]
+        if (perss !== undefined && perss !== "") {
+            personalStatement = perss
+            buttonCount += 1
+        } else {
+            personalStatement = ""
+        }
+
+        console.log("personalStatement is ", perss)
+        //获取生肖
+        var f = CLunar._chineseLunar
+        var clyear = f.solarToLunar(new Date(bir[0], bir[1], bir[2])) //农历对象
+        clyear = clyear["year"] //农历年
+        var zodiac = f.animalName(clyear)
+        indivadualWin.zodiac = "属" + zodiac //生肖
+        console.log("zodiac is ", zodiac)
+        //是否显示资料按钮
+        if (buttonCount > 4) {
+            //显示资料按钮
+            if (separInfo.visible) {
+                showNotEmptyInfo()
+                infoBtn.text = "收起资料"
+                infoBtn.rightText = "▲"
+            } else {
+                separInfo.visible = false
+                infoBtn.text = "更多资料"
+                infoBtn.rightText = "▼"
+            }
+            moreInfoItem.visible = true
+        } else {
+            showNotEmptyInfo() //显示所有非空资料卡
+        }
+    }
     //移动鼠标
     MouseCustomForWindow {
         onSendPos: {
@@ -932,9 +1079,9 @@ Window {
                 clip: true
                 interactive: false
                 width: right.width - x
-                height: right.height - y
+                height: right.height - y - 15
                 contentWidth: column.width
-                contentHeight: column.height
+                contentHeight: column1.y + column1.height
                 ScrollBar.vertical: ScrollBar {
                     parent: rightFlick //必须设置父对象才能启动hovered and pressed以及鼠标事件
                     anchors.right: rightFlick.right //绑定右边
@@ -952,11 +1099,12 @@ Window {
                                                           1.3) : "#d7d7d7"
                     }
                 }
-
+                //基本信息
                 ColumnLayout {
                     id: column
                     clip: true
                     spacing: 15
+
                     //penguin bar
                     Item {
                         width: 324
@@ -1111,99 +1259,125 @@ Window {
                         height: 1
                         color: "lightgray"
                     }
+                }
+                //MyQQ  more information set
+                Item {
+                    id: infoItem
+                    y: column.height + 10
+                    visible: separInfo.visible
+                    width: 324
+                    height: infoColumn.height
 
-                    //MyQQ information set
-                    Item {
-                        id: infoItem
-                        visible: separInfo.visible
-                        width: 200
-                        height: infoColumn.height
-                                > imgInfo.height ? infoColumn.height : imgInfo.height
-                        Image {
-                            id: imgInfo
-                            source: "qrc:/images/mainInterface/userInfoQAge.png"
+                    Image {
+                        id: imgInfo
+                        sourceSize: Qt.size(16, 16)
+                        source: "qrc:/images/mainInterface/userInfoQAge.png"
+                    }
+                    ColumnLayout {
+                        id: infoColumn
+                        x: 30
+                        spacing: 15
+                        onHeightChanged: {
+                            console.log("??", height)
                         }
-                        ColumnLayout {
-                            id: infoColumn
-                            x: 30
-                            spacing: 15
-                            InfoSmallLabel {
-                                id: whereInfo
-                                preLabel.text: "所在地"
+
+                        InfoSmallLabel {
+                            id: whereInfo
+                            preLabel.text: "所在地"
+                            aftLabel.onTextChanged: {
+                                console.log("where changed")
+                                if (aftLabel.text != "") {
+                                    isEmpty = false
+                                } else
+                                    isEmpty = true
                             }
-                            InfoSmallLabel {
-                                id: phoneInfo
-                                preLabel.text: "手机"
-                                aftLabel.text: indivadualWin.phone
-                                aftLabel.onTextChanged: {
-                                    if (aftLabel.text !== "0"
-                                            && aftLabel.text != "") {
-                                        isEmpty = false
-                                    } else
-                                        isEmpty = true
-                                }
+                        }
+                        InfoSmallLabel {
+                            id: phoneInfo
+                            preLabel.text: "手机"
+                            aftLabel.text: indivadualWin.phone
+                            aftLabel.onTextChanged: {
+                                if (aftLabel.text !== "0"
+                                        && aftLabel.text != "") {
+                                    isEmpty = false
+                                } else
+                                    isEmpty = true
                             }
-                            InfoSmallLabel {
-                                id: qAgeInfo
-                                preLabel.text: "Q龄"
-                                aftLabel.text: indivadualWin.qage
-                                aftLabel.onTextChanged: {
-                                    if (aftLabel.text != "") {
-                                        isEmpty = false
-                                    } else
-                                        isEmpty = true
-                                }
+                        }
+                        InfoSmallLabel {
+                            id: qAgeInfo
+                            preLabel.text: "Q龄"
+                            aftLabel.text: indivadualWin.qage
+                            aftLabel.onTextChanged: {
+                                if (aftLabel.text != "") {
+                                    isEmpty = false
+                                } else
+                                    isEmpty = true
                             }
-                            InfoSmallLabel {
-                                id: homeInfo
-                                preLabel.text: "家乡"
+                        }
+                        InfoSmallLabel {
+                            id: homeInfo
+                            preLabel.text: "家乡"
+                            aftLabel.onTextChanged: {
+                                if (aftLabel.text != "") {
+                                    isEmpty = false
+                                } else
+                                    isEmpty = true
                             }
-                            InfoSmallLabel {
-                                id: professInfo
-                                preLabel.text: "职业"
-                                aftLabel.text: indivadualWin.profession
-                                aftLabel.onTextChanged: {
-                                    if (aftLabel.text != "") {
-                                        isEmpty = false
-                                    } else
-                                        isEmpty = true
-                                }
+                        }
+                        InfoSmallLabel {
+                            id: professInfo
+                            preLabel.text: "职业"
+                            aftLabel.text: indivadualWin.profession
+                            aftLabel.onTextChanged: {
+                                if (aftLabel.text != "") {
+                                    isEmpty = false
+                                } else
+                                    isEmpty = true
                             }
-                            InfoSmallLabel {
-                                id: corporationInfo
-                                preLabel.text: "公司"
-                                aftLabel.text: indivadualWin.corporation
-                                aftLabel.onTextChanged: {
-                                    if (aftLabel.text != "") {
-                                        isEmpty = false
-                                    } else
-                                        isEmpty = true
-                                }
+                        }
+                        InfoSmallLabel {
+                            id: corporationInfo
+                            preLabel.text: "公司"
+                            aftLabel.text: indivadualWin.corporation
+                            aftLabel.onTextChanged: {
+                                if (aftLabel.text != "") {
+                                    isEmpty = false
+                                } else
+                                    isEmpty = true
                             }
-                            InfoSmallLabel {
-                                id: educationInfo
-                                preLabel.text: "教育经历"
-                                aftLabel.text: indivadualWin.educationExperence
-                                aftLabel.onTextChanged: {
-                                    if (aftLabel.text != "") {
-                                        isEmpty = false
-                                    } else
-                                        isEmpty = true
-                                }
+                        }
+                        InfoSmallLabel {
+                            id: educationInfo
+                            preLabel.text: "教育经历"
+                            aftLabel.text: indivadualWin.educationExperence
+
+                            aftLabel.onTextChanged: {
+                                if (aftLabel.text != "") {
+                                    isEmpty = false
+                                } else
+                                    isEmpty = true
                             }
-                            InfoSmallLabel {
-                                id: statementInfo
-                                preLabel.text: "个人说明"
-                                aftLabel.text: indivadualWin.personalStatement
-                                aftLabel.onTextChanged: {
-                                    if (aftLabel.text != "") {
-                                        isEmpty = false
-                                    } else
-                                        isEmpty = true
-                                }
+                        }
+                        InfoSmallLabel {
+                            id: statementInfo
+                            preLabel.text: "个人说明"
+                            aftLabel.text: indivadualWin.personalStatement
+                            aftLabel.onTextChanged: {
+                                if (aftLabel.text != "") {
+                                    isEmpty = false
+                                } else
+                                    isEmpty = true
                             }
                         }
                     }
+                }
+                ColumnLayout {
+                    id: column1
+                    y: infoItem.visible ? infoItem.y + infoItem.height + 10 : infoItem.y + 10
+                    clip: true
+                    spacing: 15
+
                     //资料按钮
                     Item {
                         id: moreInfoItem
@@ -1266,7 +1440,6 @@ Window {
                             }
                         }
                     }
-
                     //separator
                     Rectangle {
                         width: 324

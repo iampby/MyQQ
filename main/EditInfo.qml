@@ -8,22 +8,9 @@ import "qrc:/"
 
 //编辑资料界面
 Window {
-    property var bir: [] //生日 3 length
-    property string bloodGroup: "" //血型
-    property string personalStatement: "" //个人说明
-    property string educationExperence: "" //教育经历
-    property string profession: "" //职业
-    property string corporation: "" //公司
-    property string phone: "" //电话号码
-    property string location1: "" //所在地1
-    property string location2: "" //所在地2
-    property string location3: "" //所在地3
-    property string location4: "" //所在地4
-    property string home1: "" //故乡1
-    property string home2: "" //故乡2
-    property string home3: "" //故乡3
-    property string home4: "" //故乡4
+    property alias okBtn: okBtn //用于子部件
     signal inintHandleData
+    signal addEduInfo(string school, string detail, string flags)
     id: win
     width: 386
     height: 727
@@ -41,7 +28,22 @@ Window {
     }
     //初始化处理数据
     onInintHandleData: {
-        win.bir = indivadualWin.bir
+        var bir = [] //生日 3 length
+        var bloodGroup = "" //血型
+        var personalStatement = "" //个人说明
+        var educationExperence = "" //教育经历
+        var profession = "" //职业
+        var corporation = "" //公司
+        var phone = "" //电话号码
+        var location1 = "" //所在地1
+        var location2 = "" //所在地2
+        var location3 = "" //所在地3
+        var location4 = "" //所在地4
+        var home1 = "" //故乡1
+        var home2 = "" //故乡2
+        var home3 = "" //故乡3
+        var home4 = "" //故乡4
+        bir = indivadualWin.bir
         bloodGroup = indivadualWin.bloodGroup
         personalStatement = indivadualWin.personalStatement
         educationExperence = indivadualWin.educationExperence
@@ -70,7 +72,7 @@ Window {
             break
         }
         console.log("sexCBox.currentIndex=", sexCBox.currentIndex)
-        switch (win.bloodGroup) {
+        switch (bloodGroup) {
         case "":
             bloodCBox.currentIndex = 0
             break
@@ -172,7 +174,7 @@ Window {
             break
         }
         fieldCorporation.text = corporation //公司
-        fieldPhone.text = phone
+        fieldPhone.text = phone==="0"?"":phone
         editStatement.text = personalStatement
         console.log("edu erper:", educationExperence)
         //添加城市数据
@@ -186,7 +188,6 @@ Window {
         home2Cbox.enabled = false
         home3Cbox.enabled = false
         home4Cbox.enabled = false
-        console.log("home4Cbox.enabled", home4Cbox.enabled)
         length = indivadualWin.countryModel.count
         //所在地处理
         index = -1
@@ -202,6 +203,55 @@ Window {
             where1Cbox.currentIndex = -1
         } else {
             where1Cbox.currentIndex = index
+            if (location2 !== ""){
+                length = provinceModel1.count
+                index = -1
+                for (i = 0; i < length; ++i) {
+                    temp = provinceModel1.get(i).name
+                    if (temp === location2) {
+                        index = i
+                        break
+                    }
+                }
+                if (index === -1) {
+                    where2Cbox.currentIndex = -1
+                } else {
+                    where2Cbox.currentIndex = index
+                    if (location3 !== ""){
+                        length = cityModel1.count
+                        index = -1
+                        for (i = 0; i < length; ++i) {
+                            temp = cityModel1.get(i).name
+                            if (temp === location3) {
+                                index = i
+                                break
+                            }
+                        }
+                        if (index === -1) {
+                            where3Cbox.currentIndex = -1
+                        } else {
+                            where3Cbox.currentIndex = index
+                            if (location4 !== "") {
+                                length = countyModel1.count
+                                index = -1
+                                for (i = 0; i < length; ++i) {
+                                    temp = countyModel1.get(i).name
+                                    if (temp === location4) {
+                                        index = i
+                                        break
+                                    }
+                                }
+                                console.log("4??", index)
+                                if (index === -1) {
+                                    where4Cbox.currentIndex = -1
+                                } else {
+                                    where4Cbox.currentIndex = index
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
         //故乡处理
         index = -1
@@ -213,11 +263,72 @@ Window {
             }
         }
         if (index === -1) {
-            console.log("birthplace is  a empty information  ")
+            console.log("location is a empty information ")
             home1Cbox.currentIndex = -1
         } else {
             home1Cbox.currentIndex = index
+            if (home2 !== ""){
+                length = provinceModel2.count
+                index = -1
+                for (i = 0; i < length; ++i) {
+                    temp = provinceModel2.get(i).name
+                    if (temp === home2) {
+                        index = i
+                        break
+                    }
+                }
+                if (index === -1) {
+                    home2Cbox.currentIndex = -1
+                } else {
+                    home2Cbox.currentIndex = index
+                    if (home3 !== ""){
+                        length = cityModel2.count
+                        index = -1
+                        for (i = 0; i < length; ++i) {
+                            temp = cityModel2.get(i).name
+                            if (temp === home3) {
+                                index = i
+                                break
+                            }
+                        }
+                        if (index === -1) {
+                            home3Cbox.currentIndex = -1
+                        } else {
+                            home3Cbox.currentIndex = index
+                            if (home4 !== "") {
+                                length = countyModel2.count
+                                index = -1
+                                for (i = 0; i < length; ++i) {
+                                    temp = countyModel2.get(i).name
+                                    if (temp === home4) {
+                                        index = i
+                                        break
+                                    }
+                                }
+                                if (index === -1) {
+                                    home4Cbox.currentIndex = -1
+                                } else {
+                                    home4Cbox.currentIndex = index
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
+        okBtn.enabled = false //初始化为false
+    }
+    //添加教育信息
+    onAddEduInfo: {
+        console.log("onAddEduInfo")
+        console.log("school:", school, "detail:", detail, "flags:", flags)
+        var index = eduModel.count
+        eduModel.append({
+                            "r_school": school,
+                            "r_detail": detail,
+                            "r_flags": flags,
+                            "r_index": index
+                        })
     }
     //移动鼠标
     MouseCustomForWindow {
@@ -234,6 +345,12 @@ Window {
         width: 384
         height: 688
         //header 标题栏
+        MouseCustomForWindow {
+            onSendPos: {
+                win.x += movedCoordinate.x
+                win.y += movedCoordinate.y
+            }
+        }
         Rectangle {
             id: header
             width: 384
@@ -297,8 +414,15 @@ Window {
             y: 45
             height: 640
             width: 384
+            clip: true
+            contentHeight: cont2.y + cont2.height
             ScrollBar.vertical: ScrollBar {}
-
+            MouseCustomForWindow {
+                onSendPos: {
+                    win.x += movedCoordinate.x
+                    win.y += movedCoordinate.y
+                }
+            }
             Item {
                 id: foundationInfo
                 x: 15
@@ -335,6 +459,10 @@ Window {
                             TextField {
                                 id: fieldName
                                 font.family: "新宋体"
+                                onTextChanged: {
+                                    okBtn.enabled = true
+                                }
+
                                 background: Rectangle {
                                     implicitWidth: 108
                                     implicitHeight: 22
@@ -360,7 +488,10 @@ Window {
                                 font.pixelSize: 15
                                 currentIndex: -1
                                 editable: false
-                                // rightPadding: 30
+                                onCurrentTextChanged: {
+                                    okBtn.enabled = true
+                                }
+
                                 contentItem: Label {
                                     leftPadding: 10
                                     topPadding: 3
@@ -408,6 +539,7 @@ Window {
                                     }
 
                                     onPaint: {
+                                        var context=getContext("2d")
                                         context.reset()
                                         if (!sexPop.visible) {
                                             context.moveTo(0, height / 4)
@@ -486,6 +618,9 @@ Window {
                                     text: birCBox.displayText
                                     font: birCBox.font
                                     color: "black"
+                                    onTextChanged: {
+                                        okBtn.enabled = true
+                                    }
                                 }
                                 indicator: null
                                 background: Rectangle {
@@ -955,7 +1090,10 @@ Window {
                                 font.pixelSize: 15
                                 currentIndex: -1
                                 editable: false
-                                // rightPadding: 30
+                                onCurrentTextChanged: {
+                                    okBtn.enabled = true
+                                }
+
                                 contentItem: Label {
                                     leftPadding: 10
                                     topPadding: 3
@@ -1077,10 +1215,12 @@ Window {
                                 TextArea {
                                     id: editTag
                                     padding: 4
-                                    textFormat: TextEdit.RichText
                                     wrapMode: TextEdit.WrapAnywhere
                                     font.family: "新宋体"
                                     font.pixelSize: 13
+                                    onTextChanged: {
+                                        okBtn.enabled = true
+                                    }
                                 }
                                 background: Rectangle {
                                     border.width: viewTag.hovered ? 2 : 1
@@ -1093,6 +1233,7 @@ Window {
             }
             //教育经历
             Label {
+                id: cont1
                 x: 15
                 y: 188
                 text: "填写教育经历"
@@ -1110,6 +1251,33 @@ Window {
                 height: 15
                 onClicked: {
                     console.log("addEduExperBtn clicked")
+                    //提示等待修改完成
+                    if (!eduView.isReadyToWrite) {
+                        if (eduTipComp.status === Component.Ready) {
+                            console.log("eduTipWinComp status is Component.Ready")
+                            var tipObj = eduTipComp.createObject(win)
+                            if (!tipObj) {
+                                console.log("warning: eduTipWin instantiation failed")
+                                return
+                            }
+                            tipObj.show()
+                        } else
+                            eduView.isReadyToWrite = true
+                        return
+                    }
+
+                    eduView.isReadyToWrite = false
+                    if (addEduInfoComp.status === Component.Ready) {
+                        console.log("addEduInfoComp status is Component.Ready")
+                        var obj = addEduInfoComp.createObject(win)
+                        if (!obj) {
+                            eduView.isReadyToWrite = true
+                            console.log(" addEduInfoComp object creation fails")
+                            return
+                        }
+                        obj.show()
+                    } else
+                        eduView.isReadyToWrite = true
                 }
                 background: Label {
                     width: 85
@@ -1133,7 +1301,7 @@ Window {
             //添加教育标签
             Item {
                 id: labEdu
-                visible: false
+                visible: !eduView.visible
                 y: 211
                 width: 384
                 height: 65
@@ -1150,17 +1318,86 @@ Window {
             ListView {
                 y: 211
                 property int realCount: 0
+                property bool isReadyToWrite: true
                 signal clicked(int index)
+                signal alter(var item)
+                signal del(var item)
                 id: eduView
                 interactive: false
+                visible: false
                 model: eduModel
                 width: 384
                 height: 65
+                //修改处理
+                onAlter: {
+                    console.log("alter education information")
+                    //提示等待修改完成
+                    if (!eduView.isReadyToWrite) {
+                        if (eduTipComp.status === Component.Ready) {
+                            console.log("eduTipWinComp status is Component.Ready")
+                            var tipObj = eduTipComp.createObject(win)
+                            if (!tipObj) {
+                                console.log("warning: eduTipWin instantiation failed")
+                                return
+                            }
+                            tipObj.show()
+                        } else
+                            eduView.isReadyToWrite = true
+                        return
+                    }
+                    eduView.isReadyToWrite = false
+                    if (addEduInfoComp.status === Component.Ready) {
+                        console.log("addEduInfoComp status is Component.Ready")
+                        var obj = addEduInfoComp.createObject(win)
+                        if (!obj) {
+                            eduView.isReadyToWrite = true
+                            console.log(" addEduInfoComp object creation fails")
+                            return
+                        }
+                        obj.fieldSchool.text = item.school
+                        var detail = item.detail
+                        detail = detail.split(",").filter(function (x) {
+                            return x !== ""
+                        })
+                        var f = item.flags
+                        var count = 0
+                        if (f.indexOf("1") !== -1) {
+                            obj.fieldInstitute.text = detail[count++]
+                        }
+                        if (f.indexOf("2") !== -1) {
+                            var temp = detail[count].substring(
+                                        0, detail[count].length - 1)
+                            obj.goCBox.currentIndex = obj.goCBox.find(temp)
+                            ++count
+                        }
+                        if (f.indexOf("3") !== -1) {
+                            obj.degreeCBox.currentIndex = obj.degreeCBox.find(
+                                        detail[count++])
+                        }
+                        obj.item = item //赋值代表是修改对话框，会在其关闭时复制回来
+                        obj.show()
+                    } else
+                        eduView.isReadyToWrite = true
+                }
+                //删除处理
+                onDel: {
+                    console.log("education information deletion")
+                    var index = item.index
+
+                    var length = eduModel.count
+                    for (var i = index + 1; i < length; ++i) {
+                        eduModel.setProperty(i, "r_index", i - 1)
+                    }
+                    eduModel.remove(index)
+                    okBtn.enabled = true
+                }
+
                 //点击大控件处理
                 onClicked: {
                     console.log("eduView clicked(int index) signal")
                     var conts = contentItem.children
-                    for (var i = 0; i < realCount; ++i) {
+                    var length = conts.length
+                    for (var i = 0; i < length; ++i) {
                         var temp = conts[i]
                         if (temp === undefined) {
                             console.log("warning:eduView  acquired a undefined child item")
@@ -1171,15 +1408,28 @@ Window {
                         }
                     }
                 }
+
+                //可视化控制
+                onCountChanged: {
+                    if (count > 0)
+                        eduView.visible = true
+                    else
+                        eduView.visible = false
+                }
+
                 delegate: EduInfo {
                     id: eduItem
                     school: r_school
                     detail: r_detail
+                    flags: r_flags
+                    index: r_index
                     onClicked: eduView.clicked(index)
-                    Component.onCompleted: {
-                        eduItem.index = eduView.realCount
-                        console.log("eduView.realCount=", eduItem.index)
-                        eduView.realCount += 1
+                    //传对象给视图处理添加删除事件
+                    addBtn.onClicked: {
+                        eduView.alter(eduItem)
+                    }
+                    delBtn.onClicked: {
+                        eduView.del(eduItem)
                     }
                 }
             }
@@ -1187,8 +1437,7 @@ Window {
             Label {
                 id: labMoreInfo
                 x: 15
-                anchors.top: eduView.bottom
-                anchors.topMargin: 20
+                y: eduView.visible ? (eduView.y + eduView.height + 20) : labEdu.y + 85
                 text: "更多资料"
                 font.family: "黑体"
                 font.pixelSize: 13
@@ -1197,6 +1446,7 @@ Window {
             }
             //更多资料内容
             ColumnLayout {
+                id: cont2
                 x: 15
                 y: labMoreInfo.y + labMoreInfo.height + 2
                 spacing: 10
@@ -1221,7 +1471,9 @@ Window {
                         font.pixelSize: 15
                         currentIndex: -1
                         editable: false
-                        // rightPadding: 30
+                        onCurrentTextChanged: {
+                            okBtn.enabled = true
+                        }
                         contentItem: Label {
                             leftPadding: 10
                             topPadding: 3
@@ -1330,6 +1582,10 @@ Window {
                     TextField {
                         id: fieldCorporation
                         font.family: "新宋体"
+                        onTextChanged: {
+                            okBtn.enabled = true
+                        }
+
                         background: Rectangle {
                             implicitWidth: 288
                             implicitHeight: 22
@@ -1357,6 +1613,11 @@ Window {
                         currentIndex: -1
                         editable: false
                         model: null
+                        displayText: where1Cbox.displayText + " " + where2Cbox.displayText + " "
+                                     + where3Cbox.displayText + " " + where4Cbox.displayText
+                        onDisplayTextChanged: {
+                            okBtn.enabled = true
+                        }
                         contentItem: Label {
                             leftPadding: 10
                             topPadding: 3
@@ -1402,6 +1663,7 @@ Window {
                                         textRole: "name"
                                         onCurrentIndexChanged: {
                                             var index = currentIndex
+
                                             if (index === -1) {
                                                 where1Cbox.currentIndex = -1
                                                 where2Cbox.enabled = false
@@ -1412,8 +1674,9 @@ Window {
                                                 countyModel1.clear()
                                             } else {
                                                 where2Cbox.enabled = true
-                                                where3Cbox.enabled = true
-                                                where4Cbox.enabled = true
+                                                where3Cbox.enabled = false
+                                                where4Cbox.enabled = false
+
                                                 var temp
                                                 var length
                                                 var i
@@ -1433,6 +1696,9 @@ Window {
                                                     }
                                                 }
                                             }
+                                        }
+                                        onEnabledChanged: {
+                                            where1Canvas.requestPaint()
                                         }
 
                                         contentItem: Item {
@@ -1488,7 +1754,6 @@ Window {
                                                     where1Canvas.requestPaint()
                                                 }
                                             }
-
                                             onPaint: {
                                                 var context = getContext("2d")
                                                 context.reset()
@@ -1512,7 +1777,11 @@ Window {
                                                                 height / 4 * 3)
                                                 }
                                                 context.closePath()
-                                                context.fillStyle = "#434343"
+                                                if (where1Cbox.enabled)
+                                                    context.fillStyle = "#434343"
+                                                else
+                                                    context.fillStyle = Qt.lighter(
+                                                                "#434343", 1.15)
                                                 context.fill()
                                             }
                                         }
@@ -1559,6 +1828,7 @@ Window {
                                         editable: false
 
                                         textRole: "name"
+
                                         onCurrentIndexChanged: {
                                             var index = currentIndex
                                             if (index === -1) {
@@ -1569,7 +1839,8 @@ Window {
                                                 countyModel1.clear()
                                             } else {
                                                 where3Cbox.enabled = true
-                                                where4Cbox.enabled = true
+                                                where4Cbox.enabled = false
+
                                                 var temp
                                                 var length
                                                 var i
@@ -1593,7 +1864,7 @@ Window {
                                                 }
                                                 //如果长度为1 传县区数据给它，其代表自治市
                                                 if (cityModel1.count == 1) {
-
+                                                    where4Cbox.isNeed = false
                                                     length = indivadualWin.countyModel.count
                                                     //添加县区数据到模型
                                                     cityModel1.clear()
@@ -1607,8 +1878,13 @@ Window {
                                                                               })
                                                         }
                                                     }
+                                                } else {
+                                                    where4Cbox.isNeed = true
                                                 }
                                             }
+                                        }
+                                        onEnabledChanged: {
+                                            where2Canvas.requestPaint()
                                         }
 
                                         contentItem: Item {
@@ -1688,7 +1964,11 @@ Window {
                                                                 height / 4 * 3)
                                                 }
                                                 context.closePath()
-                                                context.fillStyle = "#434343"
+                                                if (where2Cbox.enabled)
+                                                    context.fillStyle = "#434343"
+                                                else
+                                                    context.fillStyle = Qt.lighter(
+                                                                "#434343", 1.15)
                                                 context.fill()
                                             }
                                         }
@@ -1744,12 +2024,17 @@ Window {
                                                 countyModel1.clear()
                                             } else {
                                                 where4Cbox.enabled = true
+                                                if (!where4Cbox.isNeed) {
+                                                    where4Cbox.enabled = false
+                                                    return
+                                                }
                                                 var temp
                                                 var i
                                                 var length
                                                 temp = cityModel1.get(index).id
                                                 length = indivadualWin.countyModel.count
                                                 //添加县区数据到模型
+
                                                 countyModel1.clear()
                                                 for (i = 0; i < length; ++i) {
                                                     if (indivadualWin.countyModel.get(
@@ -1762,6 +2047,9 @@ Window {
                                                     }
                                                 }
                                             }
+                                        }
+                                        onEnabledChanged: {
+                                            where3Canvas.requestPaint()
                                         }
 
                                         contentItem: Item {
@@ -1841,7 +2129,11 @@ Window {
                                                                 height / 4 * 3)
                                                 }
                                                 context.closePath()
-                                                context.fillStyle = "#434343"
+                                                if (where3Cbox.enabled)
+                                                    context.fillStyle = "#434343"
+                                                else
+                                                    context.fillStyle = Qt.lighter(
+                                                                "#434343", 1.15)
                                                 context.fill()
                                             }
                                         }
@@ -1880,6 +2172,7 @@ Window {
                                     }
                                     //所在地4
                                     ComboBox {
+                                        property bool isNeed: true
                                         id: where4Cbox
                                         displayText: currentText
                                         font.family: "新宋体"
@@ -1887,6 +2180,9 @@ Window {
                                         currentIndex: -1
                                         editable: false
                                         textRole: "name"
+                                        onEnabledChanged: {
+                                            where4Canvas.requestPaint()
+                                        }
 
                                         contentItem: Item {
                                             width: 35
@@ -1965,7 +2261,11 @@ Window {
                                                                 height / 4 * 3)
                                                 }
                                                 context.closePath()
-                                                context.fillStyle = "#434343"
+                                                if (where4Cbox.enabled)
+                                                    context.fillStyle = "#434343"
+                                                else
+                                                    context.fillStyle = Qt.lighter(
+                                                                "#434343", 1.15)
                                                 context.fill()
                                             }
                                         }
@@ -2027,7 +2327,11 @@ Window {
                         font.pixelSize: 15
                         currentIndex: -1
                         editable: false
-                        // rightPadding: 30
+                        displayText: home1Cbox.displayText + " " + home2Cbox.displayText + " "
+                                     + home3Cbox.displayText + " " + home4Cbox.displayText
+                        onDisplayTextChanged: {
+                            okBtn.enabled = true
+                        }
                         contentItem: Label {
                             leftPadding: 10
                             topPadding: 3
@@ -2082,8 +2386,9 @@ Window {
                                                 countyModel2.clear()
                                             } else {
                                                 home2Cbox.enabled = true
-                                                home3Cbox.enabled = true
-                                                home4Cbox.enabled = true
+                                                home3Cbox.enabled = false
+                                                home4Cbox.enabled = false
+
                                                 var temp
                                                 var length
                                                 var i
@@ -2104,6 +2409,10 @@ Window {
                                                 }
                                             }
                                         }
+                                        onEnabledChanged: {
+                                            home1Canvas.requestPaint()
+                                        }
+
                                         contentItem: Item {
                                             width: 35
                                             height: 20
@@ -2181,7 +2490,11 @@ Window {
                                                                 height / 4 * 3)
                                                 }
                                                 context.closePath()
-                                                context.fillStyle = "#434343"
+                                                if (home1Cbox.enabled)
+                                                    context.fillStyle = "#434343"
+                                                else
+                                                    context.fillStyle = Qt.lighter(
+                                                                "#434343", 1.15)
                                                 context.fill()
                                             }
                                         }
@@ -2237,7 +2550,8 @@ Window {
                                                 countyModel2.clear()
                                             } else {
                                                 home3Cbox.enabled = true
-                                                home4Cbox.enabled = true
+                                                home4Cbox.enabled = false
+
                                                 var temp
                                                 var length
                                                 var i
@@ -2261,7 +2575,7 @@ Window {
                                                 }
                                                 //如果长度为1 传县区数据给它，其代表自治市
                                                 if (cityModel2.count == 1) {
-
+home4Cbox.isNeed = false
                                                     length = indivadualWin.countyModel.count
                                                     //添加县区数据到模型
                                                     cityModel2.clear()
@@ -2275,9 +2589,15 @@ Window {
                                                                               })
                                                         }
                                                     }
+                                                }else {
+                                                    home4Cbox.isNeed = true
                                                 }
                                             }
                                         }
+                                        onEnabledChanged: {
+                                            home2Canvas.requestPaint()
+                                        }
+
                                         contentItem: Item {
                                             width: 35
                                             height: 20
@@ -2355,7 +2675,11 @@ Window {
                                                                 height / 4 * 3)
                                                 }
                                                 context.closePath()
-                                                context.fillStyle = "#434343"
+                                                if (home2Cbox.enabled)
+                                                    context.fillStyle = "#434343"
+                                                else
+                                                    context.fillStyle = Qt.lighter(
+                                                                "#434343", 1.15)
                                                 context.fill()
                                             }
                                         }
@@ -2409,9 +2733,14 @@ Window {
                                                 countyModel2.clear()
                                             } else {
                                                 home4Cbox.enabled = true
+                                                if (! home4Cbox.isNeed) {
+                                                    home4Cbox.enabled = false
+                                                    return
+                                                }
                                                 var temp
                                                 var i
                                                 var length
+
                                                 temp = cityModel2.get(index).id
                                                 length = indivadualWin.countyModel.count
                                                 //添加县区数据到模型
@@ -2427,6 +2756,9 @@ Window {
                                                     }
                                                 }
                                             }
+                                        }
+                                        onEnabledChanged: {
+                                            home3Canvas.requestPaint()
                                         }
 
                                         contentItem: Item {
@@ -2506,7 +2838,11 @@ Window {
                                                                 height / 4 * 3)
                                                 }
                                                 context.closePath()
-                                                context.fillStyle = "#434343"
+                                                if (home3Cbox.enabled)
+                                                    context.fillStyle = "#434343"
+                                                else
+                                                    context.fillStyle = Qt.lighter(
+                                                                "#434343", 1.15)
                                                 context.fill()
                                             }
                                         }
@@ -2545,6 +2881,7 @@ Window {
                                     }
                                     //故乡4
                                     ComboBox {
+                                         property bool isNeed: true
                                         id: home4Cbox
                                         displayText: currentText
                                         font.family: "新宋体"
@@ -2552,6 +2889,9 @@ Window {
                                         currentIndex: -1
                                         editable: false
                                         textRole: "name"
+                                        onEnabledChanged: {
+                                            home3Canvas.requestPaint()
+                                        }
 
                                         contentItem: Item {
                                             width: 35
@@ -2631,7 +2971,11 @@ Window {
                                                                 height / 4 * 3)
                                                 }
                                                 context.closePath()
-                                                context.fillStyle = "#434343"
+                                                if (home4Cbox.enabled)
+                                                    context.fillStyle = "#434343"
+                                                else
+                                                    context.fillStyle = Qt.lighter(
+                                                                "#434343", 1.15)
                                                 context.fill()
                                             }
                                         }
@@ -2690,6 +3034,10 @@ Window {
                     TextField {
                         id: fieldPhone
                         font.family: "新宋体"
+                        onTextChanged: {
+                            okBtn.enabled = true
+                        }
+
                         background: Rectangle {
                             implicitWidth: 288
                             implicitHeight: 22
@@ -2721,10 +3069,12 @@ Window {
                             TextArea {
                                 id: editStatement
                                 padding: 4
-                                textFormat: TextEdit.RichText
                                 wrapMode: TextEdit.WrapAnywhere
                                 font.family: "新宋体"
                                 font.pixelSize: 13
+                                onTextChanged: {
+                                    okBtn.enabled = true
+                                }
                             }
                             background: Rectangle {
                                 border.width: viewStatement.hovered ? 2 : 1
@@ -2743,10 +3093,16 @@ Window {
         padding: 6
         x: 1
         y: win.height - 41
+        MouseCustomForWindow {
+            onSendPos: {
+                win.x += movedCoordinate.x
+                win.y += movedCoordinate.y
+            }
+        }
         background: Rectangle {
             implicitHeight: 35
             implicitWidth: win.width - 2
-            color: "#e5eff7"
+            color: "#dddddd"
         }
         RowLayout {
             x: bottomFrame.width / 2 + 4
@@ -2754,7 +3110,64 @@ Window {
             Layout.alignment: Qt.AlignTop
             Button {
                 id: okBtn
-                text: "确认"
+                text: "保存"
+                enabled: false
+                onClicked: {
+                    console.log("save button clicked")
+                    var obj = {}
+                    var name = fieldName.text.split(" ").filter(function (x) {
+                        return x !== ""
+                    })
+                    if (name.length < 1)
+                        return
+                    obj.name = fieldName.text
+                    obj.sex = sexCBox.currentText
+                    obj.birthday = birCBox.displayText
+                    obj.bloodGroup = bloodCBox.displayText
+                    obj.signature = editTag.text
+                    var length = eduModel.count
+                    var edu = []
+                    for (var i = 0; i < length; ++i) {
+                        var temp = {}
+                        var tempObj = eduModel.get(i)
+                        temp.school = tempObj.school
+                        temp.detail = tempObj.detail
+                        temp.flags = tempObj.flags
+                        edu[i] = temp
+                    }
+                    obj.edu = edu
+                    obj.profession = professCBox.displayText
+                    obj.corporation = fieldCorporation.displayText
+                    obj.where1 = where1Cbox.currentText
+                    obj.where2 = where2Cbox.currentText
+                    obj.where3 = where3Cbox.currentText
+                    obj.where4 = where4Cbox.currentText
+                    obj.home1 = home1Cbox.currentText
+                    obj.home2 = home2Cbox.currentText
+                    obj.home3 = home3Cbox.currentText
+                    obj.home4 = home4Cbox.currentText
+                    obj.phone = fieldPhone.text
+                    obj.statement = editStatement.text
+                    indivadualWin.updateInfo(obj)
+                    console.log("edit user's information win was closed")
+                    win.close()
+                }
+                background: Rectangle {
+                    implicitWidth: 72
+                    implicitHeight: 22
+                    border.width: 1
+                    radius: 3
+                    border.color: okBtn.activeFocus ? "#1583dd" : "lightgray"
+                    color: okBtn.hovered ? okBtn.pressed ? Qt.lighter(
+                                                               "#bee7fd",
+                                                               1.2) : "#bee7fd" : Qt.lighter(
+                                                               "#bee7fd", 1.4)
+                }
+            }
+            Button {
+                property var tx: null
+                id: cancelBtn
+                text: "取消"
                 onClicked: {
                     console.log("clicked okBtn,now win will be closed")
                     win.close()
@@ -2763,32 +3176,524 @@ Window {
                 background: Rectangle {
                     implicitWidth: 72
                     implicitHeight: 22
-                    color: okBtn.hovered ? (okBtn.pressed ? Qt.darker(
-                                                                "#12b7f5",
-                                                                1.25) : Qt.darker(
-                                                                "#12b7f5",
-                                                                1.10)) : "#12b7f5"
-                }
-            }
-            Button {
-                id: cancelBtn
-                text: "取消"
-                onClicked: {
-                    close()
-                }
-                background: Rectangle {
-                    implicitWidth: 72
-                    implicitHeight: 22
-                    color: cancelBtn.hovered ? (cancelBtn.pressed ? Qt.darker(
-                                                                        "#12b7f5",
-                                                                        1.25) : Qt.darker(
-                                                                        "#12b7f5",
-                                                                        1.10)) : "#12b7f5"
+                    radius: 3
+                    color: cancelBtn.hovered ? cancelBtn.pressed ? Qt.lighter(
+                                                                       "#bee7fd",
+                                                                       1.2) : "#bee7fd" : Qt.lighter(
+                                                                       "#bee7fd",
+                                                                       1.4)
+                    border.width: 1
+                    border.color: cancelBtn.activeFocus ? "#1583dd" : "lightgray"
                 }
             }
         }
     }
+    //部件
+    //添加教育信息界面
+    Component {
+        id: addEduInfoComp
+        Window {
+            property alias fieldSchool: fieldSchool
+            property alias fieldInstitute: fieldInstitute
+            property alias goCBox: goCBox
+            property alias degreeCBox: degreeCBox
+            property var item: null //一个信息框，用于修改信息框
+            id: addEduWin
+            visible: true
+            width: 386
+            height: 198
+            flags: Qt.FramelessWindowHint
+            color: "lightgray" //边界颜色
+            //关闭处理
+            onClosing: {
+                console.log("onClosing:interface for editing information")
+                hide() //不退出app
+                eduView.isReadyToWrite = true
+                //释放win资源
+                addEduWin.destroy()
+            }
+            MouseCustomForWindow {
+                onSendPos: {
+                    addEduWin.x += movedCoordinate.x
+                    addEduWin.y += movedCoordinate.y
+                }
+            }
+            //躯干
+            Rectangle {
+                x: 1
+                y: 1
+                width: 384
+                height: 196
+                //header 标题栏
+                Rectangle {
+                    id: header
+                    width: 384
+                    height: 30
+                    Image {
+                        id: headerImg
+                        sourceSize: Qt.size(384, 30)
+                        source: "qrc:/images/mainInterface/alterEditInfo.png"
+                    }
+                    RowLayout {
+                        x: header.width - 58
+                        spacing: 0
+                        Button {
+                            id: minBtn
+                            width: 30
+                            height: 30
+                            onClicked: {
+                                addEduWin.showMinimized()
+                            }
 
+                            background: Image {
+                                id: minImg
+                                sourceSize: Qt.size(30, 30)
+                                source: "qrc:/images/mainInterface/addEduHeader.png"
+                            }
+                            ColorOverlay {
+                                anchors.fill: minImg
+                                source: minImg
+                                color: minBtn.hovered ? (minBtn.pressed ? Qt.lighter(
+                                                                              "#12b7f5",
+                                                                              1.2) : Qt.lighter(
+                                                                              "#12b7f5",
+                                                                              1.4)) : "#12b7f5"
+                            }
+                        }
+                        Button {
+                            id: closeBtn
+                            width: 28
+                            height: 30
+                            onClicked: {
+                                addEduWin.close()
+                            }
+
+                            background: Image {
+                                id: closeImg
+                                sourceSize: Qt.size(28, 30)
+                                source: "qrc:/images/mainInterface/alterHeadClose.png"
+                            }
+                            ColorOverlay {
+                                anchors.fill: closeImg
+                                source: closeImg
+                                color: closeBtn.hovered ? (closeBtn.pressed ? Qt.darker("#d44027", 1.2) : "#d44027") : "#12b7f5"
+                            }
+                        }
+                    }
+                }
+                //信息复合框
+                GridLayout {
+                    x: 20
+                    y: 42
+                    columns: 2
+                    rowSpacing: 14
+                    columnSpacing: 20
+                    //学校//116 22
+                    RowLayout {
+                        spacing: 13
+                        Label {
+                            text: "*学  校"
+                            font.family: "新宋体"
+                            font.pixelSize: 14
+                            color: "gray"
+                        }
+                        TextField {
+                            id: fieldSchool
+                            width: 116
+                            height: 22
+                            font.family: "新宋体"
+                            font.pointSize: 10
+                            background: Rectangle {
+                                implicitWidth: 116
+                                implicitHeight: 22
+                                radius: 3
+                                color: "white"
+                                border.color: "lightgray"
+                            }
+                        }
+                    }
+                    RowLayout {
+                        spacing: 10
+                        Label {
+                            text: "院系"
+                            font.family: "新宋体"
+                            font.pointSize: 10
+                            color: "gray"
+                        }
+                        TextField {
+                            id: fieldInstitute
+                            font.family: "新宋体"
+                            width: 116
+                            height: 22
+                            font.pointSize: 10
+                            background: Rectangle {
+                                implicitWidth: 116
+                                implicitHeight: 22
+                                radius: 3
+                                color: "white"
+                                border.color: "lightgray"
+                            }
+                        }
+                    }
+                    RowLayout {
+                        spacing: 10
+                        Label {
+                            text: "入学时间"
+                            font.family: "新宋体"
+                            font.pointSize: 10
+                            color: "gray"
+                        }
+                        ComboBox {
+                            id: goCBox
+                            font.family: "新宋体"
+                            font.pixelSize: 12
+                            currentIndex: -1
+                            editable: false
+                            displayText: currentIndex != -1 ? (currentText + "年") : "请选择"
+                            contentItem: Label {
+                                leftPadding: 10
+                                topPadding: 5
+                                text: goCBox.displayText
+                                font: goCBox.font
+                                color: "black"
+                            }
+
+                            model: goModel
+
+                            delegate: ItemDelegate {
+                                id: goDet
+                                width: 114
+                                height: 24
+
+                                background: Rectangle {
+                                    color: goDet.highlighted ? "#fffcdc" : "#ffffff"
+                                    Text {
+                                        y: (parent.height - height) / 2
+                                        x: 8
+                                        text: modelData + "年"
+                                        color: "black"
+                                        font: goCBox.font
+                                        elide: Text.ElideRight
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+                                }
+                                highlighted: goCBox.highlightedIndex === index
+                            }
+
+                            indicator: Canvas {
+                                x: goCBox.width - width - goCBox.rightPadding
+                                y: goCBox.topPadding + (goCBox.availableHeight - height) / 2
+                                width: 10
+                                height: 10
+                                contextType: "2d"
+
+                                onPaint: {
+                                    context.reset()
+
+                                    context.moveTo(width / 2, height / 4)
+                                    context.lineTo(0, height / 4 * 3)
+                                    context.lineTo(width, height / 4 * 3)
+                                    context.closePath()
+                                    context.fillStyle = "#434343"
+                                    context.fill()
+                                }
+                            }
+
+                            background: Rectangle {
+                                implicitWidth: 116
+                                implicitHeight: 22
+                                border.color: goCBox.hovered ? "#1583dd" : "lightgray"
+                                border.width: goCBox.hovered ? 2 : 1
+                                radius: 3
+                            }
+
+                            popup: Popup {
+                                y: goCBox.height + 1
+                                width: 116
+                                height: 98
+                                padding: 2
+                                clip: true
+                                contentItem: ListView {
+                                    clip: true
+                                    implicitHeight: contentHeight
+                                    model: goCBox.delegateModel
+                                    currentIndex: goCBox.highlightedIndex
+                                    delegate: goCBox.delegate
+                                }
+                                background: Rectangle {
+                                    color: "white"
+                                    border.color: "lightgray"
+                                    border.width: 1
+                                    radius: 2
+                                }
+                            }
+                        }
+                    }
+                    RowLayout {
+                        spacing: 10
+                        Label {
+                            text: "学历"
+                            font.family: "新宋体"
+                            font.pointSize: 10
+                            color: "gray"
+                        }
+                        //学历
+                        ComboBox {
+                            id: degreeCBox
+
+                            font.family: "新宋体"
+                            font.pixelSize: 12
+                            currentIndex: -1
+                            displayText: currentIndex != -1 ? currentText : "请选择"
+                            editable: false
+                            contentItem: Label {
+                                leftPadding: 10
+                                topPadding: 5
+                                text: degreeCBox.displayText
+                                font: degreeCBox.font
+                                color: "black"
+                            }
+
+                            model: ["小学", "初中", "高中", "中专", "本科", "研究生", "博士", "博士后"]
+
+                            delegate: ItemDelegate {
+                                id: degreeDet
+                                width: 114
+                                height: 24
+
+                                background: Rectangle {
+                                    color: degreeDet.highlighted ? "#fffcdc" : "#ffffff"
+                                    Text {
+                                        y: (parent.height - height) / 2
+                                        x: 8
+                                        text: modelData
+                                        color: "black"
+                                        font: degreeCBox.font
+                                        elide: Text.ElideRight
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+                                }
+                                highlighted: degreeCBox.highlightedIndex === index
+                            }
+
+                            indicator: Canvas {
+                                x: degreeCBox.width - width - degreeCBox.rightPadding
+                                y: degreeCBox.topPadding + (degreeCBox.availableHeight - height) / 2
+                                width: 10
+                                height: 10
+                                contextType: "2d"
+
+                                onPaint: {
+                                    context.reset()
+
+                                    context.moveTo(width / 2, height / 4)
+                                    context.lineTo(0, height / 4 * 3)
+                                    context.lineTo(width, height / 4 * 3)
+                                    context.closePath()
+                                    context.fillStyle = "#434343"
+                                    context.fill()
+                                }
+                            }
+
+                            background: Rectangle {
+                                implicitWidth: 116
+                                implicitHeight: 22
+                                border.color: degreeCBox.hovered ? "#1583dd" : "lightgray"
+                                border.width: degreeCBox.hovered ? 2 : 1
+                                radius: 3
+                            }
+
+                            popup: Popup {
+                                y: degreeCBox.height + 1
+                                width: 116
+                                height: 98
+                                padding: 2
+                                clip: true
+                                contentItem: ListView {
+                                    clip: true
+                                    implicitHeight: contentHeight
+                                    model: degreeCBox.delegateModel
+                                    currentIndex: degreeCBox.highlightedIndex
+                                    delegate: degreeCBox.delegate
+                                }
+                                background: Rectangle {
+                                    color: "white"
+                                    border.color: "lightgray"
+                                    border.width: 1
+                                    radius: 2
+                                }
+                            }
+                        }
+                    }
+                }
+                //按钮
+                RowLayout {
+                    spacing: 3
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    anchors.rightMargin: 20
+                    anchors.bottomMargin: 20
+                    Button {
+                        Text {
+                            y: (parent.height - height) / 2
+                            x: (parent.width - width) / 2
+                            text: qsTr("保存")
+                            color: "white"
+                        }
+                        onClicked: {
+                            var school = fieldSchool.text.lastIndexOf(" ")
+                            if (school !== -1)
+                                return
+                            school = fieldSchool.text.split(" ").join("")
+                            var inst = fieldInstitute.text.split(" ").filter(
+                                        function (x) {
+                                            return x !== ""
+                                        })
+                            if (inst.length > 1)
+                                return
+                            var flags = ""
+                            var detail = []
+                            var _1 = inst.join("")
+                            if (_1 !== "") {
+                                detail[detail.length] = _1
+                                flags += "1"
+                            }
+                            if (goCBox.currentIndex != -1) {
+                                detail[detail.length] = goCBox.currentText + "级"
+                                flags += "2"
+                            }
+                            if (degreeCBox.currentIndex != -1) {
+                                detail[detail.length] = degreeCBox.currentText
+                                flags += "3"
+                            }
+                            detail = detail.join(",")
+                            if (item !== null) {
+                                item.school = school
+                                item.detail = detail
+                                item.flags = flags
+                            } else
+                                win.addEduInfo(school, detail, flags)
+                            win.okBtn.enabled = true
+                            addEduWin.close()
+                        }
+
+                        width: 65
+                        height: 25
+                        background: Rectangle {
+                            implicitHeight: 25
+                            implicitWidth: 65
+                            color: "#12b7f5"
+                        }
+                    }
+                    Button {
+                        text: "取消"
+                        width: 65
+                        height: 25
+                        onClicked: {
+                            addEduWin.close()
+                        }
+
+                        background: Rectangle {
+                            implicitHeight: 25
+                            implicitWidth: 65
+                            color: "transparent"
+                            border.color: "lightgray"
+                        }
+                    }
+                }
+            }
+            //模型
+            //学级模型
+            ListModel {
+                id: goModel
+                Component.onCompleted: {
+                    var cur = parseInt(new Date().toJSON().substring(0, 4))
+                    var last = parseInt((cur - 70) / 10) * 10
+                    for (var i = cur; i >= last; --i) {
+                        goModel.append({
+                                           "modelData": i
+                                       })
+                    }
+                }
+            }
+        }
+    }
+    //正在编辑教育信息提示窗口
+    Component {
+        id: eduTipComp
+        Window {
+            id: eduTipWin
+            visible: true
+            width: 338
+            height: 153
+            flags: Qt.FramelessWindowHint | Qt.Window //显示任务栏
+            color: "lightgray" //边界颜色
+            title: "提示"
+            onClosing: {
+                hide()
+                eduTipWin.destroy()
+            }
+            MouseCustomForWindow {
+                onSendPos: {
+                    eduTipWin.x += movedCoordinate.x
+                    eduTipWin.y += movedCoordinate.y
+                }
+            }
+            BorderImage {
+                source: "qrc:/images/mainInterface/addEduTipback.png"
+                width: 338
+                height: 153
+                border.left: 5
+                border.top: 5
+                border.right: 5
+                border.bottom: 5
+            }
+            //关闭
+            Button {
+                id: closeBtn
+                x: 309
+                y: 1
+                width: 28
+                height: 30
+                onClicked: {
+                    console.log("closed win")
+                    close()
+                }
+
+                background: Image {
+                    id: closeImg
+                    sourceSize: Qt.size(28, 30)
+                    source: "qrc:/images/mainInterface/alterHeadClose.png"
+                }
+                ColorOverlay {
+                    anchors.fill: closeImg
+                    source: closeImg
+                    color: closeBtn.hovered ? (closeBtn.pressed ? Qt.darker(
+                                                                      "#d44027",
+                                                                      1.2) : "#d44027") : "#12b7f5"
+                }
+            }
+            //确认
+            Button {
+                id: okBtn
+                text: "确定"
+                x: 254
+                y: 122
+                width: 69
+                height: 24
+                onClicked: closeBtn.clicked()
+                background: Rectangle {
+                    implicitHeight: 24
+                    implicitWidth: 69
+                    radius: 3
+                    color: okBtn.hovered ? okBtn.pressed ? Qt.lighter(
+                                                               "#bee7fd",
+                                                               1.2) : "#bee7fd" : Qt.lighter(
+                                                               "#bee7fd", 1.4)
+                }
+            }
+        }
+    }
     //模型
     //公历年份
     ListModel {
@@ -2823,16 +3728,6 @@ Window {
         onCountChanged: {
             console.log("countchanged")
             eduView.height = 65 * count
-        }
-        Component.onCompleted: {
-            eduModel.append({
-                                "r_school": "小学",
-                                "r_detail": "2019"
-                            })
-            eduModel.append({
-                                "r_school": "daxue",
-                                "r_detail": "2019"
-                            })
         }
     }
     //province模型

@@ -1,6 +1,6 @@
 ﻿import QtQuick 2.0
 import QtQuick.Controls 2.5
-
+//qqmainwin菜单栏的升级和关于按钮
 ToolButton {
     property alias recBackground: recBackg
     property alias iconL: img

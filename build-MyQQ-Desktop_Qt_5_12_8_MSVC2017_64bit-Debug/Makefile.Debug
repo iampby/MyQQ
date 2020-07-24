@@ -345,6 +345,7 @@ debug\qrc_qml_qmlcache.obj: qml_qmlcache.qrc \
 		..\images\mainInterface\star.png \
 		..\images\mainInterface\userInfoDefault.png \
 		..\images\mainInterface\arrowBottom.png \
+		..\images\mainInterface\addEduHeader.png \
 		..\images\mainInterface\mesClose.png \
 		..\images\mainInterface\headInfBgd.png \
 		..\images\mainInterface\alterCover.png \
@@ -361,6 +362,7 @@ debug\qrc_qml_qmlcache.obj: qml_qmlcache.qrc \
 		..\images\mainInterface\qqMinimum.png \
 		..\images\mainInterface\qqCloseC.png \
 		..\images\mainInterface\iconSearch.png \
+		..\images\mainInterface\addEduTipback.png \
 		..\images\mainInterface\wind.png \
 		..\images\mainInterface\infManager.png \
 		..\images\mainInterface\qqClose.png \

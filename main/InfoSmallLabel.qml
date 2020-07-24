@@ -21,6 +21,8 @@ Item {
         id: aftLabel
         x: 70
         leftPadding: 0
+        width: 224
+        wrapMode: Text.WrapAnywhere
         font.family: "宋体"
         font.pointSize: 10
         MouseForShape {

@@ -2,9 +2,13 @@
 import QtQuick.Controls 2.5
 import QtQuick.Layouts 1.12
 
+//编辑资料的教育经验信息块
 Rectangle {
-    property string school: ""
+    property alias addBtn: addBtn
+    property alias delBtn: delBtn
     property string detail: ""
+    property string school: ""
+    property string flags: ""
     property bool isChecked: false
     property int index: -1
     signal clicked(int index)
@@ -28,7 +32,7 @@ Rectangle {
         width: 250
         height: 20
         text: school
-        font.pointSize: 11
+        font.pointSize:10
         font.family: "新宋体"
         elide: Text.ElideRight
     } //ebebeb
@@ -40,7 +44,7 @@ Rectangle {
         width: 250
         height: 20
         color: "gray"
-        font.pointSize: 11
+        font.pointSize: 9
         font.family: "新宋体"
         elide: Text.ElideRight
     }
@@ -69,20 +73,17 @@ Rectangle {
         y: 25
         spacing: 15
         Button {
-            onClicked: {
-                console.log("tran can button clicked")
-            }
+            id: addBtn
+            hoverEnabled: false
             background: Image {
-                source: "qrc:/images/mainInterface/trashCan.png"
+                source: "qrc:/images/mainInterface/pen.png"
             }
         }
         Button {
-            onClicked: {
-                console.log("pen button clicked")
-            }
-
+            id: delBtn
+            hoverEnabled: false
             background: Image {
-                source: "qrc:/images/mainInterface/pen.png"
+                source: "qrc:/images/mainInterface/trashCan.png"
             }
         }
     }

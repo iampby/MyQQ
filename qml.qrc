@@ -120,5 +120,7 @@
         <file>images/mainInterface/pen.png</file>
         <file>images/mainInterface/trashCan.png</file>
         <file>main/EduInfo.qml</file>
+        <file>images/mainInterface/addEduHeader.png</file>
+        <file>images/mainInterface/addEduTipback.png</file>
     </qresource>
 </RCC>

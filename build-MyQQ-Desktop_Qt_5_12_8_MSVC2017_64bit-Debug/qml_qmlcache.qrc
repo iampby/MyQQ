@@ -91,5 +91,7 @@
         <file alias="images/mainInterface/alterEditInfo.png">../images/mainInterface/alterEditInfo.png</file>
         <file alias="images/mainInterface/pen.png">../images/mainInterface/pen.png</file>
         <file alias="images/mainInterface/trashCan.png">../images/mainInterface/trashCan.png</file>
+        <file alias="images/mainInterface/addEduHeader.png">../images/mainInterface/addEduHeader.png</file>
+        <file alias="images/mainInterface/addEduTipback.png">../images/mainInterface/addEduTipback.png</file>
     </qresource>
 </RCC>
