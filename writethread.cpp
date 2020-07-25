@@ -11,6 +11,8 @@
 #include <qdatetime.h>
 #include<QDomDocument>
 #include<qbuffer.h>
+#include<QSqlRecord>
+#include<qthread.h>
 WriteThread::WriteThread(qintptr socketDescriptor, qint64 count,  QObject *parent)
     :QObject(parent),socketDescriptor(socketDescriptor),count(count)
 {
@@ -118,7 +120,7 @@ bool WriteThread::adjustHistoryImg(QByteArray &bytes, const QString &filePath, c
                 qDebug()<<"json write is of failure,named  "<<markedFile->fileName();
             muter->unlock();
         }else {
-            label:
+label:
             QFile* markedFile=new QFile(tagDir.filePath(tagName));
             if(markedFile->open(QIODevice::ReadWrite)){
                 QJsonDocument jsonDoc;
@@ -185,39 +187,39 @@ bool WriteThread::updateSignature(QByteArray &bytes)
     doc.setContent(&infoxml);
     infoxml.close();
     QDomElement dele=doc.documentElement();
-dele=dele.firstChildElement("friendGroup");
-QDomNodeList listGroup=dele.childNodes();
-QVector<QString>friends;//保存好友号码
-for (int var = 0; var < listGroup.size(); ++var) {
-    QDomElement ele=listGroup.at(var).toElement();
-    qDebug()<<ele.tagName();
-    if(ele.hasChildNodes()){
-        QDomElement friendEle=ele.firstChild().toElement();
-        while(!friendEle.isNull()){
-            QString mq=friendEle.attribute("myqq");
-            if(!mq.isEmpty()){
-                qDebug()<<"a number is found:"<<mq;
-                friends.append(mq);
-                if(mq==myqq){
-                   QDomElement myself=friendEle.firstChildElement(QStringLiteral("个性签名"));
-                   if(!myself.isNull()){
-                       qDebug()<<"find myself "<<mq<<" signature:"<<myself.text();
-                     QDomElement newele=doc.createElement(QStringLiteral("个性签名"));
-                     QDomText t=doc.createTextNode(QString::fromUtf8(bytes));//保存签名
-                     newele.appendChild(t);
-                     friendEle.replaceChild(newele,myself);//替换
-                   }
+    dele=dele.firstChildElement("friendGroup");
+    QDomNodeList listGroup=dele.childNodes();
+    QVector<QString>friends;//保存好友号码
+    for (int var = 0; var < listGroup.size(); ++var) {
+        QDomElement ele=listGroup.at(var).toElement();
+        qDebug()<<ele.tagName();
+        if(ele.hasChildNodes()){
+            QDomElement friendEle=ele.firstChild().toElement();
+            while(!friendEle.isNull()){
+                QString mq=friendEle.attribute("myqq");
+                if(!mq.isEmpty()){
+                    qDebug()<<"a number is found:"<<mq;
+                    friends.append(mq);
+                    if(mq==myqq){
+                        QDomElement myself=friendEle.firstChildElement(QStringLiteral("个性签名"));
+                        if(!myself.isNull()){
+                            qDebug()<<"find myself "<<mq<<" signature:"<<myself.text();
+                            QDomElement newele=doc.createElement(QStringLiteral("个性签名"));
+                            QDomText t=doc.createTextNode(QString::fromUtf8(bytes));//保存签名
+                            newele.appendChild(t);
+                            friendEle.replaceChild(newele,myself);//替换
+                        }
+                    }
                 }
+                friendEle=friendEle.nextSiblingElement();
             }
-            friendEle=friendEle.nextSiblingElement();
         }
     }
-}
-infoxml.open(QIODevice::WriteOnly);//只写覆盖
-QTextStream stream(&infoxml);
-stream.setCodec("utf-8");
-doc.save(stream,4,QDomNode::EncodingFromTextStream);
-infoxml.close();
+    infoxml.open(QIODevice::WriteOnly);//只写覆盖
+    QTextStream stream(&infoxml);
+    stream.setCodec("utf-8");
+    doc.save(stream,4,QDomNode::EncodingFromTextStream);
+    infoxml.close();
 
     qDebug()<<"number of friends is equal to"<<friends.length();
     //循环遍历全局文件对象，查找是否有标记文件，标记文件保存着那些好友头像发生了变化的号码
@@ -234,7 +236,7 @@ infoxml.close();
             if(!sigFiles.contains(v)){
                 qDebug()<<"notice:marked markedSignatureAndName.json file  just now  was deleted from other thread";
                 muter->unlock();
-               sigMuter.remove(v);
+                sigMuter.remove(v);
                 delete muter,muter=nullptr;//删除指针
                 goto label;//如果文件已经移除，重新更新文件
             }
@@ -257,7 +259,7 @@ infoxml.close();
                 qDebug()<<"json write is of failure,named  "<<markedFile->fileName();
             muter->unlock();
         }else {
-            label:
+label:
             QFile* markedFile=new QFile(tagDir.filePath(tagName));
             if(markedFile->open(QIODevice::ReadWrite)){
                 QJsonDocument json;
@@ -276,7 +278,7 @@ infoxml.close();
                 sigMuter.insert(v,muter);
             }else{
                 qDebug()<<"json write is of failure,named  "<<markedFile->fileName();
-             delete markedFile,markedFile=nullptr;
+                delete markedFile,markedFile=nullptr;
             }
         }
 
@@ -287,15 +289,15 @@ infoxml.close();
 bool WriteThread::updateCover(QByteArray &bytes)
 {
     QPixmap pix;
-   if(! pix.loadFromData(bytes)){
+    if(! pix.loadFromData(bytes)){
         qDebug()<<"warning:cover is not loaded,the number is equal to "<<myqq;
         return false;
     }
-   if(!pix.save("../userData/"+myqq+"/cover","png")){
-       qDebug()<<"warning:cover is not saved suffix is png,the number is equal to "<<myqq;
-       return false;
-   }
-   return true;
+    if(!pix.save("../userData/"+myqq+"/cover","png")){
+        qDebug()<<"warning:cover is not saved suffix is png,the number is equal to "<<myqq;
+        return false;
+    }
+    return true;
 }
 
 bool WriteThread::updateWall(QByteArray &bytes)
@@ -311,54 +313,155 @@ bool WriteThread::updateWall(QByteArray &bytes)
         stream>>temp;
         sizeVctor.append(temp);
     }
-   QBuffer buff(&bytes);
-   if(!buff.open(QIODevice::ReadOnly)){
-       qDebug()<<" data of photo-wall acquisition failed";
-       return false;
-   }
-   qint64 pos=1+length*4;
-   if(bytes.size()<pos)return false;
-   buff.seek(pos);//移动到数据段
-   //获取图片数据
-  for(quint8 i=0;i<length;i++){
-      QByteArray temp;
-      temp.resize(sizeVctor.at(i));
-      temp=buff.read(sizeVctor.at(i));
-      QPixmap pix;
-      pix.loadFromData(temp);
-     if(pix.isNull()){
-         qDebug()<<" data is null for a pixmap of photo wall ";
-         continue;
-     }
-     pixVector.append(pix);
-  }
-  length=pixVector.size();
-   QDir dir("../userData/"+myqq+"/photoWall");
-   if(!dir.exists()){
-       dir.mkpath("./");//创建当前目录
-   }
-   QStringList list;
-   list =dir.entryList(QStringList("*"),QDir::Files);
-   if(list.length()>0)
-   for (qint8 var = list.length()-1; var >=0; --var) {
-       QFile file(dir.filePath(QString("%1").arg(var)));
-       quint8 temp=var+length;
-       if(temp>8){
-           qDebug()<<"warning: photo wall is acquired more planed data,the number is"<<myqq<<var;
-           file.remove();
-          return false;
-       }
-       file.rename(dir.filePath(QString("%1").arg(temp)));
-   }
-   bool ok=true;
-   for (quint8 var = 0; var < length; ++var) {
-      QPixmap& temp=pixVector[var];
-      if(!temp.save(dir.absoluteFilePath(QString("%1").arg(var)),"png")){
-          qDebug()<<"warning:photo wall is of failure to update a piamap";
-          ok=false;
-      }
-   }
-   return ok;
+    QBuffer buff(&bytes);
+    if(!buff.open(QIODevice::ReadOnly)){
+        qDebug()<<" data of photo-wall acquisition failed";
+        return false;
+    }
+    qint64 pos=1+length*4;
+    if(bytes.size()<pos)return false;
+    buff.seek(pos);//移动到数据段
+    //获取图片数据
+    for(quint8 i=0;i<length;i++){
+        QByteArray temp;
+        temp.resize(sizeVctor.at(i));
+        temp=buff.read(sizeVctor.at(i));
+        QPixmap pix;
+        pix.loadFromData(temp);
+        if(pix.isNull()){
+            qDebug()<<" data is null for a pixmap of photo wall ";
+            continue;
+        }
+        pixVector.append(pix);
+    }
+    length=pixVector.size();
+    QDir dir("../userData/"+myqq+"/photoWall");
+    if(!dir.exists()){
+        dir.mkpath("./");//创建当前目录
+    }
+    QStringList list;
+    list =dir.entryList(QStringList("*"),QDir::Files);
+    if(list.length()>0)
+        for (qint8 var = list.length()-1; var >=0; --var) {
+            QFile file(dir.filePath(QString("%1").arg(var)));
+            quint8 temp=var+length;
+            if(temp>8){
+                qDebug()<<"warning: photo wall is acquired more planed data,the number is"<<myqq<<var;
+                file.remove();
+                return false;
+            }
+            file.rename(dir.filePath(QString("%1").arg(temp)));
+        }
+    bool ok=true;
+    for (quint8 var = 0; var < length; ++var) {
+        QPixmap& temp=pixVector[var];
+        if(!temp.save(dir.absoluteFilePath(QString("%1").arg(var)),"png")){
+            qDebug()<<"warning:photo wall is of failure to update a piamap";
+            ok=false;
+        }
+    }
+    return ok;
+}
+
+bool WriteThread::updateUserInfo(QByteArray &bytes)
+{
+    qDebug()<<"updateUserInfo(QByteArray &bytes) called";
+    QJsonDocument doc=QJsonDocument::fromBinaryData(bytes);
+    if(doc.isObject()){
+        QJsonObject obj=doc.object();
+
+        QString name=obj.value("name").toString();
+        if(name.isEmpty()){
+            qDebug()<<"name is empty";
+            return false;
+        }
+        QString  birthday=obj.value("birthday").toString();
+        if(birthday.length()<8){
+            qDebug()<<"the format is not corrected for birthday that is "<<birthday<<birthday.size();
+            return false  ;
+        }
+        QString blooGroup=obj.value("blooGroup").toString();
+        if(blooGroup.isNull())blooGroup="";//空值替换
+        QString sex=obj.value("sex").toString();
+        if(sex.isNull())sex="";
+        QString personalStatement=obj.value("personalStatement").toString();
+        if(personalStatement.isNull())personalStatement="";
+        QString profession=obj.value("profession").toString();
+        if(profession.isNull())profession="";
+        QString corporation=obj.value("corporation").toString();
+        if(corporation.isNull())corporation="";
+        QString where1=obj.value("where1").toString();
+        if(where1.isNull())where1="";
+        QString where2=obj.value("where2").toString();
+        if(where2.isNull())where2="";
+        QString where3=obj.value("where3").toString();
+        if(where3.isNull())where3="";
+        QString where4=obj.value("where4").toString();
+        if(where4.isNull())where4="";
+        QString home1=obj.value("home1").toString();
+        if(home1.isNull())home1="";
+        QString home2=obj.value("home2").toString();
+        if(home2.isNull())home2="";
+        QString home3=obj.value("home3").toString();
+        if(home3.isNull())home3="";
+        QString home4=obj.value("home4").toString();
+        if(home4.isNull())home4="";
+        QString phone=obj.value("phone").toString();
+        if(phone.isEmpty())phone="0";
+        QString education=obj.value("education").toString();
+        if(education.isNull())education="";
+        //用精确到秒的时间和100个值范围的count计数来控制1秒内可以打开的数据库连接，即100个
+        QSqlDatabase db=QSqlDatabase::addDatabase("QODBC",QDateTime::currentDateTime().toString("yy-M-d h:m:s")+QString("%1").arg(count));
+
+        QString connectString = QStringLiteral(
+                    "DRIVER={sql server};"
+                    "SERVER=127.0.0.1;"
+                    "DATABASENAME:qtmanager;"
+                    "PORT:1433;"
+                    "UID=sa;"
+                    "PWD=123456x;");
+        db.setDatabaseName(connectString);
+        if(db.open())
+            qDebug()<<QStringLiteral("打开数据库成功！");
+        else {
+            qDebug()<<QStringLiteral("打开数据库失败！");
+            return false;
+        }
+        qDebug()<<"login"<<db.connectionName()<<db.databaseName();
+        QSqlQuery query(" use myqq ",db);
+        //@name varchar(24),@sex varchar(2),@birthday date,@blooGroup varchar(8),@home1 varchar(20),@home2 varchar(20),@home3 varchar(20),
+        // @home4 varchar(20), @where1 varchar(20),@where2 varchar(20),@where3 varchar(20),@where4 varchar(20),@profession varchar(24),
+        // @corporation varchar(80),@personalStatement varchar(162),@phone numeric(11,0),@education varchar(250),@myqq bigint
+        query.prepare(" exec updateUserInformation ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? ");
+        query.addBindValue(QVariant(name));
+        query.addBindValue(QVariant(sex));
+        query.addBindValue(QVariant(birthday));
+        query.addBindValue(QVariant(blooGroup));
+        query.addBindValue(QVariant(home1));
+        query.addBindValue(QVariant(home2));
+        query.addBindValue(QVariant(home3));
+        query.addBindValue(QVariant(home4));
+        query.addBindValue(QVariant(where1));
+        query.addBindValue(QVariant(where2));
+        query.addBindValue(QVariant(where3));
+        query.addBindValue(QVariant(where4));
+        query.addBindValue(QVariant(profession));
+        query.addBindValue(QVariant(corporation));
+        query.addBindValue(QVariant(personalStatement));
+        query.addBindValue(QVariant(phone.toLongLong()));
+        query.addBindValue(QVariant(education));
+        query.addBindValue(QVariant(myqq));
+        bool ok= query.exec();
+        if(ok){
+            qDebug()<<"query.exec() successfully"  ;
+        }else  {
+            qDebug()<<"query.exec() unsuccessfully";
+            return ok;
+        }
+    }else{
+        qDebug()<<"it's not object";
+        return false;
+    }
 }
 
 void WriteThread::timer()
@@ -383,7 +486,7 @@ void WriteThread::readD()
             quint8 l;
             stream>>l;
             if(l<=0){
-                qDebug()<<"l="<<l;
+                qDebug()<<"note:l="<<l;
                 continue;
             }
             size=l;
@@ -449,6 +552,19 @@ void WriteThread::readD()
                         size=1;
                         continue;
                     }
+                }else if(in=="10"){
+                    QString content=obj.value("content").toString();
+                    if(content=="updateUserInformation"){
+                        myqq=obj.value("myqq").toString();
+                        if(myqq.isEmpty()){
+                            qDebug()<<"warning:myqq.isEmpty()";
+                            tcpsocket->disconnectFromHost();
+                            return;//退出线程
+                        }
+                        FT=UserInformation;
+                        size=1;
+                        continue;
+                    }
                 }
             }
         }else{
@@ -466,6 +582,9 @@ void WriteThread::readD()
             case PhotoWall:
                 bytes.append(data);
                 break;
+            case UserInformation:
+                bytes.append(data);
+                break;
             default:
                 return;
             }
@@ -476,6 +595,7 @@ void WriteThread::readD()
 void WriteThread::disconnected()
 {
     qDebug()<<"  Write QTcpSocket disconnected";
+    qDebug()<<"writethread: the executing thread is "<<this->thread()->currentThread();
     size=0;
     switch (FT) {
     //更新历史头像
@@ -500,6 +620,12 @@ void WriteThread::disconnected()
     case PhotoWall:
         if(updateWall(bytes)){
             qDebug()<<"updated photo wall successfully";
+        }
+        break;
+        //更新用户资料
+    case UserInformation:
+        if(updateUserInfo(bytes)){
+            qDebug()<<"updated user information successfully";
         }
         break;
     default:

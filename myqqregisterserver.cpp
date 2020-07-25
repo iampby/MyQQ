@@ -25,6 +25,7 @@ MyQQRegisterServer::~MyQQRegisterServer()
 
 bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd, qint64 &myqq)
 {
+    qDebug()<<"register executing thread is "<<this->thread()->currentThread();
     qDebug()<<name<<passwd;
     QMutex m;
    m.lock();//¸øcountÉÏËø

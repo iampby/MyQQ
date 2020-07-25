@@ -83,7 +83,7 @@ void LoginThread::timer()
 
 void LoginThread::readD()
 {
-
+qDebug()<<"login executing thread is "<<this->thread()->currentThread();
     //用精确到秒的时间和100个值范围的count计数来控制1秒内可以打开的数据库连接，即100个
     QSqlDatabase db=QSqlDatabase::addDatabase("QODBC",QDateTime::currentDateTime().toString("yy-M-d h:m:s")+QString("%1").arg(count));
 
@@ -189,7 +189,7 @@ void LoginThread::readD()
                                             QByteArray img;
                                             byteSize=headImg.size();
                                             img.resize(byteSize);
-                                            //QByteArray 会在写入时复制而不是引用，如此必须设定大小
+                                            //QByteArray 必须设定大小
                                             qint64 imgSize=headImg.read(img.data(),byteSize);
                                             headImg.close();
                                             if(imgSize!=-1){
@@ -251,7 +251,7 @@ void LoginThread::readD()
                                                         writeObj.insert(QStringLiteral("故乡"),QJsonValue(hometown));
                                                         writeJson.setObject(writeObj);
                                                         s=writeJson.toJson().size();
-                                                        QByteArray size3;//重写一个size头 不能复用size，每写入一次都会膨胀
+                                                        QByteArray size3;//重写一个size头 不能复用size，否则每写入一次都会膨胀
                                                         QDataStream stream3(&size3,QIODevice::WriteOnly);
                                                         stream3.setVersion(QDataStream::Qt_4_0);
                                                         stream3<<s;
@@ -936,6 +936,7 @@ label:
                         tcpsocket->disconnectFromHost();
                     }
                     return;
+                    //个性资料发送
                 }else if(in.toString()=="8"){
                     QString value=obj.value("content").toString();
                     QString myqq=obj.value("myqq").toString();
@@ -943,7 +944,7 @@ label:
                     //传myself个性资料
                     if(value=="getPersonalData"){
                         bool ok=true;
-                        if(query.exec(" exec myselfInformation "+myqq)){
+                        if(query.exec("exec myselfInformation "+myqq)){
 
                             qDebug()<<"query is of success for personal information";
                             query.next();

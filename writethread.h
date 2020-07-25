@@ -14,14 +14,16 @@ public:
         HistoryHeadImage,
         Signature,
         CoverImage,
-        PhotoWall
+        PhotoWall,
+        UserInformation,
     };
     WriteThread(qintptr socketDescriptor,qint64 count,QObject *parent = nullptr);
     ~WriteThread();
-    bool adjustHistoryImg(QByteArray&bytes,const QString&filePath,const QString&fileType);
-    bool updateSignature(QByteArray&bytes);
-    bool updateCover(QByteArray&bytes);
-    bool updateWall(QByteArray&bytes);
+    bool adjustHistoryImg(QByteArray&bytes,const QString&filePath,const QString&fileType);//更新历史头像
+    bool updateSignature(QByteArray&bytes);//更新个性签名
+    bool updateCover(QByteArray&bytes);//更新用户资料封面
+    bool updateWall(QByteArray&bytes);//更新用户照片墙
+    bool updateUserInfo(QByteArray&bytes);//更新用户信息
 signals:
     void error(QAbstractSocket::SocketError);
     void finished();
