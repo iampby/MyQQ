@@ -46,7 +46,7 @@ Window {
         bir = indivadualWin.bir
         bloodGroup = indivadualWin.bloodGroup
         personalStatement = indivadualWin.personalStatement
-        educationExperence = indivadualWin.educationExperence
+        // educationExperence = indivadualWin.educationExperence
         profession = indivadualWin.profession
         corporation = indivadualWin.corporation
         phone = indivadualWin.phone
@@ -59,6 +59,23 @@ Window {
         home3 = indivadualWin.home3
         home4 = indivadualWin.home4
         fieldName.text = qqMainWin.name
+        //教育经历
+        var temp
+        var i
+        var length
+        length = indivadualWin.eduModel.count
+        for (i = 0; i < length; ++i) {
+            eduModel.append({
+                                "r_school": indivadualWin.eduModel.get(
+                                                i).r_school,
+                                "r_detail": indivadualWin.eduModel.get(
+                                                i).r_detail,
+                                "r_flags": indivadualWin.eduModel.get(
+                                               i).r_flags,
+                                "r_index": i
+                            })
+        }
+
         //性别设置
         switch (qqMainWin.sex) {
         case '女':
@@ -116,7 +133,8 @@ Window {
         if (index !== -1) {
             dayCbox.currentIndex = index
         } else {
-            console.log("the day part of birthday is not found")
+            console.log("the day part of birthday is not found value is ",
+                        bir[2])
             dayCbox.currentIndex = 0
         }
         editTag.text = qqMainWin.signature
@@ -133,54 +151,45 @@ Window {
         case "金融/银行/投资/保险":
             professCBox.currentIndex = 3
             break
-        case "生产/工艺/制造":
+        case "商业/服务业/个体经营":
             professCBox.currentIndex = 4
             break
-        case "医疗/治理/制药":
+        case "文化/广告/传媒":
             professCBox.currentIndex = 5
             break
-        case "商业/服务业/个体经营":
+        case "娱乐/艺术/表演":
             professCBox.currentIndex = 6
             break
-        case "文化/广告/传媒":
+        case "律师/法务":
             professCBox.currentIndex = 7
             break
-        case "娱乐/艺术/表演":
+        case "教育/培训":
             professCBox.currentIndex = 8
             break
-        case "律师/法务":
+        case "公务员/行政/事业单位":
             professCBox.currentIndex = 9
             break
-        case "教育/培训":
+        case "模特":
             professCBox.currentIndex = 10
             break
-        case "公务员/行政/事业单位":
+        case "空姐":
             professCBox.currentIndex = 11
             break
-        case "模特":
+        case "学生":
             professCBox.currentIndex = 12
             break
-        case "空姐":
-            professCBox.currentIndex = 13
-            break
-        case "学生":
-            professCBox.currentIndex = 14
-            break
         case "其他":
-            professCBox.currentIndex = 15
+            professCBox.currentIndex = 13
             break
         default:
             professCBox.currentIndex = -1
             break
         }
         fieldCorporation.text = corporation //公司
-        fieldPhone.text = phone==="0"?"":phone
+        fieldPhone.text = (phone === "0" ? "" : phone)
         editStatement.text = personalStatement
-        console.log("edu erper:", educationExperence)
+        console.log("education erperence:", educationExperence)
         //添加城市数据
-        var temp
-        var i
-        var length
         //禁用它，一切变化交个索引变化信号解决
         where2Cbox.enabled = false
         where3Cbox.enabled = false
@@ -190,6 +199,7 @@ Window {
         home4Cbox.enabled = false
         length = indivadualWin.countryModel.count
         //所在地处理
+        console.log("1")
         index = -1
         for (i = 0; i < length; ++i) {
             temp = indivadualWin.countryModel.get(i).name
@@ -203,7 +213,7 @@ Window {
             where1Cbox.currentIndex = -1
         } else {
             where1Cbox.currentIndex = index
-            if (location2 !== ""){
+            if (location2 !== "") {
                 length = provinceModel1.count
                 index = -1
                 for (i = 0; i < length; ++i) {
@@ -217,7 +227,7 @@ Window {
                     where2Cbox.currentIndex = -1
                 } else {
                     where2Cbox.currentIndex = index
-                    if (location3 !== ""){
+                    if (location3 !== "") {
                         length = cityModel1.count
                         index = -1
                         for (i = 0; i < length; ++i) {
@@ -241,7 +251,6 @@ Window {
                                         break
                                     }
                                 }
-                                console.log("4??", index)
                                 if (index === -1) {
                                     where4Cbox.currentIndex = -1
                                 } else {
@@ -254,6 +263,7 @@ Window {
             }
         }
         //故乡处理
+        console.log("2")
         index = -1
         for (i = 0; i < length; ++i) {
             temp = indivadualWin.countryModel.get(i).name
@@ -267,7 +277,7 @@ Window {
             home1Cbox.currentIndex = -1
         } else {
             home1Cbox.currentIndex = index
-            if (home2 !== ""){
+            if (home2 !== "") {
                 length = provinceModel2.count
                 index = -1
                 for (i = 0; i < length; ++i) {
@@ -281,7 +291,7 @@ Window {
                     home2Cbox.currentIndex = -1
                 } else {
                     home2Cbox.currentIndex = index
-                    if (home3 !== ""){
+                    if (home3 !== "") {
                         length = cityModel2.count
                         index = -1
                         for (i = 0; i < length; ++i) {
@@ -316,6 +326,7 @@ Window {
                 }
             }
         }
+        console.log("end")
         okBtn.enabled = false //初始化为false
     }
     //添加教育信息
@@ -539,7 +550,7 @@ Window {
                                     }
 
                                     onPaint: {
-                                        var context=getContext("2d")
+                                        var context = getContext("2d")
                                         context.reset()
                                         if (!sexPop.visible) {
                                             context.moveTo(0, height / 4)
@@ -1482,7 +1493,7 @@ Window {
                             color: "black"
                         }
 
-                        model: ["计算机/互联网/通信", "生产/工艺/制造", "医疗/治理/制药", "金融/银行/投资/保险", "生产/工艺/制造", "医疗/治理/制药", "商业/服务业/个体经营", "文化/广告/传媒", "娱乐/艺术/表演", "律师/法务", "教育/培训", "公务员/行政/事业单位", "模特", "空姐", "学生", "其他"]
+                        model: ["计算机/互联网/通信", "生产/工艺/制造", "医疗/治理/制药", "金融/银行/投资/保险", "商业/服务业/个体经营", "文化/广告/传媒", "娱乐/艺术/表演", "律师/法务", "教育/培训", "公务员/行政/事业单位", "模特", "空姐", "学生", "其他"]
 
                         delegate: ItemDelegate {
                             id: proDet
@@ -2033,8 +2044,8 @@ Window {
                                                 var length
                                                 temp = cityModel1.get(index).id
                                                 length = indivadualWin.countyModel.count
-                                                //添加县区数据到模型
 
+                                                //添加县区数据到模型
                                                 countyModel1.clear()
                                                 for (i = 0; i < length; ++i) {
                                                     if (indivadualWin.countyModel.get(
@@ -2575,7 +2586,7 @@ Window {
                                                 }
                                                 //如果长度为1 传县区数据给它，其代表自治市
                                                 if (cityModel2.count == 1) {
-home4Cbox.isNeed = false
+                                                    home4Cbox.isNeed = false
                                                     length = indivadualWin.countyModel.count
                                                     //添加县区数据到模型
                                                     cityModel2.clear()
@@ -2589,7 +2600,7 @@ home4Cbox.isNeed = false
                                                                               })
                                                         }
                                                     }
-                                                }else {
+                                                } else {
                                                     home4Cbox.isNeed = true
                                                 }
                                             }
@@ -2733,7 +2744,7 @@ home4Cbox.isNeed = false
                                                 countyModel2.clear()
                                             } else {
                                                 home4Cbox.enabled = true
-                                                if (! home4Cbox.isNeed) {
+                                                if (!home4Cbox.isNeed) {
                                                     home4Cbox.enabled = false
                                                     return
                                                 }
@@ -2881,7 +2892,7 @@ home4Cbox.isNeed = false
                                     }
                                     //故乡4
                                     ComboBox {
-                                         property bool isNeed: true
+                                        property bool isNeed: true
                                         id: home4Cbox
                                         displayText: currentText
                                         font.family: "新宋体"
@@ -3124,15 +3135,16 @@ home4Cbox.isNeed = false
                     obj.sex = sexCBox.currentText
                     obj.birthday = birCBox.displayText
                     obj.bloodGroup = bloodCBox.displayText
+                    console.log("bloodGroup", obj.bloodGroup)
                     obj.signature = editTag.text
                     var length = eduModel.count
                     var edu = []
                     for (var i = 0; i < length; ++i) {
                         var temp = {}
                         var tempObj = eduModel.get(i)
-                        temp.school = tempObj.school
-                        temp.detail = tempObj.detail
-                        temp.flags = tempObj.flags
+                        temp.school = tempObj.r_school
+                        temp.detail = tempObj.r_detail
+                        temp.flags = tempObj.r_flags
                         edu[i] = temp
                     }
                     obj.edu = edu
@@ -3541,19 +3553,21 @@ home4Cbox.isNeed = false
                             color: "white"
                         }
                         onClicked: {
-                            var school = fieldSchool.text.lastIndexOf(" ")
-                            if (school !== -1)
+                            var school = fieldSchool.text.split(" ").filter(
+                                        function (x) {
+                                            return x !== ""
+                                        })
+                            if (school.length === 0)
                                 return
-                            school = fieldSchool.text.split(" ").join("")
+                            school = school.join(" ")
                             var inst = fieldInstitute.text.split(" ").filter(
                                         function (x) {
                                             return x !== ""
                                         })
-                            if (inst.length > 1)
-                                return
+
                             var flags = ""
                             var detail = []
-                            var _1 = inst.join("")
+                            var _1 = inst.join(" ")
                             if (_1 !== "") {
                                 detail[detail.length] = _1
                                 flags += "1"

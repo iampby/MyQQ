@@ -16,6 +16,7 @@ Window {
     property alias countryModel: countryModel
     property alias provinceModel: provinceModel
     property alias cityModel: cityModel
+    property alias eduModel: eduModel
     property alias countyModel: countyModel
     property var bir: [] //生日 3length
     property string birthday: "" //生日 x年x月（公历）
@@ -25,7 +26,7 @@ Window {
     property string zodiac: "" //生肖
     property string qage: "" //Q龄
     property string personalStatement: "" //个人说明
-    property string educationExperence: "" //教育经历
+    //  property string educationExperence: "" //教育经历
     property string profession: "" //职业
     property string corporation: "" //公司
     property string phone: "" //电话号码
@@ -85,6 +86,11 @@ Window {
                 location2 = obj["location2"]
                 location3 = obj["location3"]
                 location4 = obj["location4"]
+                //如果是自治市区,4赋给3
+                if (location2 == location3) {
+                    location3 = location4
+                    location4 = ""
+                }
                 if (location2.length !== 0)
                     temp = location2
                 if (location3.length !== 0)
@@ -104,7 +110,7 @@ Window {
             console.log("phone number is ", phone)
             //Q龄
             var QAge = obj["registerDateTime"].split("-") //分割日期
-            if (QAge != undefined && QAge.length > 2) {
+            if (QAge !== undefined && QAge.length > 2) {
                 QAge = func.getQAge(QAge)
                 qage = QAge + "龄"
                 buttonCount += 1
@@ -118,6 +124,11 @@ Window {
                 home2 = obj["home2"]
                 home3 = obj["home3"]
                 home4 = obj["home4"]
+                if (home2 == home3) {
+                    home3 = home4
+                    home4 = ""
+                }
+
                 temp = "" //归零
                 if (home2.length !== 0)
                     temp = home2
@@ -144,9 +155,50 @@ Window {
             }
             console.log("corporation is ", corp)
             //教育经历
+            var length
             var edu = obj["education"]
             if (edu !== undefined && edu !== "") {
-                educationExperence = edu
+                var arr = edu.split(";")
+                length = arr.length
+                console.log(length)
+                if (length !== 0)
+                    educationInfo.isEmpty = false
+                //添加教育信息到edumodel
+                for (i = 0; i < length; ++i) {
+                    temp = arr[i].split(",")
+                    var length1 = temp.length
+                    if (length1 < 4) {
+                        console.log("warning:education information is lacked")
+                        continue
+                    }
+                    var school = temp[0]
+                    var institute = temp[1]
+                    var grade = temp[2]
+                    var degree = temp[3]
+                    if (school === undefined || school === "") {
+                        console.log("warning:the school part of education information is not found")
+                        continue
+                    }
+                    var detail = [], flags = "", count = 0
+                    if (institute !== undefined && institute !== "") {
+                        detail[count++] = institute
+                        flags += "1"
+                    }
+                    if (grade !== undefined && grade !== "") {
+                        detail[count++] = grade
+                        flags += "2"
+                    }
+                    if (degree !== undefined && degree !== "") {
+                        detail[count++] = degree
+                        flags += "3"
+                    }
+                    detail = detail.join(",")
+                    eduModel.append({
+                                        "r_school": school,
+                                        "r_detail": detail,
+                                        "r_flags": flags
+                                    })
+                }
                 buttonCount += 1
             }
             console.log("education experience is ", edu)
@@ -314,17 +366,12 @@ Window {
         whereInfo.visible = !whereInfo.isEmpty
         phoneInfo.visible = !phoneInfo.isEmpty
         qAgeInfo.visible = !qAgeInfo.isEmpty
+        bloodGroupInfo.visible = !bloodGroupInfo.isEmpty
         homeInfo.visible = !homeInfo.isEmpty
         professInfo.visible = !professInfo.isEmpty
-        educationInfo.visible = !educationInfo
+        corporationInfo.visible = !corporationInfo.isEmpty
+        educationInfo.visible = !educationInfo.isEmpty
         statementInfo.visible = !statementInfo.isEmpty
-        console.log(" whereInfo.visible", whereInfo.visible)
-        console.log(" phoneInfo.visible", phoneInfo.visible)
-        console.log("  qAgeInfo.visible", qAgeInfo.visible)
-        console.log(" homeInfo.visible ", homeInfo.visible)
-        console.log(" professInfo.visible ", professInfo.visible)
-        console.log(" educationInfo.visible ", educationInfo.visible)
-        console.log(" statementInfo.visible ", statementInfo.visible)
     }
 
     //处理国家数据
@@ -417,9 +464,10 @@ Window {
         }
         birthday = bir[1] + "月" + bir[2] + "日(公历)"
         qqMainWin.sex = obj["sex"]
-        qqMainWin.signature = obj["signature"]
+        qqMainWin.signature = obj["signature"] //个性签名
         labSex.text = qqMainWin.sex
         age = func.getAge(bir)
+        qqMainWin.name = obj["name"] //昵称
         //生日
         constellation = func.getConstellation(bir) //星座
         var buttonCount = 0 //计数，如果大于4显示资料按钮
@@ -457,6 +505,15 @@ Window {
         console.log("phone number is ", phone)
         //Q龄
         buttonCount += 1
+        //血型
+        var blg = obj["bloodGroup"]
+        if (blg !== undefined && blg !== "") {
+            bloodGroup = blg
+            buttonCount += 1
+        } else {
+            bloodGroup = ""
+        }
+        console.log("bloodGroup", bloodGroup)
         //家乡
         home1 = obj["home1"]
         if (home1 !== undefined && home1 !== "") {
@@ -501,18 +558,59 @@ Window {
         }
 
         console.log("corporation is ", corp)
+
         //教育经历
+        eduModel.clear()
+        var edu = obj["edu"], education = []
+        console.log("edu.l", edu.length)
+        if (edu !== undefined && edu.length !== 0) {
+            var length = edu.length
+            for (var i = 0; i < length; ++i) {
+                temp = edu[i]
+                var school = temp["school"]
+                var detail = temp["detail"]
+                var flags = temp["flags"]
+                temp = "" //重置为字符串
+                console.log("education ", i, ":", school, detail, flags)
+                eduModel.append({
+                                    "r_school": school,
+                                    "r_detail": detail,
+                                    "r_flags": flags
+                                })
+                var arr = detail.split(","), count = 0
+                temp += school + ","
+                index = flags.indexOf("1")
+                if (index !== -1) {
+                    temp += arr[count] + ","
+                    ++count
+                } else {
+                    temp += ","
+                }
+                index = flags.indexOf("2")
+                if (index !== -1) {
+                    temp += arr[count] + ","
+                    ++count
+                } else {
+                    temp += ","
+                }
+                //最后一个不＋, 教育信息集合格式为 学校,院系,学级,学历;...
+                index = flags.indexOf("3")
+                if (index !== -1) {
+                    temp += arr[count]
+                    ++count
+                }
+                education[i] = temp
+            }
+            education = education.join(";")
+            buttonCount += 1
+            educationInfo.isEmpty = false
+        } else {
 
+            educationInfo.isEmpty = true
+            education = ""
+        }
 
-        /* var edu = obj["education"]
-      if (edu !== undefined && edu !== "") {
-          educationExperence = edu
-          buttonCount += 1
-      }else{
-          educationExperence = " "
-      }
-*/
-        // console.log("education experience is ", edu)
+        console.log("education experience is ", education)
         //个人说明
         var perss = obj["statement"]
         if (perss !== undefined && perss !== "") {
@@ -546,6 +644,29 @@ Window {
         } else {
             showNotEmptyInfo() //显示所有非空资料卡
         }
+        //传一个新数据的对象到远程
+        obj = {}
+        obj.name = qqMainWin.name
+        // obj.signature = qqMainWin.signature
+        obj.birthday = bir[0] + "-" + bir[1] + "-" + bir[2]
+        obj.blooGroup = bloodGroup
+        obj.sex = qqMainWin.sex
+        obj.personalStatement = personalStatement
+        obj.profession = profession
+        obj.corporation = corporation
+        obj.where1 = location1
+        obj.where2 = location2
+        obj.where3 = location3
+        obj.where4 = location4
+        obj.home1 = home1
+        obj.home2 = home2
+        obj.home3 = home3
+        obj.home4 = home4
+        obj.phone = phone
+        console.log("education information set:", education)
+        obj.education = education
+        funcc.updateUserInformation(obj)
+        console.log("start to update remote user information")
     }
     //移动鼠标
     MouseCustomForWindow {
@@ -1125,7 +1246,7 @@ Window {
                             height: 16
                             onClicked: {
                                 console.log("editMaterialBtn clicked")
-                                actions.editMyInfoAct.trigger(indivadualWin)
+                                actions.editMyInfoAct.trigger()
                             }
 
                             background: Label {
@@ -1316,6 +1437,17 @@ Window {
                             }
                         }
                         InfoSmallLabel {
+                            id: bloodGroupInfo
+                            preLabel.text: "血型"
+                            aftLabel.text: indivadualWin.bloodGroup
+                            aftLabel.onTextChanged: {
+                                if (aftLabel.text != "") {
+                                    isEmpty = false
+                                } else
+                                    isEmpty = true
+                            }
+                        }
+                        InfoSmallLabel {
                             id: homeInfo
                             preLabel.text: "家乡"
                             aftLabel.onTextChanged: {
@@ -1349,14 +1481,37 @@ Window {
                         }
                         InfoSmallLabel {
                             id: educationInfo
+                            height: eduModel.count * 40
                             preLabel.text: "教育经历"
-                            aftLabel.text: indivadualWin.educationExperence
-
-                            aftLabel.onTextChanged: {
-                                if (aftLabel.text != "") {
-                                    isEmpty = false
-                                } else
-                                    isEmpty = true
+                            aftLabel.visible: false
+                            ListView {
+                                x: 70
+                                width: 224
+                                height: educationInfo.height
+                                model: eduModel
+                                delegate: Item {
+                                    implicitWidth: 224
+                                    implicitHeight: 40
+                                    Label {
+                                        width: 220
+                                        height: 20
+                                        text: r_school
+                                        font.pointSize: 10
+                                        font.family: "新宋体"
+                                        elide: Text.ElideRight
+                                    } //ebebeb
+                                    Label {
+                                        id: label
+                                        y: 20
+                                        width: 220
+                                        height: 20
+                                        text: r_detail
+                                        color: "gray"
+                                        font.pointSize: 9
+                                        font.family: "新宋体"
+                                        elide: Text.ElideRight
+                                    }
+                                }
                             }
                         }
                         InfoSmallLabel {
@@ -1761,6 +1916,11 @@ Window {
     ListModel {
         id: countyModel
     }
+    //教育信息模型
+    ListModel {
+        id: eduModel
+    }
+
     Component.onCompleted: {
         funcc.inintCityData(indivadualWin)
     }

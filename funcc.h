@@ -81,6 +81,8 @@ public:
     Q_INVOKABLE void getIndividualData();//获取远程个人资料
     Q_INVOKABLE void updatePhotoWall(quint8 length);//更新用户远程照片墙
     Q_INVOKABLE void inintCityData(QQuickWindow*w);//初始化城市数据 数据源sqlite
+Q_INVOKABLE void updateUserInformation(QVariantMap info);//更新远程的用户信息
+
 
     Q_INVOKABLE void startAddFriendsProcess(QQuickWindow*arg, QMap<QString, QVariant> obj);//添加好友进程
     unsigned short addFriendsProcessCount()const;

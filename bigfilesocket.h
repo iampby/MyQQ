@@ -15,6 +15,7 @@ public:
         SingleJson
     };
     BigFileSocket(QObject *parent = nullptr);
+   ~ BigFileSocket();
     void setInstruct(const QString&);
     void setIp(const QString&arg="127.0.0.1");
     void setPort(const quint16&arg=5567);

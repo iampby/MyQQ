@@ -27,6 +27,13 @@ BigFileSocket::BigFileSocket(QObject *parent)
     timeout=40000;//д╛хо40s
 }
 
+BigFileSocket::~BigFileSocket()
+{
+    if(this->isOpen())
+        this->close();
+    qDebug()<<"~BigFileSocket()";
+}
+
 void BigFileSocket::setInstruct(const QString &arg)
 {
     QStringList l=arg.split(" ",QString::SkipEmptyParts);

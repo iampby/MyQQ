@@ -1071,6 +1071,44 @@ countyList.append(fid);
     QMetaObject::invokeMethod(w," addCountyData",Qt::DirectConnection,Q_ARG(QVariant,QVariant::fromValue(countyList)));
 }
 
+void FuncC::updateUserInformation(QVariantMap info)
+{
+   qDebug()<<"updateUserInformation(QVariantMap info)  called";
+   QString instructDescription="10 updateUserInformation "+m_myQQ+" writedHeaderSize";//更新封面
+   BigFileSocket*updateUserInfoSock=new BigFileSocket();//子线程对象最好不要有父类
+   updateUserInfoSock->setInstruct(instructDescription);
+   updateUserInfoSock->setIp(ip);
+   updateUserInfoSock->setPort(updatePort);
+   updateUserInfoSock->setTimeout(30000);//30s超时
+   QThread*thread=new QThread();
+   updateUserInfoSock->moveToThread(thread);
+   thread->start();
+   emit updateUserInfoSock->start();//转移到新线程去post host
+   //删除套接字
+   connect(thread,&QThread::finished,updateUserInfoSock,&BigFileSocket::deleteLater);
+   //删除线程
+   connect(thread,&QThread::finished,thread,&QThread::deleteLater);
+   connect(updateUserInfoSock,&BigFileSocket::finished,thread,&QThread::quit);//超时放弃
+   //获取文件结果收尾处理
+   connect(updateUserInfoSock,&BigFileSocket::writtenInstruction, updateUserInfoSock,[=](){
+       qDebug()<<"writtenInstruction finished";
+       QJsonDocument json(QJsonObject::fromVariantMap(info));
+       QByteArray data=json.toBinaryData();
+
+       if(data.isEmpty()){
+           thread->exit(0);
+           thread->quit();
+            qDebug()<<"updating failed for remote user information and lived thread had exited";
+           return;
+       }
+        updateUserInfoSock->write(data);
+       updateUserInfoSock->loop.exec();
+       thread->exit(0);
+       thread->quit();
+       qDebug()<<"the thread had exited to update remote user information";
+   });
+}
+
 
 void FuncC::startAddFriendsProcess(QQuickWindow*arg,QMap<QString, QVariant>obj)
 {
