@@ -51,6 +51,7 @@ Window {
         hide()
         funcc.closeWidget() //释放widget资源 必须在loader释放之前
         loaderForAlterHImg.source = "" //相当于deletelater
+        console.log("AlterHImag is realse")
     }
 
     //移动鼠标

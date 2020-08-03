@@ -4,6 +4,7 @@
 #include"bigfilesocket.h"
 #include"headimgwidget.h"
 #include"friendmodel.h"
+#include"addfriendgroupwidget.h"
 #include<qthread.h>
 #include<QDebug>
 #include<qprocess.h>
@@ -16,11 +17,13 @@
 #include <QQuickItem>
 #include <qlabel.h>
 #include <QBuffer>
-
+#include<qmessagebox.h>
+#include <qjsonarray.h>
 //funcc类
 FuncC::FuncC(QObject *parent):QObject(parent)
 {
-    m_win=Q_NULLPTR;registerSock=nullptr;loginSock=nullptr;timer=nullptr;updateTimer=nullptr;
+    m_win=Q_NULLPTR;registerSock=nullptr;loginSock=nullptr;timer=nullptr;updateTimer=nullptr;server=nullptr;
+    addFGWidget=nullptr;
     processCount=0;ip="127.0.0.1";m_sourceIco="";
     loginPort=5567;updatePort=5568;registerPort=5566;
     online=false;
@@ -45,7 +48,6 @@ FuncC::FuncC(QObject *parent):QObject(parent)
     }
     cityCount=0;
     initAllCitys();
-
 }
 
 FuncC::~FuncC()
@@ -60,6 +62,9 @@ FuncC::~FuncC()
         qDebug()<<"updating timer can be to delete";
         emit updateTimer->stopTimer();//阻塞队列连接信号发出 必须先退出进程事件圈在删除对象
         delete updateTimer,updateTimer=nullptr;
+    }
+    if(server){
+        emit server->emitExit();//退出线程，删除
     }
 }
 
@@ -207,7 +212,10 @@ void FuncC::initFriendInfo(QXmlStreamReader &reader)
                 //发送组名到Qml
                 ++pos;
                 groupName=reader.name().toString();
-                // qDebug()<<"the group has been sended, named "<<groupName;
+                QRegExp reg("^[ ]*$");
+                qint32 index= reg.indexIn(groupName);//全空白匹配 就减一个空白 避免xml空节点
+                if(index!=-1)groupName=groupName.left(groupName.length()-1);
+                qDebug()<<"the group has been sended, named "<<groupName;
                 emit getFriendGroup(groupName,reader.attributes().value("set").toString(),pos);
             }
         }else if(reader.isEndElement()){
@@ -245,6 +253,10 @@ void FuncC::parseFriendInfo(QXmlStreamReader &reader, QString &endString,int&pos
                         QString status=reader.attributes().value("status").toString();
                         myqqMap.insert("Message-Settin",info);
                         myqqMap.insert("Status-Settin",status);
+                    }else if(reader.name().toString()==QStringLiteral("个性签名")||reader.name().toString()==QStringLiteral("备注")){
+                        QString text=reader.attributes().value("isNull").toString();
+                        if(text=="true") myqqMap.insert(reader.name().toString(),"");
+                        else  myqqMap.insert(reader.name().toString(),reader.readElementText());
                     }else{
                         myqqMap.insert(reader.name().toString(),reader.readElementText());
                     }
@@ -329,6 +341,8 @@ int FuncC::taskBarWidth() const
     return diffHeight>diffWidth?diffHeight:diffWidth;
 }
 
+
+
 void FuncC::registerMyQQ(const QString &MyName, const QString &passwd)
 {
     //因为在后面通信时不知道为什么不能释放，所以放到开头
@@ -376,9 +390,9 @@ bool FuncC::saveStringToTxt(const QString &str,const QString& title,const QStrin
 
 void FuncC::login(const QString &myqq,const QString &passwd)
 {
-    m_myQQ=myqq;m_passwd=passwd;
     //注意凡是对注册qml属性赋值,但不是在qml引擎里赋值时，必须发出信号提醒qml作出改变
-    emit myQQChanged();emit passwdChanged();
+    setMyQQ(myqq);
+    setPasswd(passwd);
     //用户的 name（昵称） sex（性别） signature（个性签名） days（活跃天数） grade（等级) status(状态） 所在地 故乡
     loginSock=new LoginSocket(myqq,passwd,this);
     connect(loginSock,&LoginSocket::finished,[=](int result){
@@ -428,7 +442,7 @@ void FuncC::login(const QString &myqq,const QString &passwd)
                     updateTimer->setMyqq(myqq);
                     updateTimer->setIp(ip);
                     updateTimer->setPort(loginPort);
-                    updateTimer->setTimerInterval(30000);//五分钟获取一次更新
+                    updateTimer->setTimerInterval(100000);//五分钟获取一次更新
                     emit updateTimer->startTimer();
                     connect(updateTimer,&UpdateTimer::emitResult,this,&FuncC::updateHandle);
 
@@ -444,7 +458,48 @@ void FuncC::login(const QString &myqq,const QString &passwd)
         loginSock->deleteLater();//删除指针
         return;
     });
+    connect(loginSock,&LoginSocket::connected,loginSock,[=](){
+        this-> newServer();
+        connect(server,&NativeServer::findPort,loginSock,[=](quint16 port){
+            loginSock->serverPort=port;
+            emit loginSock->readyWrite();
+        });
+    });
+
     loginSock->connectToHost(ip,loginPort);
+
+}
+
+void FuncC::newServer()
+{
+    if(server)qDebug()<<"a wild pointer was found,name server";
+    server=new NativeServer();
+    QThread*thread=new QThread(this);
+    server->moveToThread(thread);
+    connect(thread,&QThread::started,server,&NativeServer::slotStarted);
+    connect(thread,&QThread::finished,server,[=]()mutable{
+        server->deleteLater();
+        server=nullptr;
+    });
+    connect(thread,&QThread::finished,thread,&QThread::deleteLater);
+    connect(server,&NativeServer::emitExit,server,[=](){
+        qDebug()<<"server thread will be exited";
+        thread->exit(0);
+        thread->quit();
+        server->close();
+    });
+    //验证消息
+    connect(server,&NativeServer::emitFverify,this,&FuncC::getFVerify);
+    connect(server,&NativeServer::emitGetFriend,this,&FuncC::getFriend);
+    thread->start();
+}
+
+void FuncC::realseServer()
+{
+    if(server){
+        qDebug()<<"server could be deleted";
+        emit server->emitExit();
+    }
 }
 //更新界面信息
 void FuncC::updateHandle(const bool &ok)
@@ -498,6 +553,36 @@ void FuncC::updateHandle(const bool &ok)
         if(!updateTimer->sigMap.isEmpty())updateTimer->sigMap.clear();
         if(!updateTimer->nameMap.isEmpty())updateTimer->nameMap.clear();
     }
+}
+
+void FuncC::getFVerify(QByteArray data)
+{
+    QJsonDocument doc=QJsonDocument::fromJson(data);
+    QJsonObject obj=doc.object();
+    QVariantMap map=obj.toVariantMap();
+    if(map.isEmpty()){
+        qDebug()<<"a error:final verify data is empty";
+        return;
+    }
+    emit emitFVeify(map);
+}
+
+void FuncC::getFriend(QByteArray data, QPixmap pix)
+{
+    QJsonDocument doc=QJsonDocument::fromJson(data);
+    QVariantMap map=doc.object().toVariantMap();
+    if(map.isEmpty()){
+        qDebug()<<"map is empty";
+        return;
+    }
+    QString number=map.value("number").toString();
+    if(number.isEmpty()){
+        qDebug()<<"data is not correct because number is empty";
+        return;
+    }
+    pix.save("../user/"+m_myQQ+"/friends"+"/"+number+"1.png","png");
+    images->provider2->images.insert(number+"1",pix);
+    emit emitFriend(map);
 }
 bool FuncC::writeFile(const QByteArray &content, const QString &filepath)
 {
@@ -679,14 +764,13 @@ void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,cons
             widget->setHeadImg(pix);
         });
         connect(this,&FuncC::emitCloseHead,widget,[=](){
-            qDebug()<<"deletelater pre";
             widget->deleteLater();//延迟删除
-            qDebug()<<"deletelater aft";
         });
         widget->setHeadImg(pixmap);
         temp->show();
     }else{
         qDebug()<<"widget is null";
+        widget->deleteLater();
     }
 }
 
@@ -803,11 +887,17 @@ void FuncC::updateCover(QString qmlFilePath)
     });
 }
 
-void FuncC::deleteNetTimer()
+void FuncC::deleteNetAndUpdateTimer()
 {
     if(timer){
-        qDebug()<<"network timer had been deleted";
+        qDebug()<<"network timer can be to delete";
+        emit timer->stopMonitor();//阻塞队列连接信号发出 必须先退出进程事件圈在删除对象
         delete timer,timer=nullptr;
+    }
+    if(updateTimer){
+        qDebug()<<"updating timer can be to delete";
+        emit updateTimer->stopTimer();//阻塞队列连接信号发出 必须先退出进程事件圈在删除对象
+        delete updateTimer,updateTimer=nullptr;
     }
 }
 //添加头像操作界面到qml更改封面界面
@@ -835,6 +925,9 @@ void FuncC::addCoverWidget(QWindow *w, const int &x, const int &y, QString fileP
         //注意：不知名原因导致更改封面（也就是无遮罩）的图像坐标总是大100左右，这里是通过观测纠正的具体原因不知道
         //原因 必须先show再设置图片
         widget->openFile(filePath);//加载图片
+    }else{
+        qDebug()<<"widget is null";
+        widget->deleteLater();
     }
 }
 
@@ -993,39 +1086,39 @@ void FuncC::inintCityData(QQuickWindow*w)
     QSqlQuery query2(db);
     qDebug()<<"open:"<<db.connectionName()<<db.databaseName();
     QVariantList countryList,provinceList,cityList,countyList;//顺序储存id name fid
-     if(!query2.exec(" begin transaction ")){
-         qDebug()<<"warning:begin transaction is of failure";
-     }
- if(!query2.exec(" select*from country ")){
-     qDebug()<<"warning:city.db is not found";
- }
+    if(!query2.exec(" begin transaction ")){
+        qDebug()<<"warning:begin transaction is of failure";
+    }
+    if(!query2.exec(" select*from country ")){
+        qDebug()<<"warning:city.db is not found";
+    }
     query2.next();
     while (query2.isValid()) {
         qint32 id=query2.value("id").toLongLong();
         QString name=query2.value("name").toString();
         if(name.isEmpty()){
-             query2.next();
+            query2.next();
             continue;
         }
-       countryList.append(id);
-       countryList.append(name);
+        countryList.append(id);
+        countryList.append(name);
         query2.next();
     }
     if(!query2.exec(" select*from province ")){
-               qDebug()<<"warning:province table is not found";
-           }
+        qDebug()<<"warning:province table is not found";
+    }
     query2.next();
     while (query2.isValid()) {
         qint32 id=query2.value("id").toLongLong();
         QString name=query2.value("name").toString();
         qint32 fid=query2.value("belongCountryId").toLongLong();
         if(name.isEmpty()){
-             query2.next();
+            query2.next();
             continue;
         }
-provinceList.append(id);
-provinceList.append(name);
-provinceList.append(fid);
+        provinceList.append(id);
+        provinceList.append(name);
+        provinceList.append(fid);
         query2.next();
     }
     if(!query2.exec(" select*from city ")){
@@ -1037,12 +1130,12 @@ provinceList.append(fid);
         QString name=query2.value("name").toString();
         qint32 fid=query2.value("belongProvinceId").toLongLong();
         if(name.isEmpty()){
-             query2.next();
+            query2.next();
             continue;
         }
-cityList.append(id);
-cityList.append(name);
-cityList.append(fid);
+        cityList.append(id);
+        cityList.append(name);
+        cityList.append(fid);
         query2.next();
     }
     if(!query2.exec(" select*from county ")){
@@ -1054,12 +1147,12 @@ cityList.append(fid);
         QString name=query2.value("name").toString();
         qint32 fid=query2.value("belongCityId").toLongLong();
         if(name.isEmpty()){
-             query2.next();
+            query2.next();
             continue;
         }
-countyList.append(id);
-countyList.append(name);
-countyList.append(fid);
+        countyList.append(id);
+        countyList.append(name);
+        countyList.append(fid);
         query2.next();
     }
     if(!query2.exec(" end transaction ")){
@@ -1073,58 +1166,304 @@ countyList.append(fid);
 
 void FuncC::updateUserInformation(QVariantMap info)
 {
-   qDebug()<<"updateUserInformation(QVariantMap info)  called";
-   QString instructDescription="10 updateUserInformation "+m_myQQ+" writedHeaderSize";//更新封面
-   BigFileSocket*updateUserInfoSock=new BigFileSocket();//子线程对象最好不要有父类
-   updateUserInfoSock->setInstruct(instructDescription);
-   updateUserInfoSock->setIp(ip);
-   updateUserInfoSock->setPort(updatePort);
-   updateUserInfoSock->setTimeout(30000);//30s超时
-   QThread*thread=new QThread();
-   updateUserInfoSock->moveToThread(thread);
-   thread->start();
-   emit updateUserInfoSock->start();//转移到新线程去post host
-   //删除套接字
-   connect(thread,&QThread::finished,updateUserInfoSock,&BigFileSocket::deleteLater);
-   //删除线程
-   connect(thread,&QThread::finished,thread,&QThread::deleteLater);
-   connect(updateUserInfoSock,&BigFileSocket::finished,thread,&QThread::quit);//超时放弃
-   //获取文件结果收尾处理
-   connect(updateUserInfoSock,&BigFileSocket::writtenInstruction, updateUserInfoSock,[=](){
-       qDebug()<<"writtenInstruction finished";
-       QJsonDocument json(QJsonObject::fromVariantMap(info));
-       QByteArray data=json.toBinaryData();
+    qDebug()<<"updateUserInformation(QVariantMap info)  called";
+    QString instructDescription="10 updateUserInformation "+m_myQQ+" writedHeaderSize";//更新封面
+    BigFileSocket*updateUserInfoSock=new BigFileSocket();//子线程对象最好不要有父类
+    updateUserInfoSock->setInstruct(instructDescription);
+    updateUserInfoSock->setIp(ip);
+    updateUserInfoSock->setPort(updatePort);
+    updateUserInfoSock->setTimeout(30000);//30s超时
+    QThread*thread=new QThread();
+    updateUserInfoSock->moveToThread(thread);
+    thread->start();
+    emit updateUserInfoSock->start();//转移到新线程去post host
+    //删除套接字
+    connect(thread,&QThread::finished,updateUserInfoSock,&BigFileSocket::deleteLater);
+    //删除线程
+    connect(thread,&QThread::finished,thread,&QThread::deleteLater);
+    connect(updateUserInfoSock,&BigFileSocket::finished,thread,&QThread::quit);//超时放弃
+    //获取文件结果收尾处理
+    connect(updateUserInfoSock,&BigFileSocket::writtenInstruction, updateUserInfoSock,[=](){
+        qDebug()<<"writtenInstruction finished";
+        QJsonDocument json(QJsonObject::fromVariantMap(info));
+        QByteArray data=json.toBinaryData();
 
-       if(data.isEmpty()){
-           thread->exit(0);
-           thread->quit();
+        if(data.isEmpty()){
+            thread->exit(0);
+            thread->quit();
             qDebug()<<"updating failed for remote user information and lived thread had exited";
-           return;
-       }
+            return;
+        }
         updateUserInfoSock->write(data);
-       updateUserInfoSock->loop.exec();
-       thread->exit(0);
-       thread->quit();
-       qDebug()<<"the thread had exited to update remote user information";
-   });
+        updateUserInfoSock->loop.exec();
+        thread->exit(0);
+        thread->quit();
+        qDebug()<<"the thread had exited to update remote user information";
+    });
+}
+
+void FuncC::addRemoteFriendGroup(QJsonDocument&doc)
+{
+    QString instructDescription="11 addFGroup "+m_myQQ+" writedHeaderSize";//更新封面
+    BigFileSocket*addFGroupSock=new BigFileSocket();//子线程对象最好不要有父类
+    addFGroupSock->setInstruct(instructDescription);
+    addFGroupSock->setIp(ip);
+    addFGroupSock->setPort(updatePort);
+    addFGroupSock->setTimeout(10000);//10s超时
+    QThread*thread=new QThread();
+    addFGroupSock->moveToThread(thread);
+    thread->start();
+    emit  addFGroupSock->start();//转移到新线程去post host
+    //删除套接字
+    connect(thread,&QThread::finished,addFGroupSock,&BigFileSocket::deleteLater);
+    //删除线程
+    connect(thread,&QThread::finished,thread,&QThread::deleteLater);
+    connect(addFGroupSock,&BigFileSocket::finished,thread,&QThread::quit);//超时放弃
+    //获取文件结果收尾处理
+    connect(addFGroupSock,&BigFileSocket::writtenInstruction,addFGroupSock,[=](){
+        QByteArray temp=doc.toBinaryData();
+        if(temp.isEmpty()){
+            qDebug()<<"added a remote group is empty";
+            thread->exit(0);
+            thread->quit();
+            return;
+        }
+        addFGroupSock->write(temp);
+        addFGroupSock->loop.exec();
+        thread->exit(0);
+        thread->quit();
+        qDebug()<<" thread of added a remote group had exited";
+    });
+}
+
+void FuncC::exitMyQQ(QQuickWindow*w)
+{
+    QJsonDocument doc;
+    QJsonObject obj;
+    obj.insert("instruct",QJsonValue("-1"));
+    obj.insert("myqq",QJsonValue(m_myQQ));
+    doc.setObject(obj);
+    QTcpSocket*exitSock=new QTcpSocket(this);
+    QEventLoop* loop=new QEventLoop(exitSock);
+    connect(exitSock,&QTcpSocket::bytesWritten,loop,&QEventLoop::quit);//完成写入
+    connect(exitSock,&QTcpSocket::connected,exitSock,[=](){
+        qDebug()<<" ready to write exit status to remote host";
+        QByteArray data=doc.toBinaryData();
+        if(data.isEmpty()){
+            qDebug()<<"json data is empty while exiting progarm";
+        }else{
+            QByteArray size;
+            QDataStream stem(&size,QIODevice::WriteOnly);
+            quint8 l=data.size();
+            stem.setVersion(QDataStream::Qt_4_0);
+            stem<<l;
+            exitSock->write(size+data);
+            QTimer::singleShot(1500,exitSock,[=](){
+                qDebug()<<"json data was blocked 2s while exiting program,then gave up process";
+                loop->quit();
+            });
+            qDebug()<<"a loop exec";
+            loop->exec();
+            qDebug()<<"a loop exit";
+        }
+        exitSock->close();
+        exitSock->deleteLater();
+        if(w){
+            QMetaObject::invokeMethod((QObject*)w,"aboutToQuit",Qt::DirectConnection);//退出程序
+        }
+    });
+    connect(exitSock,QOverload<QAbstractSocket::SocketError>::of(&QTcpSocket::error),exitSock,[=](QAbstractSocket::SocketError error){
+        qDebug()<<"error:a error occured while readying to write exit status to remote host\n\rerror description:";
+        switch (error) {
+        case QAbstractSocket::ConnectionRefusedError:
+            qDebug()<<"The connection was refused by the peer (or timed out).";
+            break;
+        case QAbstractSocket::RemoteHostClosedError:
+            qDebug()<<"The remote host closed the connection.";
+            break;
+        case QAbstractSocket::HostNotFoundError:
+            qDebug()<<"The host address was not found.";
+            break;
+        case QAbstractSocket::SocketAccessError:
+            qDebug()<<"The socket operation failed because the application lacked the required privileges.";
+            break;
+        case QAbstractSocket::NetworkError:
+            qDebug()<<"network error.";
+            break;
+        case    QAbstractSocket::UnknownSocketError:
+            qDebug()<<"An unidentified error occurred.";
+            break;
+        }
+        exitSock->deleteLater();
+        if(w)
+            QMetaObject::invokeMethod((QObject*)w,"aboutToQuit",Qt::DirectConnection);
+    });
+    exitSock->connectToHost(ip,updatePort);
+    exitSock->waitForConnected(1500);//等待1.5秒 至多3s删除套接字
+}
+
+void FuncC::getVerifyArray(const QString &myqq,QQuickWindow *qmlWin)
+{
+    qDebug()<<"getVerifyArray";
+    QString instructDescription="13  getVerifyArray "+myqq;//获取远程验证消息列表
+    BigFileSocket*getVerifyArrSock=new BigFileSocket();//子线程对象最好不要有父类
+    getVerifyArrSock->setInstruct(instructDescription);
+    getVerifyArrSock->setIp(ip);
+    getVerifyArrSock->setPort(loginPort);
+    getVerifyArrSock->setTimeout(15000);//超时15s
+    QThread*thread=new QThread(this);
+    getVerifyArrSock->moveToThread(thread);
+    thread->start();
+    emit getVerifyArrSock->start();//转移到新线程去post host
+    connect(getVerifyArrSock,&BigFileSocket::finished,getVerifyArrSock,[=](){
+        qDebug()<<"verify data is got or timeout";
+        QJsonDocument json=QJsonDocument::fromJson(getVerifyArrSock->carrier);
+        QVariantMap map=json.object().toVariantMap();
+        qDebug()<<map;
+        QMetaObject::invokeMethod(qmlWin,"getFVerify",Qt::DirectConnection,Q_ARG(QVariant,QVariant::fromValue(map)));
+        //超时放弃或完成结束线程
+        thread->exit(0);
+        thread->quit();
+        getVerifyArrSock->deleteLater();
+        thread->deleteLater();
+    });
+
+}
+
+void FuncC::openAddFGroupWidget(QQuickWindow*w,QQuickWindow *qqMainWin)
+{
+    if(nullptr!=addFGWidget){
+        qDebug()<<"addFGWidget is not null";
+        qint32 offx,offy;
+        offx=w->x()+ (w->width()-addFGWidget->width())/2;
+        offy=w->y()+ (w->height()-addFGWidget->height())/2;
+        addFGWidget->move(offx,offy);
+        addFGWidget->show();
+        addFGWidget->raise();
+        addFGWidget->activateWindow();
+        return;
+    }
+
+    addFGWidget =new AddFriendGroupWidget();
+    addFGWidget->show();
+    addFGWidget->raise();
+    addFGWidget->activateWindow();
+    qint32 offx,offy;
+    offx=w->x()+ (w->width()-addFGWidget->width())/2;
+    offy=w->y()+ (w->height()-addFGWidget->height())/2;
+    addFGWidget->move(offx,offy);
+    connect(this,&FuncC::emitCloseAddFGroup,addFGWidget,[=]()mutable{
+        delete addFGWidget,addFGWidget=nullptr;//必须立即删除
+    });
+    connect(addFGWidget,&AddFriendGroupWidget::emitGroup,this,[=](QString name){
+        QMetaObject::invokeMethod((QObject*)qqMainWin,"addFGroup",Qt::DirectConnection,Q_ARG(QString,name));
+        QMetaObject::invokeMethod((QObject*)w,"addFGroup",Qt::DirectConnection,Q_ARG(QString,name));
+        qDebug()<<"updating a remote group";
+        QJsonDocument doc;
+        QJsonObject obj;
+        obj.insert("instruct",QJsonValue("add group"));//指令 代表要更新分组
+        obj.insert("groupName",QJsonValue(name));
+        doc.setObject(obj);
+        addRemoteFriendGroup(doc);
+    });
+    //deletelater后置零
+    connect(addFGWidget,&AddFriendGroupWidget::setNull,addFGWidget,[=]()mutable{
+        addFGWidget=nullptr;
+    });
+}
+
+void FuncC::handleFVerify(QVariantMap obj)
+{
+    obj.insert("instruct",QJsonValue("14"));
+    obj.insert("content",QJsonValue("FVerify"));
+    BigFileSocket*fVerifySock=new BigFileSocket();//子线程对象最好不要有父类
+    QJsonObject instruct=QJsonObject::fromVariantMap(obj);
+    fVerifySock->setInstruct(instruct);
+    fVerifySock->setIp(ip);
+    fVerifySock->setPort(loginPort);
+    fVerifySock->setTimeout(20000);//20s超时
+    QThread*thread=new QThread();
+    fVerifySock->moveToThread(thread);
+    thread->start();
+    emit fVerifySock->start();//转移到新线程去post host
+    //删除套接字
+    connect(thread,&QThread::finished,fVerifySock,&BigFileSocket::deleteLater);
+    //删除线程
+    connect(thread,&QThread::finished,thread,&QThread::deleteLater);
+    connect(fVerifySock,&BigFileSocket::finished,thread,&QThread::quit);//超时放弃
+    //获取文件结果收尾处理
+    connect(fVerifySock,&BigFileSocket::writtenInstruction, fVerifySock,[=](){
+        thread->exit(0);
+        thread->quit();
+       qDebug()<<"handling friend verify thread had exited";
+    });
 }
 
 
-void FuncC::startAddFriendsProcess(QQuickWindow*arg,QMap<QString, QVariant>obj)
+void FuncC::startAddFriendsProcess(QQuickWindow*arg,QMap<QString, QVariant>obj,QList<QVariant>arr)
 {
 
     qDebug()<<"add friends win process started->";
     QObject*parent=dynamic_cast<QObject*>(arg);
 
     QProcess *myProcess = new QProcess(parent);
-    connect(myProcess,SIGNAL(started()),this,SLOT(handleProcessStarted()));
-    //finished信号处理函数
-    connect(myProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-            [=](int exitCode, QProcess::ExitStatus exitStatus){
-        processCount-=1;
+    connect(myProcess,&QProcess::readyReadStandardOutput,myProcess,[=](){
+        QByteArray data=myProcess->readAllStandardOutput();
+        QJsonParseError err;
+        data=QString::fromLocal8Bit(data).toUtf8();
+        QJsonDocument tempDoc=QJsonDocument::fromJson(data,&err);
+        if(err.error!=QJsonParseError::NoError){
+            qDebug()<<"error description:"<<err.errorString();
+            qDebug()<<"a error:parse json from  myprocess is of failure,then closing myprocess";
+            myProcess->kill();
+            myProcess->waitForFinished();
+            return;
+        }
+        if(tempDoc.isObject()){
+            QJsonObject obj=tempDoc.object();
+            qDebug()<<"get a json from myprocess:"<<obj;
+            QString instruct=obj.value("instruct").toString();
+            if(instruct=="add group"){
+                QString group=obj.value("groupName").toString();
+                QMetaObject::invokeMethod(arg,"addFGroup",Qt::DirectConnection,Q_ARG(QString,group));
+                addRemoteFriendGroup(tempDoc);
+            }
+        }
     });
-    qDebug()<<processCount;
+
+    connect(myProcess,&QProcess::readyReadStandardError,myProcess,[=](){
+        QByteArray data=myProcess->readAllStandardError();;
+        qDebug()<<"stderr:"<<data;
+    });
+
+    connect(myProcess,SIGNAL(started()),this,SLOT(handleProcessStarted()));
+    //qqmainwin关闭就终止进程
+    connect(this,&FuncC::emitCloseMyProcess,myProcess,[=](){
+        qDebug()<<"kill  myprocess";
+        myProcess->kill();
+        myProcess->waitForFinished();
+    });
+    //finished信号处理函数
+    connect(myProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),myProcess,
+            [=](int exitCode, QProcess::ExitStatus exitStatus)mutable{
+        qDebug()<<"deletion myprocess";
+        processCount-=1;
+        addSMm.detach();
+        if(myProcess)
+            delete myProcess,myProcess=nullptr;
+    });
     if(addFriendsProcessCount()==0){
+        addSMm.setKey("addFriendgroups"+m_myQQ);//添加好友用，一旦更新组，就更新内存 key唯一标识 进程唯一
+        qDebug()<<"myprocess key is "<<addSMm.key();
+        addSMm.create(1024);
+        if(!addSMm.isAttached()){
+            qDebug()<<"warning:a unexpected action addSMm is not attached";
+            return;
+        }
+        QJsonDocument sdoc(QJsonArray::fromVariantList(arr));
+        QByteArray sdata=sdoc.toJson();
+        qDebug()<<sdata.data();
+        memccpy(addSMm.data(),sdata.data(),'\0',1024);//数据不超过1024字节 最多15个分组
         QJsonDocument doc(QJsonObject::fromVariantMap(obj));
         QStringList list;
         list<<doc.toJson();

@@ -90,6 +90,7 @@ void NetMonitor::stop()
 {
     timer->stop();
     if(t->isRunning())t->quit();
+      qDebug()<<"net monitor timer is stoped";
 }
 
 

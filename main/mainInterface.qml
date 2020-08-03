@@ -19,6 +19,7 @@ ApplicationWindow {
     property alias loaderForHeadImg: loaderForHeadImg //头像悬浮界面
     property alias loaderForAlterHImg: loaderForAlterHImg //更改头像界面
     property alias loaderForAlterInfo: loaderForAlterInfo //修改用户资料界面
+    property alias loaderForVerify: loaderForVerify //打开验证页面
     property alias cityWeatherModel: cityWeatherModel //保存3天天气信息
     property int weatherCanShow: 0 //2表示准备好
     property bool isinit: true //用来避免第一次用户信息变化是发送更新信号
@@ -65,10 +66,18 @@ ApplicationWindow {
     //移动坐标处理信号，参数为鼠标位置偏差
     signal runGetUserInfo(var obj)
     //信息： name（昵称） sex（性别） signature（个性签名） days（活跃天数） grade（等级) status(状态） 所在地 故乡
-    //获得一个好友信息,其位于第pos个数组中，0 开始 过渡信号,代码具体执行在Func.qml
+    //获得一个好友信息,其位于第pos个数组中，0 开始
     signal runGetFriendInfoFunction(var obj, int pos)
     //获取设置信息
     signal runGetSetInfoFunction(var obj)
+    //添加好友组到末尾
+    signal addFGroup(string value)
+    //关闭函数
+    signal aboutToQuit
+    //打开信息对话框
+    signal clickedInfo(var id)
+    //打开好友对话框
+    signal clickedFriend(var id)
 
     id: qqMainWin
     visible: true
@@ -177,36 +186,19 @@ ApplicationWindow {
         console.log("obj")
         setInfo = obj //保存设置信息
     }
+
     //窗口关闭处理
     onClosing: {
         console.log("closing")
-        for (var i = 0; i < 3; i++) {
-            funcc.setCityData("", i, 0)
-            funcc.setCityData("", i, 1)
-        }
-
-        for (i = 1; i < cityWeatherModel.count; i++) {
-            funcc.setCityData(cityWeatherModel.get(i).city, i - 1, 0)
-            funcc.setCityData(cityWeatherModel.get(i).url, i - 1, 1)
-        }
-        funcc.mkDir(("../user/" + mainWin.myqq + "/weather"))
-        funcc.writeWeatherFile("../user/" + mainWin.myqq + "/weather/city")
-        images.removeHistory()
-        //释放更改头像资源
-        if (loaderForAlterHImg.status == Loader.Ready) {
-            loaderForAlterHImg.item.close()
-        }
-        //释放更改封面资源
-        if (loaderForAlterInfo.status == Loader.Ready) {
-            var lcover = loaderForAlterInfo.item.loaderForAlterCover
-            if (lcover.status === Loader.Ready) {
-                console.log("alter-cover interface could be closed")
-                lcover.item.close() //关闭altercover窗口
-            }
-        }
-
+        realse() //释放资源
+        funcc.exitMyQQ(qqMainWin) //发送退出到远程
+    }
+    //程序退出处理
+    onAboutToQuit: {
+        //退出
         Qt.quit()
     }
+
     onWeatherCanShowChanged: {
         if (weatherCanShow === 2) {
             cityWeatherModel.append({
@@ -262,6 +254,23 @@ ApplicationWindow {
                 console.log("end update")
             }
         }
+    }
+    //添加好友组
+    onAddFGroup: {
+        friendGroupModel.append(value, "", "", "none")
+        console.log("added a friends group is successful")
+    }
+    //点击信息
+    onClickedInfo: {
+        console.log("onClickedInfo:id=", id)
+        //打开验证信息界面
+        if (id === "-1") {
+            actions.openVerifyAct.trigger(qqMainWin)
+        }
+    }
+    //点击好友
+    onClickedFriend: {
+        console.log("onClickedFriend:id=", id)
     }
     //target func
     Connections {
@@ -329,6 +338,7 @@ ApplicationWindow {
         //接受读取的一个好友组信息到模型
         onGetFriendGroup: {
             friendGroupModel.append(name, "", "", set)
+            console.log(name)
             //创建一个空好友模型，用于初始化viewFriend代理
 
 
@@ -349,8 +359,7 @@ ApplicationWindow {
                 if (compFriend.status === Component.Ready) {
                     var friendObject = compFriend.createObject(qqMainWin)
                     friendsModel[pos] = friendObject //保存模型用于后面代理初始化代理
-                    console.log("created a FriendModel",
-                                friendsModel[pos] === null)
+                    console.log("created a FriendModel")
                     break
                 } else if (compFriend.status === Component.Error) {
                     console.log("compFriend created had failed")
@@ -375,6 +384,60 @@ ApplicationWindow {
                 }
             }
         }
+        //添加好友验证消息
+        onEmitFVeify: {
+            var length = infoModel.count
+            var existis = false
+            for (var i = 0; i < length; ++i) {
+                if (infoModel.get(i).r_number == -1) {
+                    existis = true
+                    infoModel.set(i, {
+                                      "r_imgPath": "qrc:/images/bellinfo.png",
+                                      "r_title": "验证消息",
+                                      "r_tip": obj["name"] + "添加你为好友",
+                                      "r_time": obj["time"],
+                                      "r_number": "-1"
+                                  })
+                    infoModel.move(i, 0, 1)
+                }
+            }
+            if (!existis) {
+                infoModel.insert(0, {
+                                     "r_imgPath": "qrc:/images/bellinfo.png",
+                                     "r_title": "验证消息",
+                                     "r_tip": obj["name"] + "添加你为好友",
+                                     "r_time": obj["time"],
+                                     "r_number": "-1"
+                                 })
+            }
+            infoTip.visible = false
+        }
+        //添加好友处理 obj
+        onEmitFriend: {
+            console.log("onEmitFriend")
+            //obj 全部数据
+            var grade = obj["grade"]
+            var groupName = obj["groupName"]
+            var infoSet = obj["infoSet"]
+            var name = obj["name"]
+            var number = obj["number"]
+            var signature = obj["signature"]
+            var status = obj["status"]
+            var statusSet = obj["statusSet"]
+            var tag = obj["tag"]
+            var length = friendGroupModel.count()
+            var imgPath = "image://friends/" + number + "1"
+            for (var i = 0; i < length; ++i) {
+                if (friendGroupModel.data(i) == groupName) {
+                    var m = friendsModel[i]
+                    console.log("find the group name:", groupName)
+                    m.append(number, name, signature, imgPath, tag, grade,
+                             status, infoSet, statusSet)
+                    friendGroupModel.update(i)
+                    break
+                }
+            }
+        }
     }
 
     //历史头像添加时
@@ -393,6 +456,49 @@ ApplicationWindow {
             }
             imgHead.source = "image://history/" + myqq + "101" //设置头像 qimage源
         }
+    }
+    //函数
+    //qqmainwin释放时释放资源
+    function realse() {
+        console.log("qqMainWin realse resource")
+        funcc.emitCloseMyProcess() //关闭辅助进程
+        for (var i = 0; i < 3; i++) {
+            funcc.setCityData("", i, 0)
+            funcc.setCityData("", i, 1)
+        }
+
+        for (i = 1; i < cityWeatherModel.count; i++) {
+            funcc.setCityData(cityWeatherModel.get(i).city, i - 1, 0)
+            funcc.setCityData(cityWeatherModel.get(i).url, i - 1, 1)
+        }
+        funcc.mkDir(("../user/" + mainWin.myqq + "/weather"))
+        funcc.writeWeatherFile("../user/" + mainWin.myqq + "/weather/city")
+        images.removeHistory()
+        //释放更改头像资源
+        if (loaderForAlterHImg.status == Loader.Ready) {
+            loaderForAlterHImg.item.close()
+        }
+        //释放更改封面资源
+        if (loaderForAlterInfo.status == Loader.Ready) {
+            var lcover = loaderForAlterInfo.item.loaderForAlterCover
+            if (lcover.status === Loader.Ready) {
+                console.log("alter-cover interface could be closed")
+                lcover.item.close() //关闭altercover窗口
+            }
+        }
+        //释放wetherwin
+        if (loaderForWeather.status == Loader.Ready) {
+            console.log("realsed weather win")
+            loaderForWeather.source = ""
+        }
+        //释放headInfwin
+        if (loaderForHeadImg.status == Loader.Ready) {
+            console.log("realsed head-image win")
+            loaderForHeadImg.source = ""
+        }
+        //释放server
+        funcc.realseServer()
+        funcc.deleteNetAndUpdateTimer() //删除网络监测器
     }
 
     //实体
@@ -1429,15 +1535,19 @@ ApplicationWindow {
                                 }
 
                                 delegate: Friend {
-                                    Component.onCompleted: {
-                                        parent.parent.height = parent.parent.count * 60
-                                    }
                                     w: headerRec.width
                                     h: 60
                                     headImg: r_imgPath
                                     name: r_name
                                     label: r_tag
                                     bottomText: r_signature
+                                    onClicked: {
+                                        clickedFriend(r_myqq) //发送号码
+                                    }
+
+                                    Component.onCompleted: {
+                                        parent.parent.height = parent.parent.count * 60
+                                    }
                                 }
                             }
 
@@ -1472,15 +1582,87 @@ ApplicationWindow {
                 anchors.fill: parent
                 visible: false
                 y: 40
+                width: headerRec.width
+                height: container.height
+                contentWidth: headerRec.width
+                contentHeight: infoTip.visible ? infoTip.height : infoView.height
                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                ScrollBar.vertical.policy: (contentHeight > container.height) ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
+                //滚动栏
+                ScrollBar.vertical: ScrollBar {
+                    parent: scrInformation //必须设置父对象才能启动hovered and pressed以及鼠标事件
+                    anchors.right: parent.right //绑定右边
+                    orientation: Qt.Vertical
+                    policy: (scrInformation.contentHeight
+                             > scrInformation.height) ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
+                    size: scrInformation.height / scrInformation.contentHeight
+                    hoverEnabled: true
+                    active: true
+                    contentItem: Rectangle {
+                        implicitWidth: 6
+                        implicitHeight: parent.size * scrInformation.height
+                        radius: width / 2
+                        color: parent.hovered ? Qt.darker("#d7d7d7",
+                                                          1.3) : "#d7d7d7"
+                    }
+                }
                 Label {
+                    id: infoTip
+                    visible: true
                     x: scrInformation.width / 2 - width / 2
                     y: 60
                     font.pointSize: 9
                     font.family: song.name
                     text: qsTr("暂时没有会话")
                     color: "gray"
+                }
+                ListView {
+                    id: infoView
+                    visible: !infoTip.visible
+                    width: parent.width
+                    model: ListModel {
+                        id: infoModel
+                        onCountChanged: {
+                            if (count === 0) {
+                                infoTip.visible = true
+                            }
+                        }
+                    }
+                    delegate: Friend {
+                        w: headerRec.width
+                        h: 60
+
+                        headImg: r_imgPath
+                        name: r_title
+                        bottomText: r_tip
+                        onClicked: {
+                            clickedInfo(r_number)
+                        }
+                        topLab.width: w - timeItem.width - 3
+
+                        Rectangle {
+                            id: timeItem
+                            height: 60
+                            x: parent.width - width - 3
+                            y: 0
+                            width: 75
+                            clip: true
+                            color: "transparent"
+                            Text {
+                                property int length: r_time.length
+                                anchors.centerIn: parent
+                                padding: 0
+                                text: r_time.substring(
+                                          0,
+                                          length - 5) + "\n    " + r_time.substring(
+                                          length - 5, length)
+                                font.pointSize: 10
+                                color: "gray"
+                            }
+                        }
+                        Component.onCompleted: {
+                            parent.parent.height = parent.parent.count * 60
+                        }
+                    }
                 }
             }
         }
@@ -1811,6 +1993,12 @@ ApplicationWindow {
         id: loaderForAlterInfo
         focus: true
         visible: Loader.Ready === loaderForAlterInfo.status
+    }
+    //打开验证页面
+    Loader {
+        id: loaderForVerify
+        focus: true
+        visible: Loader.Ready === loaderForVerify.status
     }
 
     //非界面

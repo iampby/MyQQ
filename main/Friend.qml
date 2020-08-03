@@ -7,9 +7,11 @@ Button {
     property int w: parent.width //宽度
     property int h: 60 //高度
     property alias headImg: hImg.source //头像路径
+    property alias topLab: topLab
+    property alias bottomLab: bottomLab
     property string name: "" //昵称+备注
     property string label: "" //备注
-    property alias bottomText: bottom.text //个性签名
+    property alias bottomText: bottomLab.text //个性签名
     background: Rectangle {
         implicitHeight: h
         implicitWidth: w
@@ -43,16 +45,20 @@ Button {
             ColumnLayout {
                 spacing: 3
                 Label {
-                    id: top
+                    id: topLab
+                    clip: true
+                    width: w - 5
+                    height: 18
                     textFormat: Qt.RichText
                     font.pointSize: 11
-                    height: 18
-                    text: name == label ? name : name + "<font style='color:gray;'>("
-                                          + label + ")</font>"
+                    text: label == "" ? name : name + "<font style='color:gray;'>("
+                                        + label + ")</font>"
                 }
                 Label {
-                    id: bottom
+                    id: bottomLab
                     font.pointSize: 9
+                    clip: topLab.clip
+                    width: topLab.width
                     height: 15
                     color: "gray"
                 }

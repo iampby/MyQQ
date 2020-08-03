@@ -122,5 +122,15 @@
         <file>main/EduInfo.qml</file>
         <file>images/mainInterface/addEduHeader.png</file>
         <file>images/mainInterface/addEduTipback.png</file>
+        <file>images/bellinfo.png</file>
+        <file>main/VerifyWin.qml</file>
+        <file>images/mainInterface/verifyCross.png</file>
+        <file>MyQQ.pro</file>
+        <file>images/mainInterface/verifyNewHeader.png</file>
+        <file>images/mainInterface/addFriendClosePressed.png</file>
+        <file>images/mainInterface/addFriendMinHovered.png</file>
+        <file>images/mainInterface/addFriendMinPressed.png</file>
+        <file>images/mainInterface/addFriendsCloseHovered.png</file>
+        <file>images/mainInterface/newGroupTitle.png</file>
     </qresource>
 </RCC>

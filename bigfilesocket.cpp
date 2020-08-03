@@ -34,9 +34,10 @@ BigFileSocket::~BigFileSocket()
     qDebug()<<"~BigFileSocket()";
 }
 
-void BigFileSocket::setInstruct(const QString &arg)
+void BigFileSocket::setInstruct(const QString &obj)
 {
-    QStringList l=arg.split(" ",QString::SkipEmptyParts);
+
+    QStringList l=obj.split(" ",QString::SkipEmptyParts);
     QJsonObject o;
     try{
         if(l.length()>4)throw -1;
@@ -64,6 +65,11 @@ void BigFileSocket::setInstruct(const QString &arg)
     instruct.setObject(o);
 }
 
+void BigFileSocket::setInstruct(QJsonObject &obj)
+{
+    instruct.setObject(obj);
+}
+
 void BigFileSocket::setIp(const QString &arg)
 {
     ip=arg;
@@ -79,10 +85,14 @@ bool BigFileSocket::writeImg(const QByteArray &content, const QString &filepath,
 {
 
     QImage img;
+    qDebug()<<content.size();
     qDebug()<<filepath;
+    QDir dir(filepath);
+    if(!dir.exists())dir.mkpath("../");
     if(!img.loadFromData(content,format))
         return false;
-    if(!img.save(filepath,nullptr,0))
+    qDebug()<<"?";
+    if(!img.save(filepath,format,0))
         return false;
     return true;
 }
@@ -204,6 +214,38 @@ void BigFileSocket::readD()
                     m_write=NoFile;
                     size=0;
                     emit finished(-1);
+                    return;
+                }
+                //获取验证消息
+            }else if(obj.value("instruct").toString()=="130"){
+                QString content=obj.value("content").toString();
+                if(content=="verifyJson"){
+                    m_write=SingleJson;
+                    qDebug()<<"writing"<<m_write<<size;
+                    size=obj.value("size").toInt();
+                    if(size<=0){
+                        qDebug()<<"size is less than or equal to zero";
+                        emit result(-1);
+                    }
+                    continue;
+                }else if(content=="verifyImg"){
+                    m_write=Img;//初始化标记枚举
+                   imgName=obj.value("imgName").toString();
+                    size=obj.value("size").toInt();
+                    if(size<=0){
+                        qDebug()<<"size is less than or equal to zero";
+                        emit result(-1);
+                    }
+                    return;
+                }else if(content=="end"){
+                    m_write=NoFile;
+                    size=0;
+                    QString r=obj.value("result").toString();
+                    if(r=="true"){
+                    emit result(0,"../user/"+myqq+"/friendsInfo/verifyFriends/","png");
+                    }
+                    else
+                        emit result(-1);
                     return;
                 }
             }

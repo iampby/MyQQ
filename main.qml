@@ -38,7 +38,6 @@ ApplicationWindow {
     onClosing: {
         console.log("main close")
         // funcc.closeWidget()
-
     }
     title: qsTr("MyQQ")
     onDpChanged: func.mainWinDpChanged()
@@ -56,11 +55,25 @@ ApplicationWindow {
         id: song
         name: "宋体"
     }
-
     SystemTrayIcon {
+        property bool hasInfo: false
+        property string midSource: "./images/QQTray.png"
+        property string initSource: "./images/QQTray.png"
+        id: tray
+
+        tooltip: "有新消息到来"
         visible: true
-        iconSource: "./images/QQTray.png"
+        iconSource: initSource
+
+        onMessageClicked: console.log("Message clicked")
         onActivated: {
+            //打开对话框
+            if (hasInfo) {
+                console.log("A dialog box will be opened")
+                hasInfo = false
+                timer1s.stop()
+                iconSource = initSource
+            }
             if (mainWin.inf != Math.pow(2, 2)) {
                 mainWin.show()
                 mainWin.raise()
@@ -82,12 +95,34 @@ ApplicationWindow {
         onLoaded: {
             //对Component和Qml文件组件都起作用,当组件加载完成时，才能调用dpChanged启动对组件调整
             dpChanged() //调整位置
-            funcc.initImageSet(images);//初始化图片提供器images给funcc,便于调用
+            funcc.initImageSet(images) //初始化图片提供器images给funcc,便于调用
         }
     }
     Component {
         id: comptLogin
         LoginTotalInterface {}
+    }
+
+    Connections {
+        target: funcc
+        onEmitFVeify: {
+            console.log("the qml get a friend verify:")
+            tray.iconSource = "qrc:/images/bellinfo.png"
+            tray.midSource = "qrc:/images/bellinfo.png"
+            timer1s.start()
+            tray.hasInfo = true
+        }
+    }
+    //tray定时器 闪烁效果
+    Timer {
+        id: timer1s
+        repeat: true
+        onTriggered: {
+            if (tray.iconSource != "") {
+                tray.iconSource = ""
+            } else
+                tray.iconSource = tray.midSource
+        }
     }
 
     //不能在窗口里创建函数，对导致其x,y等属性只读

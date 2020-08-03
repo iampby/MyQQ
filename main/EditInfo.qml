@@ -8,6 +8,7 @@ import "qrc:/"
 
 //编辑资料界面
 Window {
+    property var cwin: null //用于子部件
     property alias okBtn: okBtn //用于子部件
     signal inintHandleData
     signal addEduInfo(string school, string detail, string flags)
@@ -24,6 +25,8 @@ Window {
     onClosing: {
         console.log("onClosing:interface for editing information")
         hide() //不退出app
+        if (cwin != null)
+            cwin.close()
         loaderForAlterInfo.item.loaderForEditInfo.source = "" //释放win资源
     }
     //初始化处理数据
@@ -1286,7 +1289,10 @@ Window {
                             console.log(" addEduInfoComp object creation fails")
                             return
                         }
+                        cwin = obj //赋值用于清理资源
                         obj.show()
+                        obj.raise()
+                        obj.requestActivate()
                     } else
                         eduView.isReadyToWrite = true
                 }

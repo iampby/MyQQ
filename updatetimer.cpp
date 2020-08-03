@@ -58,6 +58,7 @@ void UpdateTimer::stop()
 {
     timer->stop();
     if(t->isRunning())t->quit();
+    qDebug()<<"update timer is stoped";
 }
 
 void UpdateTimer::start()

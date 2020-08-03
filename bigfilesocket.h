@@ -5,6 +5,7 @@
 #include<QTcpSocket>
 #include<QJsonDocument>
 #include<QEventLoop>
+#include <qjsonobject.h>
 class BigFileSocket : public QTcpSocket
 {
     Q_OBJECT
@@ -17,6 +18,7 @@ public:
     BigFileSocket(QObject *parent = nullptr);
    ~ BigFileSocket();
     void setInstruct(const QString&);
+    void setInstruct(QJsonObject &obj);
     void setIp(const QString&arg="127.0.0.1");
     void setPort(const quint16&arg=5567);
     bool  writeImg(const QByteArray&content,const QString&filepath, const char *format = nullptr);//保存图片到文件

@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_FriendGroupModel_t {
-    QByteArrayData data[16];
-    char stringdata0[99];
+    QByteArrayData data[18];
+    char stringdata0[116];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -36,22 +36,24 @@ QT_MOC_LITERAL(1, 17, 4), // "data"
 QT_MOC_LITERAL(2, 22, 0), // ""
 QT_MOC_LITERAL(3, 23, 1), // "i"
 QT_MOC_LITERAL(4, 25, 4), // "role"
-QT_MOC_LITERAL(5, 30, 6), // "insert"
+QT_MOC_LITERAL(5, 30, 6), // "update"
 QT_MOC_LITERAL(6, 37, 5), // "index"
-QT_MOC_LITERAL(7, 43, 4), // "Data"
-QT_MOC_LITERAL(8, 48, 6), // "remove"
-QT_MOC_LITERAL(9, 55, 7), // "setData"
-QT_MOC_LITERAL(10, 63, 5), // "value"
-QT_MOC_LITERAL(11, 69, 6), // "append"
-QT_MOC_LITERAL(12, 76, 5), // "group"
-QT_MOC_LITERAL(13, 82, 6), // "online"
-QT_MOC_LITERAL(14, 89, 5), // "count"
-QT_MOC_LITERAL(15, 95, 3) // "set"
+QT_MOC_LITERAL(7, 43, 6), // "insert"
+QT_MOC_LITERAL(8, 50, 4), // "Data"
+QT_MOC_LITERAL(9, 55, 6), // "remove"
+QT_MOC_LITERAL(10, 62, 7), // "setData"
+QT_MOC_LITERAL(11, 70, 5), // "value"
+QT_MOC_LITERAL(12, 76, 6), // "append"
+QT_MOC_LITERAL(13, 83, 5), // "group"
+QT_MOC_LITERAL(14, 89, 6), // "online"
+QT_MOC_LITERAL(15, 96, 5), // "count"
+QT_MOC_LITERAL(16, 102, 3), // "set"
+QT_MOC_LITERAL(17, 106, 9) // "getGroups"
 
     },
-    "FriendGroupModel\0data\0\0i\0role\0insert\0"
-    "index\0Data\0remove\0setData\0value\0append\0"
-    "group\0online\0count\0set"
+    "FriendGroupModel\0data\0\0i\0role\0update\0"
+    "index\0insert\0Data\0remove\0setData\0value\0"
+    "append\0group\0online\0count\0set\0getGroups"
 };
 #undef QT_MOC_LITERAL
 
@@ -61,7 +63,7 @@ static const uint qt_meta_data_FriendGroupModel[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-       8,   14, // methods
+      10,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -69,24 +71,28 @@ static const uint qt_meta_data_FriendGroupModel[] = {
        0,       // signalCount
 
  // methods: name, argc, parameters, tag, flags
-       1,    2,   54,    2, 0x02 /* Public */,
-       1,    1,   59,    2, 0x22 /* Public | MethodCloned */,
-       5,    2,   62,    2, 0x02 /* Public */,
-       8,    1,   67,    2, 0x02 /* Public */,
-       9,    3,   70,    2, 0x02 /* Public */,
-       9,    2,   77,    2, 0x22 /* Public | MethodCloned */,
-      11,    4,   82,    2, 0x02 /* Public */,
-      14,    0,   91,    2, 0x02 /* Public */,
+       1,    2,   64,    2, 0x02 /* Public */,
+       1,    1,   69,    2, 0x22 /* Public | MethodCloned */,
+       5,    1,   72,    2, 0x02 /* Public */,
+       7,    2,   75,    2, 0x02 /* Public */,
+       9,    1,   80,    2, 0x02 /* Public */,
+      10,    3,   83,    2, 0x02 /* Public */,
+      10,    2,   90,    2, 0x22 /* Public | MethodCloned */,
+      12,    4,   95,    2, 0x02 /* Public */,
+      15,    0,  104,    2, 0x02 /* Public */,
+      17,    0,  105,    2, 0x02 /* Public */,
 
  // methods: parameters
     QMetaType::QVariant, QMetaType::Int, QMetaType::Int,    3,    4,
     QMetaType::QVariant, QMetaType::Int,    3,
-    QMetaType::Void, QMetaType::Int, 0x80000000 | 7,    6,    1,
     QMetaType::Void, QMetaType::Int,    6,
-    QMetaType::Void, QMetaType::Int, QMetaType::QString, QMetaType::Int,    3,   10,    4,
-    QMetaType::Void, QMetaType::Int, QMetaType::QString,    3,   10,
-    QMetaType::Bool, QMetaType::QString, QMetaType::QString, QMetaType::QString, QMetaType::QString,   12,   13,   14,   15,
+    QMetaType::Void, QMetaType::Int, 0x80000000 | 8,    6,    1,
+    QMetaType::Void, QMetaType::Int,    6,
+    QMetaType::Void, QMetaType::Int, QMetaType::QString, QMetaType::Int,    3,   11,    4,
+    QMetaType::Void, QMetaType::Int, QMetaType::QString,    3,   11,
+    QMetaType::Bool, QMetaType::QString, QMetaType::QString, QMetaType::QString, QMetaType::QString,   13,   14,   15,   16,
     QMetaType::Int,
+    QMetaType::QVariantList,
 
        0        // eod
 };
@@ -101,14 +107,17 @@ void FriendGroupModel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int
             if (_a[0]) *reinterpret_cast< QVariant*>(_a[0]) = std::move(_r); }  break;
         case 1: { QVariant _r = _t->data((*reinterpret_cast< const int(*)>(_a[1])));
             if (_a[0]) *reinterpret_cast< QVariant*>(_a[0]) = std::move(_r); }  break;
-        case 2: _t->insert((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const Data(*)>(_a[2]))); break;
-        case 3: _t->remove((*reinterpret_cast< const int(*)>(_a[1]))); break;
-        case 4: _t->setData((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])),(*reinterpret_cast< int(*)>(_a[3]))); break;
-        case 5: _t->setData((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
-        case 6: { bool _r = _t->append((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])),(*reinterpret_cast< const QString(*)>(_a[3])),(*reinterpret_cast< const QString(*)>(_a[4])));
+        case 2: _t->update((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 3: _t->insert((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const Data(*)>(_a[2]))); break;
+        case 4: _t->remove((*reinterpret_cast< const int(*)>(_a[1]))); break;
+        case 5: _t->setData((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])),(*reinterpret_cast< int(*)>(_a[3]))); break;
+        case 6: _t->setData((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
+        case 7: { bool _r = _t->append((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])),(*reinterpret_cast< const QString(*)>(_a[3])),(*reinterpret_cast< const QString(*)>(_a[4])));
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
-        case 7: { int _r = _t->count();
+        case 8: { int _r = _t->count();
             if (_a[0]) *reinterpret_cast< int*>(_a[0]) = std::move(_r); }  break;
+        case 9: { QVariantList _r = _t->getGroups();
+            if (_a[0]) *reinterpret_cast< QVariantList*>(_a[0]) = std::move(_r); }  break;
         default: ;
         }
     }
@@ -143,13 +152,13 @@ int FriendGroupModel::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 8)
+        if (_id < 10)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 8;
+        _id -= 10;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 8)
+        if (_id < 10)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 8;
+        _id -= 10;
     }
     return _id;
 }

@@ -9,6 +9,7 @@ class WeatherHandle : public QObject
 public:
 
     explicit WeatherHandle(QObject *parent = nullptr);
+    ~WeatherHandle();
 void checkNetState();
 void getIPGeoAdress();
 signals:

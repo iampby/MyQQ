@@ -4,8 +4,6 @@
 #include <QObject>
 #include<QAbstractListModel>
 
-
-
 class FriendData{
 public:
     FriendData();

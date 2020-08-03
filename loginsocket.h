@@ -11,6 +11,8 @@ class LoginSocket : public QTcpSocket
     Q_OBJECT
 public:
     LoginSocket(const QString &myqq, const QString &passwd, QObject *parent = nullptr);
+    ~LoginSocket();
+    quint16 serverPort;
     QString myqq;
     QString passwd;
     QJsonObject infoObj;//储存着昵称、性别、个性签名等信息
@@ -25,6 +27,7 @@ private slots:
 
 signals:
     void finished(int result);
+    void readyWrite();
 private:
     qint64 size;
     QEventLoop loop;

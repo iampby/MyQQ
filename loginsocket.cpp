@@ -4,13 +4,26 @@
 #include<qjsonobject.h>
 #include<qjsondocument.h>
 #include<QHostInfo>
+#include<qtimer.h>
 LoginSocket::LoginSocket(const QString &myqq, const QString &passwd, QObject *parent)
     :QTcpSocket(parent),myqq(myqq),passwd(passwd),result(int(3)),flags(0),size(qint64())
 {
     connect(this, SIGNAL(readyRead()),this,SLOT(readD()));
-    connect(this, SIGNAL(connected()),this,SLOT(toWrite()));
+    connect(this, SIGNAL(readyWrite()),this,SLOT(toWrite()));
     connect(this, SIGNAL(bytesWritten(qint64)),&loop,SLOT(quit()));
+
     connect(this,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(err(QAbstractSocket::SocketError)));
+    QTimer::singleShot(10000,this,[=](){
+        qDebug()<<"conection timeout 10s ,login exit";
+        if(this->state()==QAbstractSocket::UnconnectedState)
+        emit finished(3);
+    });
+}
+
+LoginSocket::~LoginSocket()
+{
+    if(this->isOpen())this->close();
+    qDebug()<<"~LoginSocket()";
 }
 
 void LoginSocket::readD()
@@ -88,10 +101,12 @@ void LoginSocket::toWrite()
     }
     QHostAddress addr=addresses.first();
     QJsonObject obj;
+QString temp=QString("%1").arg(serverPort);
     obj.insert("instruct",QJsonValue("1"));
     obj.insert("myqq",QJsonValue(myqq));
     obj.insert("password",QJsonValue(passwd));
     obj.insert("hostname",QJsonValue(hostname));
+    obj.insert("serverPort",QJsonValue(temp));
     obj.insert("ip",QJsonValue(addr.toString()));
     QJsonDocument docJson(obj);
     this->write(docJson.toBinaryData());

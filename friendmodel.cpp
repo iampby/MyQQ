@@ -324,4 +324,5 @@ void FriendModel::append(const QString &myqq,const QString &name, const QString 
     data->setInfoSet(infoSet);
     data->setStatusSet(statusSet);
     this->insert(this->rowCount(),data);
+    qDebug()<<"append a friend";
 }

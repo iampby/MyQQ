@@ -7,7 +7,6 @@ CONFIG += c++11
 #资源过大使用它
 CONFIG += resources_big
 CONIFG += qtquickcompiler
-
 # The following define makes your compiler emit warnings if you use
 DEFINES += QT_DEPRECATED_WARNINGS
 
@@ -17,6 +16,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    addfriendgroupwidget.cpp \
     bigfilesocket.cpp \
     friendgroupmodel.cpp \
     friendmodel.cpp \
@@ -26,6 +26,8 @@ SOURCES += \
     loginsocket.cpp \
         main.cpp \
     funcc.cpp \
+    nativeserver.cpp \
+    nativesocket.cpp \
     netmonitor.cpp \
     qmlimageprovider.cpp \
     UpdateTimer.cpp \
@@ -50,6 +52,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 # deprecated API in order to know how to port your code away from it.
 
 HEADERS += \
+    addfriendgroupwidget.h \
     bigfilesocket.h \
     friendgroupmodel.h \
     friendmodel.h \
@@ -58,8 +61,42 @@ HEADERS += \
     headimgwidget.h \
     images.h \
     loginsocket.h \
+    nativeserver.h \
+    nativesocket.h \
     netmonitor.h \
     qmlimageprovider.h \
     UpdateTimer.h \
     weatherhandle.h \
     registersocket.h
+
+DISTFILES += \
+    images/QQTray.png \
+    images/bellinfo.png \
+    images/belltras.png \
+    images/border.png \
+    images/bottom.png \
+    images/checked.png \
+    images/code.png \
+    images/codeB.png \
+    images/head.png \
+    images/keybord.png \
+    images/keybordB.png \
+    images/lockerBlue.png \
+    images/lockerGray.png \
+    images/maskLogin.png \
+    images/qqClose.png \
+    images/qqCloseC.png \
+    images/qqGreenL.png \
+    images/qqLogin.png \
+    images/qqMinimum.png \
+    images/qqMinimumC.png \
+    images/qqSet.png \
+    images/qqSetC.png \
+    images/qqSetClose.png \
+    images/qqSetCloseC.png \
+    images/qqSetMinimum.png \
+    images/qq小图标.png \
+    images/qq灰色小图标.png \
+    images/top.png \
+    images/unchecked.png \
+    images/云.png

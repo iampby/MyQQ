@@ -66,6 +66,11 @@ QVariant FriendGroupModel::data(const int &i, int role) const
 
 }
 
+void FriendGroupModel::update(int index)
+{
+  dataChanged(createIndex(index,0),createIndex(index,0));
+}
+
 void FriendGroupModel::setData(const int &i, const QString &value, int role)
 {
     if(m_dataList.size()<=i||i<0)
@@ -101,6 +106,7 @@ void FriendGroupModel::setData(const int &i, const QString &value, int role)
         return;
     }
     m_dataList.replace(i,newData);
+    dataChanged(createIndex(i,0),createIndex(i,0));
 }
 
 int FriendGroupModel::rowCount(const QModelIndex &parent) const
@@ -188,6 +194,16 @@ bool FriendGroupModel::append(const QString &group,const QString &online, const 
 int FriendGroupModel::count() const
 {
     return rowCount(QModelIndex());
+}
+
+QVariantList FriendGroupModel::getGroups()
+{
+    QVariantList temp;
+    qint32 length=m_dataList.length();
+    for(qint32 i=0;i<length;++i){
+        temp.append(QVariant( m_dataList.at(i).groupName()));
+    }
+    return temp;
 }
 
 

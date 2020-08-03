@@ -1,5 +1,5 @@
 #include "weatherhandle.h"
-
+#include<qdebug.h>
 #include <qhostinfo.h>
 #include <qnetworkaccessmanager.h>
 #include <qnetworkreply.h>
@@ -12,11 +12,14 @@ WeatherHandle::WeatherHandle(QObject *parent) : QObject(parent)
     totalGeoAddr="";
 }
 
+WeatherHandle::~WeatherHandle()
+{
+    qDebug()<<"~WeatherHandle()";
+}
+
 
 void WeatherHandle::getIPGeoAdress()
 {
-
-
     QNetworkAccessManager*manager=new QNetworkAccessManager();
     QUrl url;
 

@@ -26,6 +26,7 @@ Rectangle {
     property alias headImgAct: headImgAction //头像悬浮时弹出界面
     property alias openAlterHImgAct: openAlterHImgAction //更改头像
     property alias openAlterUserInfoAct: openAlterUserInfoAction //用户资料修改
+    property alias openVerifyAct: openVerifyAction //打开验证页面
 
     //登录界面Actions
     Action {
@@ -153,12 +154,15 @@ Rectangle {
             if (result === 1) {
                 inCenterLoader.item.loginInf.loginTip.text = qsTr("没有这个账号！")
                 inCenterLoader.item.loginInf.loginTip.visible = true
+                funcc.realseServer()
             } else if (result === 2) {
                 inCenterLoader.item.loginInf.loginTip.text = qsTr("密码错误！")
                 inCenterLoader.item.loginInf.loginTip.visible = true
+                funcc.realseServer()
             } else if (result === 3) {
                 inCenterLoader.item.loginInf.loginTip.text = qsTr("登录失败！")
                 inCenterLoader.item.loginInf.loginTip.visible = true
+                funcc.realseServer()
             } else if (result === 0) {
                 mainWin.inf = Math.pow(2, 2) //标记为main界面
                 inCenterLoader.sourceComponent = undefined
@@ -169,7 +173,6 @@ Rectangle {
                 // mainWin.adjustCoordination()
                 //建议加载器的加载方式最好一致，否则很容易出现其属性null的情况
             }
-
             time60sForLogin.stop()
             loginAction.isClicked = false
         }
@@ -248,7 +251,9 @@ Rectangle {
             obj["sex"] = inCenterLoader.item.sex
             obj["所在地"] = inCenterLoader.item.where
             obj["故乡"] = inCenterLoader.item.townmans
-            funcc.startAddFriendsProcess(inCenterLoader.item, obj)
+            funcc.startAddFriendsProcess(
+                        inCenterLoader.item, obj,
+                        inCenterLoader.item.friendGroupModel.getGroups())
         }
     }
 
@@ -436,21 +441,52 @@ Rectangle {
             }
         }
     }
+    //打开验证页面
+    Action {
+        id: openVerifyAction
+        onTriggered: {
+            console.log("openVerifyAction ")
+            if (inCenterLoader.item.loaderForVerify === undefined)
+                return
+            var loader = inCenterLoader.item.loaderForVerify
+            if (!(Loader.Ready === loader.status)) {
+                console.log("loaded")
+                loader.source = "qrc:/main/VerifyWin.qml"
+                while (true) {
+                    if (loader.status === Loader.Ready) {
+                        console.log("start show")
+                        console.log("opened the VerifyWin.qml")
+                        funcc.getVerifyArray(myqq, loader.item) //获取也验证信息
+                        loader.item.x = (mainWin.desktopAvailableWidth - loader.item.width) / 2
+                        loader.item.y = (mainWin.desktopAvailableHeight - loader.item.height) / 2
+                        loader.item.showNormal()
+                        loader.item.raise()
+                        loader.item.requestActivate()
+                        break
+                    } else if (loader.status === Loader.Error) {
+                        console.log("loaderForAlterInfo  occured a error")
+                        break
+                    }
+                }
+            }
+        }
+    }
+
     //附属于主界面窗口的Actions
     Action {
         //切换账号窗口的确认动作
         id: mesWinForOkAction
         onTriggered: {
             mainWin.inf = Math.pow(2, 0)
-            //inCenterLoader.item.hide()
-            inCenterLoader.source = ""
+            inCenterLoader.item.realse() //释放资源
+            inCenterLoader.source = "" //删除对象
             func.mainWinReSize(mainWin.x + ((850 - 495) / 2),
                                mainWin.y + ((500 - 470) / 2), 495, 470)
             inCenterLoader.sourceComponent = comptLogin
             mainWin.show()
             mainWin.raise()
             mainWin.requestActivate()
-            funcc.deleteNetTimer() //删除网络监测器
+            funcc.exitMyQQ() //退出推送
         }
     }
     Action {
@@ -524,7 +560,8 @@ Rectangle {
         id: time2sForHideWeather
         interval: 2000
         onTriggered: {
-            if (!inCenterLoader.item.loaderForWeather.item.isMouseInside
+            if (null !== inCenterLoader
+                    && !inCenterLoader.item.loaderForWeather.item.isMouseInside
                     && inCenterLoader.item.loaderForWeather.item.win === 1
                     && !inCenterLoader.item.loaderForWeather.item.popIsOpen)
                 inCenterLoader.item.loaderForWeather.item.hide()
