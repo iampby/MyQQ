@@ -765,6 +765,7 @@ release\moc_bigfilesocket.cpp: ..\bigfilesocket.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonvalue.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QEventLoop \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qeventloop.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonobject.h \
 		release\moc_predefs.h \
 		..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe
 	D:\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include D:/QTpractice/MyQQ/MyQQ/build-MyQQ-Desktop_Qt_5_12_8_MSVC2017_64bit-Debug/release/moc_predefs.h -ID:/Qt5.12.8/5.12.8/msvc2017_64/mkspecs/win32-msvc -ID:/QTpractice/MyQQ/MyQQ -ID:/Qt5.12.8/5.12.8/msvc2017_64/include -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQuick -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWinExtras -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWidgets -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtGui -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtANGLE -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtNetwork -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtXml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtSql -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtCore -I. -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\ATLMFC\include" -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\cppwinrt" ..\bigfilesocket.h -o release\moc_bigfilesocket.cpp
@@ -1702,6 +1703,27 @@ release\moc_nativeserver.cpp: ..\nativeserver.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer_impl.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qhostaddress.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixmap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtguiglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtgui-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpaintdevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs_win.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qrect.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmargins.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsize.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qcolor.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgb.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgba64.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qimage.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixelformat.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtransform.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qmatrix.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpolygon.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qregion.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdatastream.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qline.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpainterpath.h \
 		release\moc_predefs.h \
 		..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe
 	D:\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include D:/QTpractice/MyQQ/MyQQ/build-MyQQ-Desktop_Qt_5_12_8_MSVC2017_64bit-Debug/release/moc_predefs.h -ID:/Qt5.12.8/5.12.8/msvc2017_64/mkspecs/win32-msvc -ID:/QTpractice/MyQQ/MyQQ -ID:/Qt5.12.8/5.12.8/msvc2017_64/include -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQuick -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWinExtras -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWidgets -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtGui -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtANGLE -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtNetwork -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtXml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtSql -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtCore -I. -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\ATLMFC\include" -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\cppwinrt" ..\nativeserver.h -o release\moc_nativeserver.cpp
@@ -1778,6 +1800,27 @@ release\moc_nativesocket.cpp: ..\nativesocket.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QJsonDocument \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsondocument.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonvalue.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixmap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtguiglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtgui-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpaintdevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs_win.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qrect.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmargins.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsize.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qcolor.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgb.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgba64.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qimage.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixelformat.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtransform.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qmatrix.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpolygon.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qregion.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdatastream.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qline.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpainterpath.h \
 		release\moc_predefs.h \
 		..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe
 	D:\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include D:/QTpractice/MyQQ/MyQQ/build-MyQQ-Desktop_Qt_5_12_8_MSVC2017_64bit-Debug/release/moc_predefs.h -ID:/Qt5.12.8/5.12.8/msvc2017_64/mkspecs/win32-msvc -ID:/QTpractice/MyQQ/MyQQ -ID:/Qt5.12.8/5.12.8/msvc2017_64/include -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQuick -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWinExtras -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWidgets -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtGui -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtANGLE -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtNetwork -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtXml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtSql -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtCore -I. -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\ATLMFC\include" -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\cppwinrt" ..\nativesocket.h -o release\moc_nativesocket.cpp
@@ -3541,6 +3584,27 @@ release\nativeserver.obj: ..\nativeserver.cpp ..\nativeserver.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer_impl.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qhostaddress.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixmap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtguiglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtgui-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpaintdevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs_win.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qrect.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmargins.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsize.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qcolor.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgb.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgba64.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qimage.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixelformat.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtransform.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qmatrix.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpolygon.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qregion.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdatastream.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qline.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpainterpath.h \
 		..\nativesocket.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtcpsocket.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QJsonDocument \
@@ -3620,8 +3684,28 @@ release\nativesocket.obj: ..\nativesocket.cpp ..\nativesocket.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QJsonDocument \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsondocument.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonvalue.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonobject.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdatastream.h
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixmap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtguiglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtgui-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpaintdevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs_win.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qrect.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmargins.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsize.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qcolor.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgb.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgba64.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qimage.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixelformat.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtransform.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qmatrix.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpolygon.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qregion.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdatastream.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qline.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpainterpath.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonobject.h
 
 release\netmonitor.obj: ..\netmonitor.cpp ..\netmonitor.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QObject \

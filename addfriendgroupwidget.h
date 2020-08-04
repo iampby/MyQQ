@@ -1,6 +1,7 @@
 #ifndef ADDFRIENDGROUPWIDGET_H
 #define ADDFRIENDGROUPWIDGET_H
 
+
 #include <QObject>
 #include <QWidget>
 #include<QMouseEvent>

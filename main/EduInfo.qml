@@ -32,7 +32,7 @@ Rectangle {
         width: 250
         height: 20
         text: school
-        font.pointSize:10
+        font.pointSize: 10
         font.family: "新宋体"
         elide: Text.ElideRight
     } //ebebeb

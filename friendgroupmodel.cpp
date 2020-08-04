@@ -68,7 +68,40 @@ QVariant FriendGroupModel::data(const int &i, int role) const
 
 void FriendGroupModel::update(int index)
 {
-  dataChanged(createIndex(index,0),createIndex(index,0));
+    if(rowCount()==0)
+        return;
+    if(index<0)index=0;
+    if(index>=rowCount())index=rowCount()-1;
+    dataChanged(createIndex(index,0),createIndex(index,0));
+}
+
+void FriendGroupModel::update(int index1, int index2)
+{
+    if(index1>index2){
+        qint32 temp=index2;
+        index2=index1;
+        index1=temp;
+    }
+    if(index1<0){
+        index1=0;
+    }
+    if(index2>rowCount()-1)
+        index2=rowCount()-1;
+    if(rowCount()==0){
+        index1=0;index2=0;
+    }
+    dataChanged(createIndex(index1,0),createIndex(index2,0));
+}
+
+void FriendGroupModel::swap(const int &i1, const int &i2)
+{
+    if(i1>i2){
+        m_dataList.move(i2,i1);
+        this->update(i2,i1);
+    }else{
+        m_dataList.move(i1,i2);
+        this->update(i1,i2);
+    }
 }
 
 void FriendGroupModel::setData(const int &i, const QString &value, int role)

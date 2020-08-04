@@ -38,7 +38,9 @@ public:
 
     QHash<int, QByteArray>roleNames()const;
    Q_INVOKABLE  QVariant data(const int&i, int role = Qt::DisplayRole)const;
-    Q_INVOKABLE void update(int index);
+    Q_INVOKABLE void update(int index);//更新好友列表
+    Q_INVOKABLE void update(int index1,int index2);//更新好友列表
+    Q_INVOKABLE void swap(const int&i1,const int& i2);//更新好友列表
     // Basic functionality:
     QVariant data(const QModelIndex&index, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;

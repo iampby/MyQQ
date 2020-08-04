@@ -1,5 +1,6 @@
 ﻿import QtQuick 2.11
 import QtQuick.Window 2.11
+
 Window {
     id: win
     property alias updgradeBtn: updgradeBtn

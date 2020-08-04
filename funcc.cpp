@@ -583,6 +583,7 @@ void FuncC::getFriend(QByteArray data, QPixmap pix)
     pix.save("../user/"+m_myQQ+"/friends"+"/"+number+"1.png","png");
     images->provider2->images.insert(number+"1",pix);
     emit emitFriend(map);
+
 }
 bool FuncC::writeFile(const QByteArray &content, const QString &filepath)
 {

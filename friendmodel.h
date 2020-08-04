@@ -56,6 +56,8 @@ public:
     ~FriendModel();
     //基础函数
     Q_INVOKABLE  int rowCount(const QModelIndex &parent=QModelIndex()) const;
+    Q_INVOKABLE void update(int index);
+    Q_INVOKABLE void update(int index1, int index2);
     QHash<int,QByteArray>roleNames()const;
     Q_INVOKABLE QString data(const int &, int ) const;
     QVariant data(const QModelIndex &index, int role) const;//纯虚函数必须实现

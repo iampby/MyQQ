@@ -18,23 +18,13 @@
                 <备注 isNull="true">none</备注>
                 <等级>0</等级>
                 <状态>0</状态>
-                <set info="0" status="0" isNull="true">none</set>
-            </friend>
-            <friend myqq="10001">
-                <昵称>10001</昵称>
-                <个性签名 isNull="true">none</个性签名>
-                <头像路径>../userData/10001/historyHeadImg/01.png</头像路径>
-                <备注 isNull="true">none</备注>
-                <等级>0</等级>
-                <状态>0</状态>
-                <set info="0" status="0" isNull="true">none</set>
+                <set status="0" isNull="true" info="0">none</set>
             </friend>
         </我的好友>
         <朋友 set="none">none</朋友>
         <家人 set="none">none</家人>
         <同学 set="none">none</同学>
         <黑名单 set="none">none</黑名单>
-        <haha set="none">none</haha>
     </friendGroup>
     <groupChat>
         <我的群聊 isNull="true">none</我的群聊>

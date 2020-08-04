@@ -12,7 +12,7 @@ FriendData::FriendData():m_myqq(QString()),
 
 QString FriendData::myqq() const
 {
- return m_myqq;
+    return m_myqq;
 }
 QString FriendData::name() const
 {
@@ -46,7 +46,7 @@ QString FriendData::status() const
 
 QString FriendData::infoSet() const
 {
-     return m_infoSet;
+    return m_infoSet;
 }
 
 QString FriendData::statusSet() const
@@ -122,27 +122,54 @@ int FriendModel::rowCount(const QModelIndex &parent) const
     return m_dataList.count();
 }
 
-QHash<int, QByteArray> FriendModel::roleNames() const
+void FriendModel::update( int index)
 {
-   QHash<int, QByteArray> roles;
-   roles.insert(NameRole,QByteArray("r_name"));
-   roles.insert(SignatureRole,QByteArray("r_signature"));
-   roles.insert(ImgPathRole,QByteArray("r_imgPath"));
-   roles.insert(TagRole,QByteArray("r_tag"));
-   roles.insert(GradeRole,QByteArray("r_grade"));
-   roles.insert(StatusRole,QByteArray("r_status"));
-   roles.insert(InfoSetRole,QByteArray("r_infoSet"));
-   roles.insert(StatusSetRole,QByteArray("r_statusSet"));
-   roles.insert(MyQQRole,QByteArray("r_myqq"));
-   return roles;
+    if(rowCount()==0)
+        return;
+    if(index<0)index=0;
+    if(index>=rowCount())index=rowCount()-1;
+    dataChanged(createIndex(index,0),createIndex(index,0));
 }
 
- QString FriendModel::data(const int &row, int role) const
+void FriendModel::update(int index1,  int index2)
 {
-     if(row<0||row>=this->rowCount())
-         return QVariant().toString();
-   QModelIndex index=this->createIndex(row,0);
-   return  this->data(index,role).toString();
+    if(index1>index2){
+        qint32 temp=index2;
+        index2=index1;
+        index1=temp;
+    }
+    if(index1<0){
+        index1=0;
+    }
+    if(index2>rowCount()-1)
+        index2=rowCount()-1;
+    if(rowCount()==0){
+        index1=0;index2=0;
+    }
+    dataChanged(createIndex(index1,0),createIndex(index2,0));
+}
+
+QHash<int, QByteArray> FriendModel::roleNames() const
+{
+    QHash<int, QByteArray> roles;
+    roles.insert(NameRole,QByteArray("r_name"));
+    roles.insert(SignatureRole,QByteArray("r_signature"));
+    roles.insert(ImgPathRole,QByteArray("r_imgPath"));
+    roles.insert(TagRole,QByteArray("r_tag"));
+    roles.insert(GradeRole,QByteArray("r_grade"));
+    roles.insert(StatusRole,QByteArray("r_status"));
+    roles.insert(InfoSetRole,QByteArray("r_infoSet"));
+    roles.insert(StatusSetRole,QByteArray("r_statusSet"));
+    roles.insert(MyQQRole,QByteArray("r_myqq"));
+    return roles;
+}
+
+QString FriendModel::data(const int &row, int role) const
+{
+    if(row<0||row>=this->rowCount())
+        return QVariant().toString();
+    QModelIndex index=this->createIndex(row,0);
+    return  this->data(index,role).toString();
 }
 
 QVariant FriendModel::data(const QModelIndex &index, int role) const
@@ -152,28 +179,28 @@ QVariant FriendModel::data(const QModelIndex &index, int role) const
         return QVariant();
     qDebug()<<"role"<<role;
     qDebug()<<m_dataList.at(row)->myqq();
-     switch (role) {
-     case MyQQRole:
-         return m_dataList.at(row)->myqq();
-     case NameRole:
+    switch (role) {
+    case MyQQRole:
+        return m_dataList.at(row)->myqq();
+    case NameRole:
         return m_dataList.at(row)->name();
-     case SignatureRole:
-         return m_dataList.at(row)->signature();
-     case ImgPathRole:
-         return m_dataList.at(row)->imgPath();
-     case TagRole:
-         return m_dataList.at(row)->tag();
-     case GradeRole:
-         return m_dataList.at(row)->grade();
-     case StatusRole:
-         return m_dataList.at(row)->status();
-     case InfoSetRole:
-         return m_dataList.at(row)->infoSet();
-     case StatusSetRole:
-         return m_dataList.at(row)->statusSet();
-     default:
+    case SignatureRole:
+        return m_dataList.at(row)->signature();
+    case ImgPathRole:
+        return m_dataList.at(row)->imgPath();
+    case TagRole:
+        return m_dataList.at(row)->tag();
+    case GradeRole:
+        return m_dataList.at(row)->grade();
+    case StatusRole:
+        return m_dataList.at(row)->status();
+    case InfoSetRole:
+        return m_dataList.at(row)->infoSet();
+    case StatusSetRole:
+        return m_dataList.at(row)->statusSet();
+    default:
         return QVariant();
-     }
+    }
 
 }
 
@@ -183,60 +210,60 @@ int FriendModel::rowOf(const QVariant &var, int role) const
     switch (role) {
     case MyQQRole:
         for ( i = 0; i <m_dataList.length(); ++i) {
-           if(m_dataList.at(i)->myqq()==var.toString())
-               return i;
+            if(m_dataList.at(i)->myqq()==var.toString())
+                return i;
         }
         break;
     case NameRole:
         for ( i = 0; i <m_dataList.length(); ++i) {
-           if(m_dataList.at(i)->name()==var.toString())
-               return i;
+            if(m_dataList.at(i)->name()==var.toString())
+                return i;
         }
-         break;
+        break;
     case SignatureRole:
         for ( i = 0; i <m_dataList.length(); ++i) {
-           if(m_dataList.at(i)->signature()==var.toString())
-               return i;
+            if(m_dataList.at(i)->signature()==var.toString())
+                return i;
         }
-         break;
+        break;
     case ImgPathRole:
         for ( i = 0; i <m_dataList.length(); ++i) {
-           if(m_dataList.at(i)->imgPath()==var.toString())
-               return i;
+            if(m_dataList.at(i)->imgPath()==var.toString())
+                return i;
         }
-         break;
+        break;
     case TagRole:
         for ( i = 0; i <m_dataList.length(); ++i) {
-           if(m_dataList.at(i)->tag()==var.toString())
-               return i;
+            if(m_dataList.at(i)->tag()==var.toString())
+                return i;
         }
-         break;
+        break;
     case GradeRole:
         for ( i = 0; i <m_dataList.length(); ++i) {
-           if(m_dataList.at(i)->grade()==var.toString())
-               return i;
+            if(m_dataList.at(i)->grade()==var.toString())
+                return i;
         }
-         break;
+        break;
     case StatusRole:
         for ( i = 0; i <m_dataList.length(); ++i) {
-           if(m_dataList.at(i)->status()==var.toString())
-               return i;
+            if(m_dataList.at(i)->status()==var.toString())
+                return i;
         }
-         break;
+        break;
     case InfoSetRole:
         for ( i = 0; i <m_dataList.length(); ++i) {
-           if(m_dataList.at(i)->infoSet()==var.toString())
-               return i;
+            if(m_dataList.at(i)->infoSet()==var.toString())
+                return i;
         }
-         break;
+        break;
     case StatusSetRole:
         for ( i = 0; i <m_dataList.length(); ++i) {
-           if(m_dataList.at(i)->statusSet()==var.toString())
-               return i;
+            if(m_dataList.at(i)->statusSet()==var.toString())
+                return i;
         }
-         break;
+        break;
     default:
-      break;
+        break;
     }
     return -1;
 }
@@ -256,22 +283,22 @@ void FriendModel::insert(int row, FriendData*value)
 
 void FriendModel::remove(const int& row,const  int& count)
 {
-if(row<0||row>=m_dataList.size()||row<(row+count-1))
-    return;
-beginRemoveRows(this->createIndex(row,0),row,row+count-1);
-for(int i=row;i<row+count;i++){
-FriendData*data=m_dataList.at(i);
- m_dataList.removeAt(i);
- delete data;
- data=nullptr;
-}
-endRemoveRows();
+    if(row<0||row>=m_dataList.size()||row<(row+count-1))
+        return;
+    beginRemoveRows(this->createIndex(row,0),row,row+count-1);
+    for(int i=row;i<row+count;i++){
+        FriendData*data=m_dataList.at(i);
+        m_dataList.removeAt(i);
+        delete data;
+        data=nullptr;
+    }
+    endRemoveRows();
 }
 
 void FriendModel::setData(const int &row,const QString& value, int role)
 {
-   if(row<0||row>=m_dataList.size())
-       return;
+    if(row<0||row>=m_dataList.size())
+        return;
     FriendData*data=m_dataList.at(row);
     switch (role) {
     case MyQQRole:
@@ -282,28 +309,28 @@ void FriendModel::setData(const int &row,const QString& value, int role)
         break;
     case SignatureRole:
         data->setSignature(value);
-         break;
+        break;
     case ImgPathRole:
         data->setImgPath(value);
         qDebug()<<data->imgPath();
-         break;
+        break;
     case TagRole:
-       data->setTag(value);
+        data->setTag(value);
         break;
     case GradeRole:
-       data->setGrade(value);
+        data->setGrade(value);
         break;
     case StatusRole:
-       data->setStatus(value);
+        data->setStatus(value);
         break;
     case InfoSetRole:
         data->setInfoSet(value);
-         break;
+        break;
     case StatusSetRole:
         data->setStatusSet(value);
-         break;
+        break;
     default:
-      break;
+        break;
     };
     dataChanged(createIndex(row,0),createIndex(row,0));
     qDebug()<<" dataChanged(createIndex(row,0),createIndex(row,0))";

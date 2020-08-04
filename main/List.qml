@@ -14,14 +14,15 @@ Button {
     property int w: 100
     property string set:"none"
     property int pos:0
+    property bool isChecked: false
     id:lb
     width: w
     height: h
     visible: true
     hoverEnabled: true
 
-    onHoveredChanged: {
-        if (hovered)
+    onIsCheckedChanged:  {
+        if (isChecked)
             backColor = "#f2f2f2"
         else
             backColor = "transparent"
