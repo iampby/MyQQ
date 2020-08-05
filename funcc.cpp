@@ -1205,7 +1205,7 @@ void FuncC::updateUserInformation(QVariantMap info)
 
 void FuncC::addRemoteFriendGroup(QJsonDocument&doc)
 {
-    QString instructDescription="11 addFGroup "+m_myQQ+" writedHeaderSize";//更新封面
+    QString instructDescription="11 addFGroup "+m_myQQ+" writedHeaderSize";//添加分组
     BigFileSocket*addFGroupSock=new BigFileSocket();//子线程对象最好不要有父类
     addFGroupSock->setInstruct(instructDescription);
     addFGroupSock->setIp(ip);
@@ -1397,6 +1397,42 @@ void FuncC::handleFVerify(QVariantMap obj)
         thread->exit(0);
         thread->quit();
        qDebug()<<"handling friend verify thread had exited";
+    });
+}
+
+void FuncC::updateFGroup(QVariantMap obj)
+{
+    QString instructDescription="15 "+obj.take("content").toString()+" "+m_myQQ+" writedHeaderSize";//添加分组
+    BigFileSocket*updateFGroupSock=new BigFileSocket();//子线程对象最好不要有父类
+    updateFGroupSock->setInstruct(instructDescription);
+    updateFGroupSock->setIp(ip);
+    updateFGroupSock->setPort(updatePort);
+    updateFGroupSock->setTimeout(10000);//10s超时
+    QThread*thread=new QThread();
+    updateFGroupSock->moveToThread(thread);
+    thread->start();
+    emit  updateFGroupSock->start();//转移到新线程去post host
+    //删除套接字
+    connect(thread,&QThread::finished,updateFGroupSock,&BigFileSocket::deleteLater);
+    //删除线程
+    connect(thread,&QThread::finished,thread,&QThread::deleteLater);
+    connect(updateFGroupSock,&BigFileSocket::finished,thread,&QThread::quit);//超时放弃
+    //获取文件结果收尾处理
+    connect(updateFGroupSock,&BigFileSocket::writtenInstruction,updateFGroupSock,[=](){
+       QJsonObject jobj=QJsonObject::fromVariantMap(obj);
+       QJsonDocument json(jobj);
+       QByteArray data=json.toBinaryData();
+       if(data.isEmpty()){
+        qDebug()<<"a error:data of dispatching is empty ";
+                  thread->exit(0);
+                  thread->quit();
+                  return;
+       }
+        updateFGroupSock->write(data);
+        updateFGroupSock->loop.exec();
+        thread->exit(0);
+        thread->quit();
+        qDebug()<<" thread had exited to move or delete remote group";
     });
 }
 

@@ -23,6 +23,15 @@
         </我的好友>
         <朋友 set="none">none</朋友>
         <家人 set="none">none</家人>
+             <friend myqq="10003">
+                <昵称>潘佰远2</昵称>
+                <个性签名 isNull="false">iamhei</个性签名>
+                <头像路径>../userData/10002/historyHeadImg/01.png</头像路径>
+                <备注 isNull="true">none</备注>
+                <等级>0</等级>
+                <状态>0</状态>
+                <set status="0" isNull="true" info="0">none</set>
+            </friend>
         <同学 set="none">none</同学>
         <黑名单 set="none">none</黑名单>
     </friendGroup>

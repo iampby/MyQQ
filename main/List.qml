@@ -12,23 +12,23 @@ Button {
     property int rotat: 0
     property int h: 35
     property int w: 100
-    property string set:"none"
-    property int pos:0
+    property string set: "none"
+    property int pos: 0
     property bool isChecked: false
-    id:lb
+    id: lb
     width: w
     height: h
     visible: true
     hoverEnabled: true
 
-    onIsCheckedChanged:  {
+    onIsCheckedChanged: {
         if (isChecked)
             backColor = "#f2f2f2"
         else
             backColor = "transparent"
     }
     background: Rectangle {
-        implicitWidth:w
+        implicitWidth: w
         implicitHeight: h
         color: backColor
         RowLayout {

@@ -28,8 +28,6 @@ ApplicationWindow {
     property alias gradeModel: gradeModel //用户等级模型
     property alias viewFriend: viewFriend //好友视图
 
-    property var fg: null //移动好友组便条
-
     property var friendsModel: [] //保存好友模型，用来过渡且便于使用
     //好友代理数，由于代理动态加载，在friendGroupModel添加数据过程中一直处于线程忙碌，无法直接构造，所以标记是否构造完用来加载好友模型
     property int friendDelegateCount: 0 //好友组实例化数，用于有效添加好友数据
@@ -64,6 +62,7 @@ ApplicationWindow {
 
     property int headImgY: qqMainWin.y + bodyRec.y + headRec.y + recHead.y //头像窗口的Y坐标
 
+    signal move(point movedCoordinate)
     signal sendLeaveForMenuBtnItems
     signal sendCoordinate(point pos)
     //移动坐标处理信号，参数为鼠标位置偏差
@@ -199,6 +198,18 @@ ApplicationWindow {
     onAboutToQuit: {
         //退出
         Qt.quit()
+    }
+    //拖拽便条随窗口位置变化而毁灭
+    onXChanged: {
+        if (loaderForFG.status != Loader.Null) {
+            loaderForFG.item.close()
+        }
+    }
+    //拖拽便条随窗口可视变化而毁灭
+    onVisibleChanged: {
+        if (loaderForFG.status != Loader.Null) {
+            loaderForFG.item.close()
+        }
     }
 
     onWeatherCanShowChanged: {
@@ -1482,6 +1493,38 @@ ApplicationWindow {
                     hoverEnabled: true
                     contentWidth: headerRec.width
                     contentHeight: viewFriend.height
+
+                    onCloseAllGroup: {
+                        console.log("close????")
+                        var length = friendGroupModel.count()
+                        var items = viewFriend.contentItem.children
+                        for (var i = 0; i < length; ++i) {
+                            var item = items[i]
+                            item.listGroup.rotat = 0
+                            item.friend.visible = false
+                        }
+                    }
+                    onCloseFGChecked: {
+                        var length = friendGroupModel.count()
+                        var items = viewFriend.contentItem.children
+                        for (var i = 0; i < length; ++i) {
+                            var item = items[i]
+                            item.listGroup.isChecked = false
+                        }
+                    }
+                    onClickFG: {
+
+                        var item = viewFriend.contentItem.children[index]
+                        item.listGroup.isChecked = false
+                        console.log("???", index)
+                        if (item.listGroup.rotat == 0) {
+                            item.listGroup.rotat = 90
+                            item.friend.visible = true
+                        } else {
+                            item.listGroup.rotat = 0
+                            item.friend.visible = false
+                        }
+                    }
                     //滚动栏
                     ScrollBar.vertical: ScrollBar {
                         parent: scrFriend //必须设置父对象才能启动hovered and pressed以及鼠标事件
@@ -1508,7 +1551,9 @@ ApplicationWindow {
                         delegate: Rectangle {
                             property alias delegateModel: listFriend.model
                             property alias friend: listFriend
+                            property alias listGroup: listGroup
                             property string group: r_group
+                            property bool isClicked: false
                             property int pos: -1
                             id: fgitem
                             width: headerRec.width
@@ -1524,42 +1569,12 @@ ApplicationWindow {
                                 name.text: group
                                 sumForFriends: r_count
                                 activeLine: r_online
-                                Connections {
-                                    target: scrFriend
-                                    onCloseAllGroup: {
-                                        listGroup.rotat = 0
-                                        fgitem.friend.visible = false
-                                    }
-                                    onCloseFGChecked: {
-                                        listGroup.isChecked = false
-                                    }
-                                    onClickFG: {
-                                        var i = viewFriend.indexAt(fgitem.x,
-                                                                   fgitem.y)
-                                        if (i !== -1 && i == index) {
-                                            if (listGroup.rotat == 0) {
-                                                listGroup.rotat = 90
-                                                listFriend.visible = true
-                                            } else {
-                                                listGroup.rotat = 0
-                                                listFriend.visible = false
-                                            }
-                                        }
-                                    }
-                                }
+
                                 onHoveredChanged: {
                                     if (hovered) {
+                                         scrFriend.closeFGChecked()
                                         isChecked = true
-                                        var obj = qqMainWin.fg
-                                        if (obj != null) {
-                                            obj.destroy()
-                                            qqMainWin.fg = null
-                                        }
-                                        obj = friendComp.createObject(scrFriend)
-                                        if (!obj) {
-                                            console.log("object creation is of failure")
-                                            return
-                                        }
+                                        var obj = loaderForFG.item
                                         var items = viewFriend.contentItem.children
                                         var length = friendGroupModel.count()
                                         for (var i = 0; i < length; ++i) {
@@ -1578,11 +1593,12 @@ ApplicationWindow {
                                         }
                                         if (index > 1 && index < length - 1)
                                             obj.canDarg = true
-                                        qqMainWin.fg = obj
+                                        else
+                                            obj.canDarg = false
                                         obj.hide()
                                         obj.x = scrFriend.ix + fgitem.x
                                         obj.y = scrFriend.iy + fgitem.y
-                                        obj.btn.w = listGroup.w
+                                        obj.btn.w = listGroup.w - 50
                                         obj.btn.h = listGroup.h
                                         obj.name = listGroup.name.text
                                         obj.btn.rotat = listGroup.rotat
@@ -1593,8 +1609,8 @@ ApplicationWindow {
                                         obj.index = fgitem.pos
                                         obj.isDarg = false
                                         obj.show()
-                                    } else {
-                                        listGroup.isChecked = false
+                                        obj.raise()
+                                        obj.requestActivate()
                                     }
                                 }
                             }
@@ -1604,6 +1620,8 @@ ApplicationWindow {
                                 anchors.top: listGroup.bottom
                                 visible: false
                                 onVisibleChanged: {
+                                    console.log("???,visible=", visible,
+                                                fgitem.pos)
                                     if (visible)
                                         parent.height += height
                                     else
@@ -2076,10 +2094,17 @@ ApplicationWindow {
     }
 
     //移动好友组
+    Loader {
+        id: loaderForFG
+        sourceComponent: friendComp
+        focus: true
+        visible: Loader.Ready === loaderForFG.status
+    }
     Component {
         id: friendComp
         Window {
             property int index: -1
+            property bool firstAllClose: true
             property bool isDarg: false
             property bool canDarg: false
             property int bx: scrFriend.ix
@@ -2094,10 +2119,13 @@ ApplicationWindow {
             height: btn.height
             flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
             opacity: 1.0
+            onClosing: {
+                hide()
+            }
+
             onXChanged: {
                 if (x == m.tx && m.l) {
-                    fgwin.destroy()
-                    qqMainWin.fg = null
+                    close()
                     m.l = false
                 }
             }
@@ -2105,10 +2133,10 @@ ApplicationWindow {
             onYChanged: {
                 if (y == m.ty && m.l) {
                     m.l = false
-                    fgwin.destroy()
-                    item = null
+                    close()
                 }
             }
+
             List {
                 id: btn
                 name.text: fgwin.name
@@ -2116,29 +2144,50 @@ ApplicationWindow {
                     property bool l: false
                     property int tx: 0
                     property int ty: 0
+                    //开始的窗口位置
+                    property int swx: 0
+                    property int swy: 0
                     //按下位置
-                    property int sx: fgwin.x + startPoint.x
-                    property int sy: fgwin.y + startPoint.y
+                    property point s:Qt.point(fgwin.x + startPoint.x,fgwin.y + startPoint.y)
                     id: m
 
                     width: parent.width
                     height: parent.height
                     property point startPoint: Qt.point(0, 0)
                     hoverEnabled: true
-
+//防误移动
+                    onSChanged: {
+    if(fgwin.firstAllClose){
+        var offx=Math.abs(s.x-fgwin.x-startPoint.x)
+        var offy=Math.abs(s.y-fgwin.y-startPoint.y)
+        if(Math.sqrt(offx*offx+offy*offy)>5){
+            scrFriend.closeAllGroup()//关闭所有号好友表
+            fgwin.firstAllClose=false
+        }
+    }
+}
                     onPressed: {
                         l = true
                         startPoint.x = mouseX
                         startPoint.y = mouseY
-                        console.log("mouseX=", mouseX, "mouseY=", mouseY) //测试位置
+                        swx = fgwin.x
+                        swy = fgwin.y
+                        fgwin.firstAllClose=true
                     }
 
                     onReleased: {
-                        var ix = sx - scrFriend.ix
-                        var iy = sy - scrFriend.iy
+                        var ix = s.x - scrFriend.ix
+                        var iy = s.y - scrFriend.iy
                         var index = viewFriend.indexAt(ix, iy)
-                        console.log("index=", index)
-                        if (fgwin.isDarg) {
+                        console.log("index=", index, fgwin.index)
+                        if (index == -1) {
+                            console.log("warning:index=-1")
+                          return
+                        }
+                        var b = (!(Math.abs(swx - fgwin.x) < 2 && Math.abs(
+                                       swy - fgwin.y) < 2))
+                        //忽略小弧度位移
+                        if (fgwin.isDarg && b) {
                             //处理移动事件
                             if (cursorShape != Qt.ForbiddenCursor) {
                                 if (index !== fgwin.index) {
@@ -2159,45 +2208,48 @@ ApplicationWindow {
                                     friendGroupModel.swap(fgwin.index, index)
                                     console.log("swap(", fgwin.index,
                                                 index, ")")
+                                    //推送远程
+                                    var obj = {}
+                                    obj.content = "deleteOrMoveFGroup"
+                                    obj.type = "move"
+                                    obj.index1 = fgwin.index
+                                    obj.index2 = index
+                                    funcc.updateFGroup(obj)
                                 }
                             }
                             cursorShape = Qt.ArrowCursor
-                            hide()
-                            fgwin.destroy()
-                            qqMainWin.fg = null
-                        } else {
-                            scrFriend.clickFG(fgwin.index)
-                            if (btn.rotat == 0)
-                                btn.rotat = 90
-                            else
-                                btn.rotat = 0
-                            fgwin.opacity = 1.0
-                          btn.backColor="transparent"
+                            fgwin.close()
+                            return
                         }
+                        cursorShape = Qt.ArrowCursor
+                        fgwin.close()
+                        //不能移动则不打开
+                        if ((!fgwin.canDarg) && b)
+                            return
+                        console.log("clicked")
+                        btn.backColor = "transparent"
+                        scrFriend.clickFG(fgwin.index)
                     }
                     onContainsMouseChanged: {
                         if (!containsMouse) {
                             l = false
                             if (!pressed) {
-                              btn.backColor="transparent"
+                                btn.backColor = "transparent"
                                 scrFriend.closeFGChecked()
                             }
                         }
                     }
                     //公式：窗口位置+=鼠标位置-起始位置；实现移动效果
                     onPositionChanged: {
-                        if (!fgwin.canDarg)
-                            return
                         if (pressed) {
                             fgwin.opacity = 0.5
-                            scrFriend.closeAllGroup()
                             btn.rotat = 0
                             fgwin.isDarg = true
                             tx = mouseX - startPoint.x
                             ty = mouseY - startPoint.y
                             fgwin.x += tx
                             fgwin.y += ty
-                            if (sx < bx || sx > ex || (sy < by || sy > ey)) {
+                            if (s.x < bx || s.x > ex || (s.y < by || s.y > ey)) {
                                 cursorShape = Qt.ForbiddenCursor
                             } else
                                 cursorShape = Qt.ArrowCursor

@@ -91,6 +91,7 @@ public:
     Q_INVOKABLE void getVerifyArray(const QString&myqq, QQuickWindow *qmlWin);//获取验证消息组
     Q_INVOKABLE void openAddFGroupWidget(QQuickWindow *w, QQuickWindow *qqMainWin);//打开widget 用于添加hao'you分组
     Q_INVOKABLE void handleFVerify(QVariantMap obj);//处理好友验证消息
+    Q_INVOKABLE void updateFGroup(QVariantMap obj);//更新远程好友分组 顺序变换 删除
 
 
 
