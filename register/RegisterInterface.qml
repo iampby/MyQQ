@@ -75,7 +75,7 @@ Rectangle {
         currentIndex: 0
         contentItem: ListView {
             model: container.contentModel
-            //snapMode: ListView.SnapOneItem
+            snapMode: ListView.SnapOneItem
             highlightRangeMode: ListView.StrictlyEnforceRange
             orientation: ListView.Vertical
             highlightMoveVelocity: 3000

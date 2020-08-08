@@ -7,6 +7,7 @@
 #include <qimage.h>
 #include<qdir.h>
 #include <qtimer.h>
+#include <qdatetime.h>
 BigFileSocket::BigFileSocket(QObject *parent)
     :QTcpSocket(parent),instruct(QJsonDocument())
 {
@@ -104,6 +105,7 @@ void BigFileSocket::setTimeout(const qint64 &t)
 
 void BigFileSocket::readD()
 {
+
     while (bytesAvailable()>=size&&bytesAvailable()>0) {
         if(size==0){
             QByteArray data=this->read(1);

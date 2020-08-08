@@ -2,7 +2,6 @@
 import QtQuick.Controls 2.5
 import QtGraphicalEffects 1.0
 
-
 //baccd7
 Button {
     property alias img: img

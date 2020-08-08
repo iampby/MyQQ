@@ -85,11 +85,9 @@ void FriendGroupModel::update(int index1, int index2)
     if(index1<0){
         index1=0;
     }
-    if(index2>rowCount()-1)
-        index2=rowCount()-1;
-    if(rowCount()==0){
-        index1=0;index2=0;
-    }
+    if(index2>rowCount())
+        index2=rowCount();
+
     dataChanged(createIndex(index1,0),createIndex(index2,0));
 }
 
@@ -193,7 +191,24 @@ void FriendGroupModel::insert(const int& index, const Data &data)
     beginInsertRows(QModelIndex(), index, index);
     m_dataList.insert(index, data);
     endInsertRows();
-    //    emit countChanged(m_data.count());
+}
+
+void FriendGroupModel::insert( int index, const QString &group, const QString &online, const QString &count, const QString &set)
+{
+    if(index < 0 ) {
+      index=0;
+    }
+    else if(index > m_dataList.count()){
+        index=m_dataList.count();
+    }
+Data d;
+d.setGroupName(group);
+d.setOnline(online);
+d.setCount(count);
+d.setSet(set);
+    beginInsertRows(QModelIndex(), index, index);
+    m_dataList.insert(index, d);
+    endInsertRows();
 }
 
 void FriendGroupModel::remove(const int& index)

@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<myqq number="10015">
+    <set>
+        <头像>0</头像>
+        <名称>0</名称>
+        <列表>0</列表>
+        <联系人>0</联系人>
+        <黑名单>0</黑名单>
+        <独立密码>none</独立密码>
+    </set>
+    <friendGroup count="8">
+        <好友组1 name="我的设备" set="none">none</好友组1>
+        <好友组2 name="我的好友" set="none">
+            <friend myqq="10015">
+                <昵称>10015</昵称>
+                <个性签名 isNull="true">none</个性签名>
+                <头像路径>../userData/10015/historyHeadImg/01.png</头像路径>
+                <备注 isNull="true">none</备注>
+                <等级>0</等级>
+                <状态>0</状态>
+                <set info="0" isNull="true" status="0">none</set>
+            </friend>
+        </好友组2>
+        <好友组4 name="2" set="none">none</好友组4>
+        <好友组5 name="同学" set="none">
+            <friend myqq="10016">
+                <昵称>105</昵称>
+                <个性签名 isNull="true">none</个性签名>
+                <头像路径>../userData/10015/historyHeadImg/01.png</头像路径>
+                <备注 isNull="true">none</备注>
+                <等级>0</等级>
+                <状态>0</状态>
+                <set info="0" isNull="true" status="0">none</set>
+            </friend>
+        </好友组5>
+        <好友组6 name="22" set="none">none</好友组6>
+        <好友组7 name="未命名" set="none">
+            <friend myqq="10016">
+                <昵称>10016</昵称>
+                <个性签名 isNull="true">none</个性签名>
+                <头像路径>../userData/10015/historyHeadImg/01.png</头像路径>
+                <备注 isNull="true">none</备注>
+                <等级>0</等级>
+                <状态>0</状态>
+                <set info="0" isNull="true" status="0">none</set>
+            </friend>
+        </好友组7>
+        <好友组7 name="tt" set="none">none</好友组7>
+        <好友组8 name="黑名单" set="none">none</好友组8>
+    </friendGroup>
+    <groupChat>
+        <我的群聊 isNull="true">none</我的群聊>
+    </groupChat>
+</myqq>

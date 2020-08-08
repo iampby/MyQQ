@@ -86,12 +86,13 @@ public:
     Q_INVOKABLE void updatePhotoWall(quint8 length);//更新用户远程照片墙
     Q_INVOKABLE void inintCityData(QQuickWindow*w);//初始化城市数据 数据源sqlite
     Q_INVOKABLE void updateUserInformation(QVariantMap info);//更新远程的用户信息
-    Q_INVOKABLE void addRemoteFriendGroup(QJsonDocument &doc);//远程添加分组
     Q_INVOKABLE void exitMyQQ(QQuickWindow *w=nullptr);//退出处理
     Q_INVOKABLE void getVerifyArray(const QString&myqq, QQuickWindow *qmlWin);//获取验证消息组
     Q_INVOKABLE void openAddFGroupWidget(QQuickWindow *w, QQuickWindow *qqMainWin);//打开widget 用于添加hao'you分组
     Q_INVOKABLE void handleFVerify(QVariantMap obj);//处理好友验证消息
-    Q_INVOKABLE void updateFGroup(QVariantMap obj);//更新远程好友分组 顺序变换 删除
+    Q_INVOKABLE void addRemoteFriendGroup(QJsonDocument &doc);//远程添加分组
+    Q_INVOKABLE void addRemoteFriendGroup(QVariantMap obj);//远程添加分组
+    Q_INVOKABLE void updateFGroup(QVariantMap obj);//更新远程好友分组 顺序变换 删除 rename
 
 
 

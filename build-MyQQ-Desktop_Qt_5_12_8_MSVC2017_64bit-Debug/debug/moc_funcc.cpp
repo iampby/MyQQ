@@ -144,15 +144,15 @@ QT_MOC_LITERAL(107, 1200, 6), // "length"
 QT_MOC_LITERAL(108, 1207, 13), // "inintCityData"
 QT_MOC_LITERAL(109, 1221, 21), // "updateUserInformation"
 QT_MOC_LITERAL(110, 1243, 4), // "info"
-QT_MOC_LITERAL(111, 1248, 20), // "addRemoteFriendGroup"
-QT_MOC_LITERAL(112, 1269, 14), // "QJsonDocument&"
-QT_MOC_LITERAL(113, 1284, 3), // "doc"
-QT_MOC_LITERAL(114, 1288, 8), // "exitMyQQ"
-QT_MOC_LITERAL(115, 1297, 14), // "getVerifyArray"
-QT_MOC_LITERAL(116, 1312, 6), // "qmlWin"
-QT_MOC_LITERAL(117, 1319, 19), // "openAddFGroupWidget"
-QT_MOC_LITERAL(118, 1339, 9), // "qqMainWin"
-QT_MOC_LITERAL(119, 1349, 13), // "handleFVerify"
+QT_MOC_LITERAL(111, 1248, 8), // "exitMyQQ"
+QT_MOC_LITERAL(112, 1257, 14), // "getVerifyArray"
+QT_MOC_LITERAL(113, 1272, 6), // "qmlWin"
+QT_MOC_LITERAL(114, 1279, 19), // "openAddFGroupWidget"
+QT_MOC_LITERAL(115, 1299, 9), // "qqMainWin"
+QT_MOC_LITERAL(116, 1309, 13), // "handleFVerify"
+QT_MOC_LITERAL(117, 1323, 20), // "addRemoteFriendGroup"
+QT_MOC_LITERAL(118, 1344, 14), // "QJsonDocument&"
+QT_MOC_LITERAL(119, 1359, 3), // "doc"
 QT_MOC_LITERAL(120, 1363, 12), // "updateFGroup"
 QT_MOC_LITERAL(121, 1376, 22), // "startAddFriendsProcess"
 QT_MOC_LITERAL(122, 1399, 3), // "arr"
@@ -219,10 +219,10 @@ QT_MOC_LITERAL(150, 1687, 8) // "localUrl"
     "addCoverWidget\0filePath\0closeCoverWidget\0"
     "getIndividualData\0updatePhotoWall\0"
     "length\0inintCityData\0updateUserInformation\0"
-    "info\0addRemoteFriendGroup\0QJsonDocument&\0"
-    "doc\0exitMyQQ\0getVerifyArray\0qmlWin\0"
+    "info\0exitMyQQ\0getVerifyArray\0qmlWin\0"
     "openAddFGroupWidget\0qqMainWin\0"
-    "handleFVerify\0updateFGroup\0"
+    "handleFVerify\0addRemoteFriendGroup\0"
+    "QJsonDocument&\0doc\0updateFGroup\0"
     "startAddFriendsProcess\0arr\0crawWeatherUrl\0"
     "url\0_3daysdata\0r\0c\0initWh\0mkDir\0"
     "dirString\0initLoginInfo\0readWeatherFile\0"
@@ -241,106 +241,107 @@ static const uint qt_meta_data_FuncC[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-      88,   14, // methods
-       6,  720, // properties
+      89,   14, // methods
+       6,  728, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
       27,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    0,  454,    2, 0x06 /* Public */,
-       3,    0,  455,    2, 0x06 /* Public */,
-       4,    0,  456,    2, 0x06 /* Public */,
-       5,    0,  457,    2, 0x06 /* Public */,
-       6,    2,  458,    2, 0x06 /* Public */,
-       9,    1,  463,    2, 0x06 /* Public */,
-      10,    3,  466,    2, 0x06 /* Public */,
-      14,    1,  473,    2, 0x06 /* Public */,
-      16,    0,  476,    2, 0x06 /* Public */,
-      17,    0,  477,    2, 0x06 /* Public */,
-      18,    0,  478,    2, 0x06 /* Public */,
-      19,    1,  479,    2, 0x06 /* Public */,
-      21,    0,  482,    2, 0x06 /* Public */,
-      22,    3,  483,    2, 0x06 /* Public */,
-      26,    0,  490,    2, 0x06 /* Public */,
-      27,    1,  491,    2, 0x06 /* Public */,
-      29,    0,  494,    2, 0x06 /* Public */,
-      30,    0,  495,    2, 0x06 /* Public */,
-      31,    0,  496,    2, 0x06 /* Public */,
-      32,    1,  497,    2, 0x06 /* Public */,
-      35,    1,  500,    2, 0x06 /* Public */,
-      37,    1,  503,    2, 0x06 /* Public */,
-      38,    1,  506,    2, 0x06 /* Public */,
-      40,    1,  509,    2, 0x06 /* Public */,
-      42,    2,  512,    2, 0x06 /* Public */,
-      46,    1,  517,    2, 0x06 /* Public */,
-      47,    1,  520,    2, 0x06 /* Public */,
+       1,    0,  459,    2, 0x06 /* Public */,
+       3,    0,  460,    2, 0x06 /* Public */,
+       4,    0,  461,    2, 0x06 /* Public */,
+       5,    0,  462,    2, 0x06 /* Public */,
+       6,    2,  463,    2, 0x06 /* Public */,
+       9,    1,  468,    2, 0x06 /* Public */,
+      10,    3,  471,    2, 0x06 /* Public */,
+      14,    1,  478,    2, 0x06 /* Public */,
+      16,    0,  481,    2, 0x06 /* Public */,
+      17,    0,  482,    2, 0x06 /* Public */,
+      18,    0,  483,    2, 0x06 /* Public */,
+      19,    1,  484,    2, 0x06 /* Public */,
+      21,    0,  487,    2, 0x06 /* Public */,
+      22,    3,  488,    2, 0x06 /* Public */,
+      26,    0,  495,    2, 0x06 /* Public */,
+      27,    1,  496,    2, 0x06 /* Public */,
+      29,    0,  499,    2, 0x06 /* Public */,
+      30,    0,  500,    2, 0x06 /* Public */,
+      31,    0,  501,    2, 0x06 /* Public */,
+      32,    1,  502,    2, 0x06 /* Public */,
+      35,    1,  505,    2, 0x06 /* Public */,
+      37,    1,  508,    2, 0x06 /* Public */,
+      38,    1,  511,    2, 0x06 /* Public */,
+      40,    1,  514,    2, 0x06 /* Public */,
+      42,    2,  517,    2, 0x06 /* Public */,
+      46,    1,  522,    2, 0x06 /* Public */,
+      47,    1,  525,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-      48,    1,  523,    2, 0x0a /* Public */,
-      50,    1,  526,    2, 0x0a /* Public */,
-      52,    1,  529,    2, 0x0a /* Public */,
-      53,    1,  532,    2, 0x0a /* Public */,
-      54,    1,  535,    2, 0x0a /* Public */,
-      55,    1,  538,    2, 0x0a /* Public */,
-      56,    1,  541,    2, 0x08 /* Private */,
-      58,    0,  544,    2, 0x08 /* Private */,
-      59,    0,  545,    2, 0x08 /* Private */,
-      60,    0,  546,    2, 0x08 /* Private */,
-      61,    1,  547,    2, 0x08 /* Private */,
-      63,    1,  550,    2, 0x08 /* Private */,
-      65,    2,  553,    2, 0x08 /* Private */,
+      48,    1,  528,    2, 0x0a /* Public */,
+      50,    1,  531,    2, 0x0a /* Public */,
+      52,    1,  534,    2, 0x0a /* Public */,
+      53,    1,  537,    2, 0x0a /* Public */,
+      54,    1,  540,    2, 0x0a /* Public */,
+      55,    1,  543,    2, 0x0a /* Public */,
+      56,    1,  546,    2, 0x08 /* Private */,
+      58,    0,  549,    2, 0x08 /* Private */,
+      59,    0,  550,    2, 0x08 /* Private */,
+      60,    0,  551,    2, 0x08 /* Private */,
+      61,    1,  552,    2, 0x08 /* Private */,
+      63,    1,  555,    2, 0x08 /* Private */,
+      65,    2,  558,    2, 0x08 /* Private */,
 
  // methods: name, argc, parameters, tag, flags
-      67,    0,  558,    2, 0x02 /* Public */,
-      68,    0,  559,    2, 0x02 /* Public */,
-      69,    1,  560,    2, 0x02 /* Public */,
-      70,    2,  563,    2, 0x02 /* Public */,
-      73,    3,  568,    2, 0x02 /* Public */,
-      77,    2,  575,    2, 0x02 /* Public */,
-      78,    0,  580,    2, 0x02 /* Public */,
-      79,    2,  581,    2, 0x02 /* Public */,
-      82,    0,  586,    2, 0x02 /* Public */,
-      83,    0,  587,    2, 0x02 /* Public */,
-      84,    2,  588,    2, 0x02 /* Public */,
-      88,    0,  593,    2, 0x02 /* Public */,
-      89,    6,  594,    2, 0x02 /* Public */,
-      93,    1,  607,    2, 0x02 /* Public */,
-      94,    0,  610,    2, 0x02 /* Public */,
-      95,    1,  611,    2, 0x02 /* Public */,
-      96,    2,  614,    2, 0x02 /* Public */,
-      99,    1,  619,    2, 0x02 /* Public */,
-     101,    0,  622,    2, 0x02 /* Public */,
-     102,    4,  623,    2, 0x02 /* Public */,
-     104,    0,  632,    2, 0x02 /* Public */,
-     105,    0,  633,    2, 0x02 /* Public */,
-     106,    1,  634,    2, 0x02 /* Public */,
-     108,    1,  637,    2, 0x02 /* Public */,
-     109,    1,  640,    2, 0x02 /* Public */,
-     111,    1,  643,    2, 0x02 /* Public */,
-     114,    1,  646,    2, 0x02 /* Public */,
-     114,    0,  649,    2, 0x22 /* Public | MethodCloned */,
-     115,    2,  650,    2, 0x02 /* Public */,
-     117,    2,  655,    2, 0x02 /* Public */,
-     119,    1,  660,    2, 0x02 /* Public */,
-     120,    1,  663,    2, 0x02 /* Public */,
-     121,    3,  666,    2, 0x02 /* Public */,
-     123,    1,  673,    2, 0x02 /* Public */,
-     125,    2,  676,    2, 0x02 /* Public */,
-     128,    0,  681,    2, 0x02 /* Public */,
-     129,    1,  682,    2, 0x02 /* Public */,
-     131,    0,  685,    2, 0x02 /* Public */,
-     132,    1,  686,    2, 0x02 /* Public */,
-     134,    1,  689,    2, 0x02 /* Public */,
-     135,    1,  692,    2, 0x02 /* Public */,
-     137,    2,  695,    2, 0x02 /* Public */,
-     138,    3,  700,    2, 0x02 /* Public */,
-     140,    1,  707,    2, 0x02 /* Public */,
-     142,    1,  710,    2, 0x02 /* Public */,
-     144,    2,  713,    2, 0x02 /* Public */,
-     145,    0,  718,    2, 0x02 /* Public */,
-     146,    0,  719,    2, 0x02 /* Public */,
+      67,    0,  563,    2, 0x02 /* Public */,
+      68,    0,  564,    2, 0x02 /* Public */,
+      69,    1,  565,    2, 0x02 /* Public */,
+      70,    2,  568,    2, 0x02 /* Public */,
+      73,    3,  573,    2, 0x02 /* Public */,
+      77,    2,  580,    2, 0x02 /* Public */,
+      78,    0,  585,    2, 0x02 /* Public */,
+      79,    2,  586,    2, 0x02 /* Public */,
+      82,    0,  591,    2, 0x02 /* Public */,
+      83,    0,  592,    2, 0x02 /* Public */,
+      84,    2,  593,    2, 0x02 /* Public */,
+      88,    0,  598,    2, 0x02 /* Public */,
+      89,    6,  599,    2, 0x02 /* Public */,
+      93,    1,  612,    2, 0x02 /* Public */,
+      94,    0,  615,    2, 0x02 /* Public */,
+      95,    1,  616,    2, 0x02 /* Public */,
+      96,    2,  619,    2, 0x02 /* Public */,
+      99,    1,  624,    2, 0x02 /* Public */,
+     101,    0,  627,    2, 0x02 /* Public */,
+     102,    4,  628,    2, 0x02 /* Public */,
+     104,    0,  637,    2, 0x02 /* Public */,
+     105,    0,  638,    2, 0x02 /* Public */,
+     106,    1,  639,    2, 0x02 /* Public */,
+     108,    1,  642,    2, 0x02 /* Public */,
+     109,    1,  645,    2, 0x02 /* Public */,
+     111,    1,  648,    2, 0x02 /* Public */,
+     111,    0,  651,    2, 0x22 /* Public | MethodCloned */,
+     112,    2,  652,    2, 0x02 /* Public */,
+     114,    2,  657,    2, 0x02 /* Public */,
+     116,    1,  662,    2, 0x02 /* Public */,
+     117,    1,  665,    2, 0x02 /* Public */,
+     117,    1,  668,    2, 0x02 /* Public */,
+     120,    1,  671,    2, 0x02 /* Public */,
+     121,    3,  674,    2, 0x02 /* Public */,
+     123,    1,  681,    2, 0x02 /* Public */,
+     125,    2,  684,    2, 0x02 /* Public */,
+     128,    0,  689,    2, 0x02 /* Public */,
+     129,    1,  690,    2, 0x02 /* Public */,
+     131,    0,  693,    2, 0x02 /* Public */,
+     132,    1,  694,    2, 0x02 /* Public */,
+     134,    1,  697,    2, 0x02 /* Public */,
+     135,    1,  700,    2, 0x02 /* Public */,
+     137,    2,  703,    2, 0x02 /* Public */,
+     138,    3,  708,    2, 0x02 /* Public */,
+     140,    1,  715,    2, 0x02 /* Public */,
+     142,    1,  718,    2, 0x02 /* Public */,
+     144,    2,  721,    2, 0x02 /* Public */,
+     145,    0,  726,    2, 0x02 /* Public */,
+     146,    0,  727,    2, 0x02 /* Public */,
 
  // signals: parameters
     QMetaType::Void,
@@ -412,11 +413,12 @@ static const uint qt_meta_data_FuncC[] = {
     QMetaType::Void, QMetaType::UChar,  107,
     QMetaType::Void, 0x80000000 | 51,   87,
     QMetaType::Void, QMetaType::QVariantMap,  110,
-    QMetaType::Void, 0x80000000 | 112,  113,
     QMetaType::Void, 0x80000000 | 51,   87,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::QString, 0x80000000 | 51,   36,  116,
-    QMetaType::Void, 0x80000000 | 51, 0x80000000 | 51,   87,  118,
+    QMetaType::Void, QMetaType::QString, 0x80000000 | 51,   36,  113,
+    QMetaType::Void, 0x80000000 | 51, 0x80000000 | 51,   87,  115,
+    QMetaType::Void, QMetaType::QVariantMap,   41,
+    QMetaType::Void, 0x80000000 | 118,  119,
     QMetaType::Void, QMetaType::QVariantMap,   41,
     QMetaType::Void, QMetaType::QVariantMap,   41,
     QMetaType::Void, 0x80000000 | 51, QMetaType::QVariantMap, QMetaType::QVariantList,   49,   41,  122,
@@ -530,33 +532,34 @@ void FuncC::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void 
         case 62: _t->updatePhotoWall((*reinterpret_cast< quint8(*)>(_a[1]))); break;
         case 63: _t->inintCityData((*reinterpret_cast< QQuickWindow*(*)>(_a[1]))); break;
         case 64: _t->updateUserInformation((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
-        case 65: _t->addRemoteFriendGroup((*reinterpret_cast< QJsonDocument(*)>(_a[1]))); break;
-        case 66: _t->exitMyQQ((*reinterpret_cast< QQuickWindow*(*)>(_a[1]))); break;
-        case 67: _t->exitMyQQ(); break;
-        case 68: _t->getVerifyArray((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< QQuickWindow*(*)>(_a[2]))); break;
-        case 69: _t->openAddFGroupWidget((*reinterpret_cast< QQuickWindow*(*)>(_a[1])),(*reinterpret_cast< QQuickWindow*(*)>(_a[2]))); break;
-        case 70: _t->handleFVerify((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
-        case 71: _t->updateFGroup((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
-        case 72: _t->startAddFriendsProcess((*reinterpret_cast< QQuickWindow*(*)>(_a[1])),(*reinterpret_cast< QMap<QString,QVariant>(*)>(_a[2])),(*reinterpret_cast< QList<QVariant>(*)>(_a[3]))); break;
-        case 73: _t->crawWeatherUrl((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 74: { QString _r = _t->_3daysdata((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const int(*)>(_a[2])));
+        case 65: _t->exitMyQQ((*reinterpret_cast< QQuickWindow*(*)>(_a[1]))); break;
+        case 66: _t->exitMyQQ(); break;
+        case 67: _t->getVerifyArray((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< QQuickWindow*(*)>(_a[2]))); break;
+        case 68: _t->openAddFGroupWidget((*reinterpret_cast< QQuickWindow*(*)>(_a[1])),(*reinterpret_cast< QQuickWindow*(*)>(_a[2]))); break;
+        case 69: _t->handleFVerify((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
+        case 70: _t->addRemoteFriendGroup((*reinterpret_cast< QJsonDocument(*)>(_a[1]))); break;
+        case 71: _t->addRemoteFriendGroup((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
+        case 72: _t->updateFGroup((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
+        case 73: _t->startAddFriendsProcess((*reinterpret_cast< QQuickWindow*(*)>(_a[1])),(*reinterpret_cast< QMap<QString,QVariant>(*)>(_a[2])),(*reinterpret_cast< QList<QVariant>(*)>(_a[3]))); break;
+        case 74: _t->crawWeatherUrl((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 75: { QString _r = _t->_3daysdata((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const int(*)>(_a[2])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = std::move(_r); }  break;
-        case 75: _t->initWh(); break;
-        case 76: _t->mkDir((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 77: _t->initLoginInfo(); break;
-        case 78: _t->readWeatherFile((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 79: _t->writeWeatherFile((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 80: _t->connectGetFile((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 81: { QString _r = _t->getCityData((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const int(*)>(_a[2])));
+        case 76: _t->initWh(); break;
+        case 77: _t->mkDir((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 78: _t->initLoginInfo(); break;
+        case 79: _t->readWeatherFile((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 80: _t->writeWeatherFile((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 81: _t->connectGetFile((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 82: { QString _r = _t->getCityData((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const int(*)>(_a[2])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = std::move(_r); }  break;
-        case 82: _t->setCityData((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const int(*)>(_a[2])),(*reinterpret_cast< const int(*)>(_a[3]))); break;
-        case 83: { QString _r = _t->getWeatherUrl((*reinterpret_cast< const QString(*)>(_a[1])));
+        case 83: _t->setCityData((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const int(*)>(_a[2])),(*reinterpret_cast< const int(*)>(_a[3]))); break;
+        case 84: { QString _r = _t->getWeatherUrl((*reinterpret_cast< const QString(*)>(_a[1])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = std::move(_r); }  break;
-        case 84: _t->findCityEvent((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 85: { QString _r = _t->indexForCityList((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2])));
+        case 85: _t->findCityEvent((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 86: { QString _r = _t->indexForCityList((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = std::move(_r); }  break;
-        case 86: _t->clearForCityList(); break;
-        case 87: { int _r = _t->getCityCount();
+        case 87: _t->clearForCityList(); break;
+        case 88: { int _r = _t->getCityCount();
             if (_a[0]) *reinterpret_cast< int*>(_a[0]) = std::move(_r); }  break;
         default: ;
         }
@@ -619,10 +622,17 @@ void FuncC::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void 
                 *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QQuickWindow* >(); break;
             }
             break;
-        case 66:
+        case 65:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<int*>(_a[0]) = -1; break;
             case 0:
+                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QQuickWindow* >(); break;
+            }
+            break;
+        case 67:
+            switch (*reinterpret_cast<int*>(_a[1])) {
+            default: *reinterpret_cast<int*>(_a[0]) = -1; break;
+            case 1:
                 *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QQuickWindow* >(); break;
             }
             break;
@@ -630,18 +640,11 @@ void FuncC::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void 
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<int*>(_a[0]) = -1; break;
             case 1:
-                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QQuickWindow* >(); break;
-            }
-            break;
-        case 69:
-            switch (*reinterpret_cast<int*>(_a[1])) {
-            default: *reinterpret_cast<int*>(_a[0]) = -1; break;
-            case 1:
             case 0:
                 *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QQuickWindow* >(); break;
             }
             break;
-        case 72:
+        case 73:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<int*>(_a[0]) = -1; break;
             case 0:
@@ -909,13 +912,13 @@ int FuncC::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 88)
+        if (_id < 89)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 88;
+        _id -= 89;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 88)
+        if (_id < 89)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 88;
+        _id -= 89;
     }
 #ifndef QT_NO_PROPERTIES
     else if (_c == QMetaObject::ReadProperty || _c == QMetaObject::WriteProperty

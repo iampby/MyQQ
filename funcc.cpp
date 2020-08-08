@@ -212,11 +212,9 @@ void FuncC::initFriendInfo(QXmlStreamReader &reader)
                 //发送组名到Qml
                 ++pos;
                 groupName=reader.name().toString();
-                QRegExp reg("^[ ]*$");
-                qint32 index= reg.indexIn(groupName);//全空白匹配 就减一个空白 避免xml空节点
-                if(index!=-1)groupName=groupName.left(groupName.length()-1);
-                qDebug()<<"the group has been sended, named "<<groupName;
-                emit getFriendGroup(groupName,reader.attributes().value("set").toString(),pos);
+                QString name=reader.attributes().value("name").toString();;
+                qDebug()<<"the group has been sended, named "<<name;;
+                emit getFriendGroup(name,reader.attributes().value("set").toString(),pos);
             }
         }else if(reader.isEndElement()){
             if(reader.name().toString()=="friendGroup")
@@ -225,9 +223,9 @@ void FuncC::initFriendInfo(QXmlStreamReader &reader)
                 groupName=QString();
             }
         }else if(reader.hasError()){
-            qDebug()<<"initFriendInfo() function has a error.";
+            qDebug()<<"initFriendInfo() function has a error:"<<reader.errorString();
             return;
-        }
+        }else if(reader.isEndDocument())return;
     }
 }
 
@@ -241,6 +239,7 @@ void FuncC::initGroupChatInfo( QXmlStreamReader &reader)
 void FuncC::parseFriendInfo(QXmlStreamReader &reader, QString &endString,int&pos)
 {
     while(true){
+        QString name=reader.attributes().value("name").toString();
         if(reader.name().toString()=="friend"&&reader.isStartElement()){
             QVariantMap myqqMap;//QvariantMap可以直接传参
             QString myqq= reader.attributes().value("myqq").toString();
@@ -271,11 +270,11 @@ void FuncC::parseFriendInfo(QXmlStreamReader &reader, QString &endString,int&pos
                     qDebug()<<"parseFriendInfo(const QXmlStreamReader &reader,"
                               " const QString &endString,int pos) function has a error:"<<reader.errorString();
                     return;
-                }
+                }else if(reader.isEndDocument())return;
             }
-        }else if(reader.name().toString()==endString){//结束添加好友信息
+        }else if(reader.name()==endString){//结束添加好友信息
             break;
-        }
+        }else if(reader.isEndDocument())return;
         reader.readNext();
     }
 
@@ -1205,7 +1204,7 @@ void FuncC::updateUserInformation(QVariantMap info)
 
 void FuncC::addRemoteFriendGroup(QJsonDocument&doc)
 {
-    QString instructDescription="11 addFGroup "+m_myQQ+" writedHeaderSize";//添加分组
+    QString instructDescription="11 addFGroup "+m_myQQ+"  writedHeaderSize";//添加分组
     BigFileSocket*addFGroupSock=new BigFileSocket();//子线程对象最好不要有父类
     addFGroupSock->setInstruct(instructDescription);
     addFGroupSock->setIp(ip);
@@ -1229,12 +1228,23 @@ void FuncC::addRemoteFriendGroup(QJsonDocument&doc)
             thread->quit();
             return;
         }
+
         addFGroupSock->write(temp);
         addFGroupSock->loop.exec();
         thread->exit(0);
         thread->quit();
         qDebug()<<" thread of added a remote group had exited";
     });
+}
+
+void FuncC::addRemoteFriendGroup(QVariantMap obj)
+{
+    QJsonDocument doc(QJsonObject::fromVariantMap(obj));
+    if(doc.isEmpty()){
+       qDebug()<<"added a remote group is empty";
+       return;
+    }
+    addRemoteFriendGroup(doc);
 }
 
 void FuncC::exitMyQQ(QQuickWindow*w)
@@ -1362,8 +1372,8 @@ void FuncC::openAddFGroupWidget(QQuickWindow*w,QQuickWindow *qqMainWin)
         qDebug()<<"updating a remote group";
         QJsonDocument doc;
         QJsonObject obj;
-        obj.insert("instruct",QJsonValue("add group"));//指令 代表要更新分组
         obj.insert("groupName",QJsonValue(name));
+        obj.insert("index",QJsonValue(-1));//末尾前一项添加
         doc.setObject(obj);
         addRemoteFriendGroup(doc);
     });
@@ -1432,7 +1442,7 @@ void FuncC::updateFGroup(QVariantMap obj)
         updateFGroupSock->loop.exec();
         thread->exit(0);
         thread->quit();
-        qDebug()<<" thread had exited to move or delete remote group";
+        qDebug()<<" thread had exited to move or delete,rename remote group";
     });
 }
 

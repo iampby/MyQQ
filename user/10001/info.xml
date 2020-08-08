@@ -26,4 +26,7 @@
         <同学 set="none">none</同学>
         <黑名单 set="none">none</黑名单>
     </friendGroup>
+    <groupChat>
+        <我的群聊 isNull="true">none</我的群聊>
+    </groupChat>
 </myqq>

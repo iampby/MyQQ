@@ -47,7 +47,8 @@ public:
 
     // Add data:
 
-    Q_INVOKABLE void insert(const int& index,const Data &data) ;
+   void insert(const int& index,const Data &data) ;
+   Q_INVOKABLE  void insert(int index, const QString &group, const QString &online, const QString &count,  const QString &set) ;
     // Remove data:
     Q_INVOKABLE void remove(const int &index);
 

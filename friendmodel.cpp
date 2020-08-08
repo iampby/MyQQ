@@ -141,11 +141,9 @@ void FriendModel::update(int index1,  int index2)
     if(index1<0){
         index1=0;
     }
-    if(index2>rowCount()-1)
-        index2=rowCount()-1;
-    if(rowCount()==0){
-        index1=0;index2=0;
-    }
+    if(index2>rowCount())
+        index2=rowCount();
+
     dataChanged(createIndex(index1,0),createIndex(index2,0));
 }
 
