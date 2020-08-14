@@ -28,7 +28,7 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
     qDebug()<<"register executing thread is "<<this->thread()->currentThread();
     qDebug()<<name<<passwd;
     QMutex m;
-   m.lock();//给count上锁
+    m.lock();//给count上锁
     if(count>=100)//理论上1秒内可以打开的数据库数 100
         count=0;
     QSqlDatabase db=QSqlDatabase::addDatabase("QODBC",QDateTime::currentDateTime().toMSecsSinceEpoch()+QString("%1").arg(count++));
@@ -51,117 +51,126 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
     query.bindValue(":name",name);
     query.bindValue(":passwd",passwd);
     if(query.exec()){
-            if(query.next()){
-                myqq=query.value(0).toLongLong();
-                sucessful=query.value(1).toBool();
-                if(sucessful){
-                    qDebug()<<QStringLiteral("注册成功！qq:")<<myqq<<endl;
-                    if(myqq!=0){
-                        QDir dir;
-                        dir.mkpath(QString("../userData/%1/historyHeadImg").arg(myqq));
-                        QString headPath=dir.relativeFilePath(QString("../userData/%1/historyHeadImg").arg(myqq)+"/01.png");
-                        QImage img(":/img/init.png");
-                        if(img.save(headPath,nullptr,0)){
-                            qDebug()<<"IMG is saved！";
-                            query.prepare(" update userInfo set headimgpath=?,photoWallPath=? where myqq=? ");
-                            query.bindValue(0,QVariant(headPath));
-                            query.bindValue(1,QVariant(QString("../userData/%1/photoWall").arg(myqq)));
-                            query.bindValue(2,QVariant(myqq));
-                            if(query.exec()){
-                                qDebug()<<"updating the headImgPath of myqq sucessfully,myqq equal to "+QString("%1").arg( myqq);
-                                dir.mkpath(QString("../userData/%1/friendsInfo").arg(myqq));
-                                dir.mkpath(QString("../userData/%1/groupsInfo").arg(myqq));
-                                QFile infoFile(dir.relativeFilePath(QString("../userData/%1/info.xml").arg(myqq)));
-                                if(infoFile.open(QIODevice::WriteOnly)){
-                                    qDebug()<<"creating info.xml file sucessfully";
-                                    QDomDocument doc;
-                                    QDomElement root=doc.createElement("myqq");
-                                    root.setAttribute("number",myqq);
-                                    doc.appendChild(root);
-                                    QDomElement set=doc.createElement("set");
-                                    QStringList showList;//显示信息配置
-                                    showList<<QStringLiteral("头像")<<QStringLiteral("名称")<<QStringLiteral("列表")
-                                           <<QStringLiteral("联系人")<<QStringLiteral("黑名单");
-                                    for(int i=0;i<showList.count();i++){
-                                        QDomElement showEle=doc.createElement(showList.at(i));
-                                        QDomText showT= doc.createTextNode("0");
-                                        showEle.appendChild(showT);
-                                        set.appendChild(showEle);
-                                    }
-                                    QDomElement passwdEle=doc.createElement(QStringLiteral("独立密码"));
-                                    QDomText passwdT= doc.createTextNode("");
-                                    passwdEle.appendChild(passwdT);
-                                    set.appendChild(passwdEle);
-                                    root.appendChild(set);
-
-                                    QDomElement friends=doc.createElement("friendGroup");
-                                    QStringList friendGroup;
-                                    friendGroup<<QStringLiteral("我的设备")<<QStringLiteral("我的好友")
-                                              <<QStringLiteral("朋友")<<QStringLiteral("家人")<<QStringLiteral("同学")
-                                             <<QStringLiteral("黑名单");
-                                    for(int i=0;i<friendGroup.count();i++){
-                                        QDomElement tempEle=doc.createElement(friendGroup.at(i));
-                                        QDomText value=doc.createTextNode("");
-                                        tempEle.setAttribute("set","none");
-                                        if(friendGroup.at(i)==QStringLiteral("我的好友")){
-                                            QDomElement meEle=doc.createElement("friend");
-                                            meEle.setAttribute("myqq",QString("%1").arg(myqq));
-                                            QDomElement nameEle=doc.createElement(QStringLiteral("昵称"));
-                                            QDomText nameT=doc.createTextNode(name);
-                                            nameEle.appendChild(nameT);
-                                            QDomElement signatureEle=doc.createElement(QStringLiteral("个性签名"));
-                                            QDomText signatureT=doc.createTextNode("");
-                                            signatureEle.appendChild(signatureT);
-                                            QDomElement headPathEle=doc.createElement(QStringLiteral("头像路径"));
-                                            QDomText headPathT=doc.createTextNode(headPath);
-                                            headPathEle.appendChild(headPathT);
-                                            QDomElement tagEle=doc.createElement(QStringLiteral("备注"));
-                                            QDomText tagT=doc.createTextNode(name);//默认为昵称
-                                            tagEle.appendChild(tagT);
-                                            QDomElement gradeEle=doc.createElement(QStringLiteral("等级"));
-                                            QDomText gradeT=doc.createTextNode("0");
-                                            gradeEle.appendChild(gradeT);
-                                            QDomElement statusEle=doc.createElement(QStringLiteral("状态"));
-                                            QDomText statusT=doc.createTextNode("0");
-                                            statusEle.appendChild(statusT);
-                                            QDomElement setEle=doc.createElement(QStringLiteral("set"));
-                                            setEle.setAttribute("info","0");
-                                            setEle.setAttribute("status","0");
-                                            QDomText setT=doc.createTextNode("");
-                                            setEle.appendChild(setT);
-
-                                            meEle.appendChild(nameEle);
-                                            meEle.appendChild(signatureEle);
-                                            meEle.appendChild(headPathEle);
-                                            meEle.appendChild(tagEle);
-                                            meEle.appendChild(gradeEle);
-                                            meEle.appendChild(statusEle);
-                                            meEle.appendChild(setEle);
-                                            tempEle.appendChild(meEle);
-                                        }
-                                        friends.appendChild(tempEle);
-                                        tempEle.appendChild(value);
-                                    }
-                                    QDomElement groups=doc.createElement("groupChat");
-                                    QDomElement groupChatEle=doc.createElement(QStringLiteral("我的群聊"));
-                                    QDomText groupChatT=doc.createTextNode("");
-                                    groups.appendChild(groupChatEle);
-                                    groupChatEle.appendChild(groupChatT);
-                                    root.appendChild(friends);
-                                    root.appendChild(groups);
-                                    QTextStream s(&infoFile);
-                                    s.setCodec("utf-8");
-                                    doc.save(s,4,QDomNode::EncodingFromTextStream);
-                                    infoFile.close();
-                                    return sucessful;
+        if(query.next()){
+            myqq=query.value(0).toLongLong();
+            sucessful=query.value(1).toBool();
+            if(sucessful){
+                qDebug()<<QStringLiteral("注册成功！qq:")<<myqq<<endl;
+                if(myqq!=0){
+                    QDir dir;
+                    dir.mkpath(QString("../userData/%1/historyHeadImg").arg(myqq));
+                    QString headPath=dir.relativeFilePath(QString("../userData/%1/historyHeadImg").arg(myqq)+"/01.png");
+                    QImage img(":/img/init.png");
+                    if(img.save(headPath,nullptr,0)){
+                        qDebug()<<"IMG is saved！";
+                        query.prepare(" update userInfo set headimgpath=?,photoWallPath=? where myqq=? ");
+                        query.bindValue(0,QVariant(headPath));
+                        query.bindValue(1,QVariant(QString("../userData/%1/photoWall").arg(myqq)));
+                        query.bindValue(2,QVariant(myqq));
+                        if(query.exec()){
+                            qDebug()<<"updating the headImgPath of myqq sucessfully,myqq equal to "+QString("%1").arg( myqq);
+                            dir.mkpath(QString("../userData/%1/friendsInfo").arg(myqq));
+                            dir.mkpath(QString("../userData/%1/groupsInfo").arg(myqq));
+                            QFile infoFile(dir.relativeFilePath(QString("../userData/%1/info.xml").arg(myqq)));
+                            if(infoFile.open(QIODevice::WriteOnly)){
+                                qDebug()<<"creating info.xml file sucessfully";
+                                QDomDocument doc;
+                                QDomProcessingInstruction header=doc.createProcessingInstruction("xml","version="
+                                                                                                       "\"1.0\" encoding=\"UTF-8\"");
+                              doc.appendChild(header);
+                                QDomElement root=doc.createElement("myqq");
+                                root.setAttribute("number",myqq);
+                                doc.appendChild(root);
+                                QDomElement set=doc.createElement("set");
+                                QStringList showList;//显示信息配置
+                                showList<<QStringLiteral("头像")<<QStringLiteral("名称")<<QStringLiteral("列表")
+                                       <<QStringLiteral("联系人")<<QStringLiteral("黑名单");
+                                for(int i=0;i<showList.count();i++){
+                                    QDomElement showEle=doc.createElement(showList.at(i));
+                                    QDomText showT= doc.createTextNode("0");
+                                    showEle.appendChild(showT);
+                                    set.appendChild(showEle);
                                 }
+                                QDomElement passwdEle=doc.createElement(QStringLiteral("独立密码"));
+                                QDomText passwdT= doc.createTextNode("none");
+                                passwdEle.appendChild(passwdT);
+                                set.appendChild(passwdEle);
+                                root.appendChild(set);
+
+                                QDomElement friends=doc.createElement("friendGroup");
+                                QStringList friendGroup;
+                                friendGroup<<QStringLiteral("我的设备")<<QStringLiteral("我的好友")
+                                          <<QStringLiteral("朋友")<<QStringLiteral("家人")<<QStringLiteral("同学")
+                                         <<QStringLiteral("黑名单");
+                                friends.setAttribute("count",friendGroup.length());//标记数
+                                for(int i=0;i<friendGroup.count();i++){
+                                    QDomElement tempEle=doc.createElement(QStringLiteral("好友组")+QString("%1").arg(i+1));
+                                    QDomText value=doc.createTextNode("none");
+                                    tempEle.setAttribute("name",friendGroup.at(i));
+                                    tempEle.setAttribute("set","none");
+                                    if(friendGroup.at(i)==QStringLiteral("我的好友")){
+                                        QDomElement meEle=doc.createElement("friend");
+                                        meEle.setAttribute("myqq",QString("%1").arg(myqq));
+                                        QDomElement nameEle=doc.createElement(QStringLiteral("昵称"));
+                                        QDomText nameT=doc.createTextNode(name);
+                                        nameEle.appendChild(nameT);
+                                        QDomElement signatureEle=doc.createElement(QStringLiteral("个性签名"));
+                                        signatureEle.setAttribute("isNull","true");
+                                        QDomText signatureT=doc.createTextNode("none");
+                                        signatureEle.appendChild(signatureT);
+                                        QDomElement headPathEle=doc.createElement(QStringLiteral("头像路径"));
+                                        QDomText headPathT=doc.createTextNode(headPath);
+                                        headPathEle.appendChild(headPathT);
+                                        QDomElement tagEle=doc.createElement(QStringLiteral("备注"));
+                                        tagEle.setAttribute("isNull","true");
+                                        QDomText tagT=doc.createTextNode("none");//默认为none
+                                        tagEle.appendChild(tagT);
+                                        QDomElement gradeEle=doc.createElement(QStringLiteral("等级"));
+                                        QDomText gradeT=doc.createTextNode("0");
+                                        gradeEle.appendChild(gradeT);
+                                        QDomElement statusEle=doc.createElement(QStringLiteral("状态"));
+                                        QDomText statusT=doc.createTextNode("0");
+                                        statusEle.appendChild(statusT);
+                                        QDomElement setEle=doc.createElement(QStringLiteral("set"));
+                                        setEle.setAttribute("isNull","true");
+                                        setEle.setAttribute("info","0");
+                                        setEle.setAttribute("status","0");
+                                        QDomText setT=doc.createTextNode("none");
+
+                                        setEle.appendChild(setT);
+
+                                        meEle.appendChild(nameEle);
+                                        meEle.appendChild(signatureEle);
+                                        meEle.appendChild(headPathEle);
+                                        meEle.appendChild(tagEle);
+                                        meEle.appendChild(gradeEle);
+                                        meEle.appendChild(statusEle);
+                                        meEle.appendChild(setEle);
+                                        tempEle.appendChild(meEle);
+                                    }else
+                                    tempEle.appendChild(value);
+                                    friends.appendChild(tempEle);
+                                }
+                                QDomElement groups=doc.createElement("groupChat");
+                                QDomElement groupChatEle=doc.createElement(QStringLiteral("我的群聊"));
+                                groupChatEle.setAttribute("isNull","true");
+                                QDomText groupChatT=doc.createTextNode("none");
+                                groups.appendChild(groupChatEle);
+                                groupChatEle.appendChild(groupChatT);
+                                root.appendChild(friends);
+                                root.appendChild(groups);
+                                QTextStream s(&infoFile);
+                                doc.save(s,4);
+                                infoFile.close();
+                                return sucessful;
                             }
                         }
                     }
-                }else{
-                    qDebug()<<QStringLiteral("注册失败！")<<endl;
                 }
+            }else{
+                qDebug()<<QStringLiteral("注册失败！")<<endl;
             }
+        }
     }else
         qDebug()<<QStringLiteral("sql 语句执行失败！");
     return sucessful;

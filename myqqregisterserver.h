@@ -4,7 +4,6 @@
 #include <QObject>
 #include<QTcpServer>
 
-
 class MyQQRegisterServer:public QTcpServer
 {
     Q_OBJECT

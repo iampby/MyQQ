@@ -18,7 +18,7 @@ MyQQLoginServer::~MyQQLoginServer()
 void MyQQLoginServer::incomingConnection(qintptr socketDescriptor)
 {
     qDebug()<<"viaed incomingC"<<endl;
-    QThread*thread=new QThread();
+    QThread*thread=new QThread(this);
     //控制一秒内可以打开的数据库连接数
     if(count>=200)
         count=100;
