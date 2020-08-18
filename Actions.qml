@@ -15,9 +15,11 @@ Rectangle {
     property alias mesWinForOkAct: mesWinForOkAction //切换账号接收键
     property alias alterCoverAct: alterCoverAction //更改封面界面打开
     property alias editMyInfoAct: editMyInfoAction //编辑资料界面打开
+    property alias alterFTagAct: alterFTagAction //修改好友备注确认行为
 
     property alias mainMenuAct: mainMenuAction //底部菜单
     property alias addFriendsAct: addFriendsAction //添加好友按钮
+
     property alias showWeatherAct: showWeatherAction //露出天气界面
     property alias hideWeatherAct: hideWeatherAction //hide天气界面
     property alias updgradeAct: updgradeAction //升级按钮
@@ -26,7 +28,12 @@ Rectangle {
     property alias headImgAct: headImgAction //头像悬浮时弹出界面
     property alias openAlterHImgAct: openAlterHImgAction //更改头像
     property alias openAlterUserInfoAct: openAlterUserInfoAction //用户资料修改
+    property alias openUserInfoAct: openUserInfoAction //查看好友资料
     property alias openVerifyAct: openVerifyAction //打开验证页面
+    property alias openOfflineAct: openOfflineAction //打开下线框
+    property alias openAlterTagAct: openAlterTagAction //打开修改好友备注框
+    property alias openFriendInfoAct: openFriendInfoAction //打开好友资料
+    property alias openChatWinAct: openChatWinAction //打开聊天界面
 
     //登录界面Actions
     Action {
@@ -170,7 +177,6 @@ Rectangle {
                 mainWin.hide()
                 //从组件到原文件的加载会导致不能对其设置属性，inCenterLoader.status一直等于Loader.loading
                 //故只能在qqMain内部想方法,设置其坐标
-                // mainWin.adjustCoordination()
                 //建议加载器的加载方式最好一致，否则很容易出现其属性null的情况
             }
             time60sForLogin.stop()
@@ -355,12 +361,17 @@ Rectangle {
                         }
                         break
                     }
-                    loader.item.y = main.headImgY //和头像同高
-                    loader.item.name = main.name
-                    loader.item.signature = main.signature
-                    loader.item.grade = 122 //main.grade
-                    loader.item.headImgHovered = true //初始化悬浮在头像
-
+                    try {
+                        var obj = loader.obj //获取数据对象
+                        loader.item.y = obj.posY //和头像同高
+                        loader.item.name = obj.name
+                        loader.item.signature = obj.signature
+                        loader.item.tag = obj.tag
+                        loader.item.grade = obj.grade
+                        loader.item.headImgHovered = true //初始化悬浮在头像
+                    } catch (e) {
+                        console.log("warning:", e.message)
+                    }
                     loader.item.show()
                     break
                 } else if (loader.status === Loader.Error) {
@@ -404,8 +415,50 @@ Rectangle {
             }
         }
     }
+    //用户资料修改
     Action {
         id: openAlterUserInfoAction
+        onTriggered: {
+            console.log("openAlterUserInfoAction")
+            if (inCenterLoader.item.loaderForAlterInfo === undefined)
+                return
+            var loader = inCenterLoader.item.loaderForAlterInfo
+            if (!(Loader.Ready === loader.status)) {
+                console.log("loaded")
+                loader.source = "qrc:/main/IndividualData.qml"
+                while (true) {
+                    if (loader.status === Loader.Ready) {
+                        funcc.getIndividualData("getPersonalData",
+                                                inCenterLoader.item.myqq,
+                                                loader.item) //远程获取数据，初始化界面
+                        console.log("start show")
+                        console.log("opened the IndividualData.qml")
+                        loader.item.x = (mainWin.desktopAvailableWidth - loader.item.width) / 2
+                        loader.item.y = (mainWin.desktopAvailableHeight - loader.item.height) / 2
+                        loader.item.showNormal()
+                        loader.item.raise()
+                        loader.item.requestActivate()
+                        break
+                    } else if (loader.status === Loader.Error) {
+                        console.log("loaderForAlterInfo  occured a error")
+                        break
+                    }
+                }
+            } else {
+                //显示窗口
+                loader.item.x = (mainWin.desktopAvailableWidth - loader.item.width) / 2
+                loader.item.y = (mainWin.desktopAvailableHeight - loader.item.height) / 2
+                loader.item.opacity = 1.0
+                loader.item.flags = Qt.FramelessWindowHint | Qt.Window //显示任务栏
+                loader.item.showNormal() //重新出现
+                loader.item.raise() //弹出来
+                loader.item.requestActivate()
+            }
+        }
+    }
+    //查看好友资料
+    Action {
+        id: openUserInfoAction
         onTriggered: {
             console.log("openAlterUserInfoAction")
             if (inCenterLoader.item.loaderForAlterInfo === undefined)
@@ -449,7 +502,7 @@ Rectangle {
             if (inCenterLoader.item.loaderForVerify === undefined)
                 return
             var loader = inCenterLoader.item.loaderForVerify
-            if (!(Loader.Ready === loader.status)) {
+            if (Loader.Null === loader.status) {
                 console.log("loaded")
                 loader.source = "qrc:/main/VerifyWin.qml"
                 while (true) {
@@ -468,6 +521,116 @@ Rectangle {
                         break
                     }
                 }
+                //刷新界面并弹出
+            } else {
+                loader.item.model.clear() //清空列表
+                loader.item.initGroup() //组模型初始化
+                funcc.getVerifyArray(myqq, loader.item) //获取也验证信息
+                loader.item.show()
+                loader.item.raise()
+                loader.item.requestActivate()
+            }
+        }
+    }
+    //打开下线框
+    Action {
+        id: openOfflineAction
+        onTriggered: {
+            console.log("openVerifyAction ")
+            if (inCenterLoader.item.loaderForOffline === undefined)
+                return
+            var loader = inCenterLoader.item.loaderForOffline
+            if (Loader.Null === loader.status) {
+                console.log("loaded")
+                loader.source = "qrc:/main/OfflineTip.qml"
+                while (true) {
+                    if (loader.status === Loader.Ready) {
+                        console.log("start show")
+                        console.log("opened the OfflineTip.qml")
+                        var tx = (inCenterLoader.item.width - loader.item.width) / 2
+                        var ty = (inCenterLoader.item.height - loader.item.height) / 2
+                        loader.item.x = (inCenterLoader.item.x + tx)
+                        loader.item.y = (inCenterLoader.item.y + ty)
+                        var obj = loader.obj
+                        loader.item.ip = obj.ip
+                        loader.item.host = obj.host
+                        loader.item.loginTime = obj.datetime
+                        loader.item.showNormal()
+                        loader.item.raise()
+                        loader.item.requestActivate()
+                        break
+                    } else if (loader.status === Loader.Error) {
+                        console.log("loaderForAlterInfo  occured a error")
+                        inCenterLoader.item.close() //关闭主窗口
+                        break
+                    }
+                }
+            }
+        }
+    }
+    //打开修改好友备注框
+    Action {
+        id: openAlterTagAction
+        onTriggered: {
+            console.log("openVerifyAction ")
+            if (inCenterLoader.item.loaderForAlterTag === undefined)
+                return
+            var loader = inCenterLoader.item.loaderForAlterTag
+            if (Loader.Null === loader.status) {
+                console.log("loaded")
+                loader.source = "qrc:/main/AlterSmallWin.qml"
+                while (true) {
+                    if (loader.status === Loader.Ready) {
+                        console.log("start show")
+                        console.log("opened the AlterSmallWin.qml")
+                        var tx = (inCenterLoader.item.width - loader.item.width) / 2
+                        var ty = (inCenterLoader.item.height - loader.item.height) / 2
+                        loader.item.x = (inCenterLoader.item.x + tx)
+                        loader.item.y = (inCenterLoader.item.y + ty)
+                        loader.item.showNormal()
+                        loader.item.raise()
+                        loader.item.requestActivate()
+                        break
+                    } else if (loader.status === Loader.Error) {
+                        console.log("loaderForAlterInfo  occured a error")
+                        loader.source = "" //释放
+                        break
+                    }
+                }
+            }
+        }
+    }
+    //打开好友资料
+    Action {
+        id: openFriendInfoAction
+        onTriggered: {
+            console.log("openFriendInfoAction ")
+            var obj = source
+            //获取数据
+            if (obj.isFirst) {
+                funcc.getIndividualData("getFriendInformation", obj.number,
+                                        obj) //第一次打开就爬取数据
+            }
+            obj.isFirst = false
+            obj.showNormal()
+            obj.raise()
+            obj.requestActivate()
+        }
+    }
+    //打开聊天界面
+    Action {
+        id: openChatWinAction
+        onTriggered: {
+            console.log("openChatWinAction")
+            try {
+                var cw = source
+                cw.x = (mainWin.desktopAvailableWidth - cw.width) / 2
+                cw.y = (mainWin.desktopAvailableHeight - cw.height) / 2
+                cw.showNormal()
+                cw.raise()
+                cw.requestActivate()
+            } catch (e) {
+                console.log("warning:", e.message)
             }
         }
     }
@@ -554,17 +717,40 @@ Rectangle {
             }
         }
     }
+    Action {
+        //修改好友备注确认行为
+        id: alterFTagAction
+        onTriggered: {
+            console.log("alterFTagAction")
+            try {
+                var item = inCenterLoader.item
+                var obj = item.loaderForAlterTag.obj
+                item.loaderForAlterTag.obj = null
+                obj.tag = source.value
+                iitem.updateTag(obj)
+                var fw = item.mapInfo.get(obj.number)
+                if (fw != undefined) {
+                    fw.tag = obj.tag
+                }
+            } catch (e) {
+                console.log("warning:", e.message)
+            }
+        }
+    }
 
     //辅助功能计时器
     Timer {
         id: time2sForHideWeather
         interval: 2000
         onTriggered: {
-            if (null !== inCenterLoader
-                    && !inCenterLoader.item.loaderForWeather.item.isMouseInside
-                    && inCenterLoader.item.loaderForWeather.item.win === 1
-                    && !inCenterLoader.item.loaderForWeather.item.popIsOpen)
-                inCenterLoader.item.loaderForWeather.item.hide()
+            try {
+                if (!inCenterLoader.item.loaderForWeather.item.isMouseInside
+                        && inCenterLoader.item.loaderForWeather.item.win === 1
+                        && !inCenterLoader.item.loaderForWeather.item.popIsOpen)
+                    inCenterLoader.item.loaderForWeather.item.hide()
+            } catch (e) {
+                console.log("warning:", e.message)
+            }
         }
     }
     Timer {

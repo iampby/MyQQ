@@ -11,6 +11,7 @@ Window {
     property string name: ""
     property int grade: -1
     property string signature: ""
+    property string tag: ""
     id: win
     width: 292
     height: 109
@@ -29,6 +30,12 @@ Window {
             headImgHovered = false //关闭时回到初始化状态
         }
     }
+    //等级图标更新
+    onGradeChanged: {
+        console.log("grade=", grade)
+        func.resetGradeModel(gradeModel, grade)
+    }
+
     //鼠标区
     MouseArea {
         id: winMouse
@@ -59,7 +66,7 @@ Window {
         id: nameLab
         x: 15
         y: 20
-        text: win.name
+        text: win.tag == "" ? win.name : win.tag
         font.pixelSize: 22
         color: "white"
         MouseForShape {
@@ -179,7 +186,7 @@ Window {
         rowSpacing: 3
         Repeater {
             id: rep
-            model: qqMainWin.gradeModel
+            model: gradeModel
             ToolButton {
                 background: Image {
                     sourceSize: Qt.size(19, 19)
@@ -230,6 +237,10 @@ Window {
                 gridLay.posy = mouseY
             }
         }
+    }
+    //模型
+    ListModel {
+        id: gradeModel
     }
 
     //延迟1s关闭个性签名提示

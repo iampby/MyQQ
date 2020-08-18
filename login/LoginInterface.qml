@@ -129,9 +129,7 @@ Rectangle {
                     f = 1
                     img1.height = canvasSet.height
                     img1.width = canvasSet.width
-                    console.log("?")
                     requestPaint()
-                    console.log("??")
                     unloadImage(url)
                     loadImage("qrc:images/qqSetC.png")
                 } else {

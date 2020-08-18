@@ -7,7 +7,7 @@ Button {
     property alias name: name
     property alias ratio: ratio
     property alias edit: edit
-    property bool muter: false//防止丢失焦点
+    property bool muter: false //防止丢失焦点
     property int sumForFriends: 0
     property int activeLine: 0
     property string backColor: "transparent"
@@ -99,10 +99,10 @@ Button {
             lastLength = length
         }
         onEditingFinished: {
-            if(muter){
+            if (muter) {
                 selectAll()
-                focus=true
-                muter=false
+                focus = true
+                muter = false
                 return
             }
             if (visible)

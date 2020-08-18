@@ -200,8 +200,8 @@ Window {
         home2Cbox.enabled = false
         home3Cbox.enabled = false
         home4Cbox.enabled = false
-        length = indivadualWin.countryModel.count
         //所在地处理
+        length = indivadualWin.countryModel.count
         console.log("1")
         index = -1
         for (i = 0; i < length; ++i) {
@@ -268,8 +268,13 @@ Window {
         //故乡处理
         console.log("2")
         index = -1
+        length = indivadualWin.countryModel.count
         for (i = 0; i < length; ++i) {
-            temp = indivadualWin.countryModel.get(i).name
+            try {
+                temp = indivadualWin.countryModel.get(i).name
+            } catch (e) {
+                console.log("warning:", e.message)
+            }
             if (temp === home1) {
                 index = i
                 break

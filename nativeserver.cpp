@@ -40,13 +40,18 @@ void NativeServer::incomingConnection(qintptr socketDescriptor)
    nsock->moveToThread(cthread);
    //中转验证消息
    connect(nsock,&NativeSocket::emitFVerify,this,[=](QByteArray data){
-       qDebug()<<"the relay station of the data packet has passed";
+       qDebug()<<"the relay station of the data packet of friends verify has passed";
        emit emitFverify(data);
    });
    //中转好友消息
    connect(nsock,&NativeSocket::emitGetFriend,this,[=](QByteArray data,QPixmap pix){
-       qDebug()<<"the relay station of the data packet has passed";
+       qDebug()<<"the relay station of the data packet of added friend information  has passed";
        emit emitGetFriend(data,pix);
+   });
+   //下线通知中间站
+   connect(nsock,&NativeSocket::emitOffline,this,[=](QString ip,QString host,QString datetime){
+       qDebug()<<"the relay station of the data packet of offline has passed";
+       emit emitOffline(ip,host,datetime);
    });
    connect(cthread,&QThread::finished,cthread,&QThread::deleteLater);
    connect(cthread,&QThread::finished,nsock,&NativeSocket::deleteLater);

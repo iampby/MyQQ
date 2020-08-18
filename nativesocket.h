@@ -26,6 +26,7 @@ signals:
     void finished();
     void emitFVerify(QByteArray data);
     void emitGetFriend(QByteArray data,QPixmap pix);
+    void emitOffline(QString ip,QString host,QString datetime);//强制下线信号
 protected:
     qint64 size;
     DataType IT;

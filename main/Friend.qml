@@ -4,17 +4,27 @@ import QtQuick.Layouts 1.3
 import QtGraphicalEffects 1.12
 
 Button {
+    property alias bottomText: bottomLab.text //个性签名
+    property bool isChecked: false
     property int w: parent.width //宽度
     property int h: 60 //高度
     property alias headImg: hImg.source //头像路径
     property alias topLab: topLab
     property alias bottomLab: bottomLab
-    property string name: "" //昵称+备注
+    property string name: "" //昵称
     property string label: "" //备注
-    property alias bottomText: bottomLab.text //个性签名
+    property string status: "" //状态
+    property string backColor: "transparent"
+    onIsCheckedChanged: {
+        if (isChecked)
+            backColor = "#f2f2f2"
+        else
+            backColor = "transparent"
+    }
     background: Rectangle {
         implicitHeight: h
         implicitWidth: w
+        color: backColor
         RowLayout {
             x: 12
             height: h
@@ -24,7 +34,6 @@ Button {
                 width: 40
                 height: 40
                 clip: true
-                //color: "transparent" 遮罩源不能为透明
                 radius: 90
                 Image {
                     id: hImg
@@ -36,6 +45,7 @@ Button {
                 }
                 //遮罩
                 OpacityMask {
+                    id: mask
                     width: headRec.width
                     height: headRec.height
                     source: hImg
@@ -51,8 +61,9 @@ Button {
                     height: 18
                     textFormat: Qt.RichText
                     font.pointSize: 11
-                    text: label == "" ? name : name + "<font style='color:gray;'>("
-                                        + label + ")</font>"
+                    text: label == ""
+                          || label == name ? name : name + "<font style='color:gray;'>("
+                                             + label + ")</font>"
                 }
                 Label {
                     id: bottomLab

@@ -10,7 +10,6 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qmetatype.h>
 #include <QtCore/QList>
-#include <QtCore/QVector>
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'funcc.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 67
@@ -23,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_FuncC_t {
-    QByteArrayData data[151];
-    char stringdata0[1696];
+    QByteArrayData data[163];
+    char stringdata0[1795];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -73,117 +72,129 @@ QT_MOC_LITERAL(36, 419, 4), // "myqq"
 QT_MOC_LITERAL(37, 424, 15), // "emitReadHistory"
 QT_MOC_LITERAL(38, 440, 15), // "emitSelectedImg"
 QT_MOC_LITERAL(39, 456, 6), // "pixmap"
-QT_MOC_LITERAL(40, 463, 20), // "emitPersonalJsonInfo"
-QT_MOC_LITERAL(41, 484, 3), // "obj"
-QT_MOC_LITERAL(42, 488, 25), // "emitPersonalCoverAndPhoto"
-QT_MOC_LITERAL(43, 514, 16), // "QVector<QString>"
-QT_MOC_LITERAL(44, 531, 5), // "walls"
-QT_MOC_LITERAL(45, 537, 5), // "cover"
-QT_MOC_LITERAL(46, 543, 10), // "emitFVeify"
-QT_MOC_LITERAL(47, 554, 10), // "emitFriend"
-QT_MOC_LITERAL(48, 565, 12), // "setSourceIco"
-QT_MOC_LITERAL(49, 578, 3), // "arg"
-QT_MOC_LITERAL(50, 582, 6), // "setWin"
-QT_MOC_LITERAL(51, 589, 13), // "QQuickWindow*"
-QT_MOC_LITERAL(52, 603, 12), // "setLocalCity"
-QT_MOC_LITERAL(53, 616, 11), // "setLocalUrl"
-QT_MOC_LITERAL(54, 628, 7), // "setMyQQ"
-QT_MOC_LITERAL(55, 636, 9), // "setPasswd"
-QT_MOC_LITERAL(56, 646, 10), // "analysisWh"
-QT_MOC_LITERAL(57, 657, 12), // "totalGeoAddr"
-QT_MOC_LITERAL(58, 670, 20), // "handleProcessStarted"
-QT_MOC_LITERAL(59, 691, 16), // "registerFinished"
-QT_MOC_LITERAL(60, 708, 21), // "registerConnectFailed"
-QT_MOC_LITERAL(61, 730, 12), // "updateHandle"
-QT_MOC_LITERAL(62, 743, 2), // "ok"
-QT_MOC_LITERAL(63, 746, 10), // "getFVerify"
-QT_MOC_LITERAL(64, 757, 4), // "data"
-QT_MOC_LITERAL(65, 762, 9), // "getFriend"
-QT_MOC_LITERAL(66, 772, 3), // "pix"
-QT_MOC_LITERAL(67, 776, 13), // "taskDirection"
-QT_MOC_LITERAL(68, 790, 12), // "taskBarWidth"
-QT_MOC_LITERAL(69, 803, 12), // "initImageSet"
-QT_MOC_LITERAL(70, 816, 12), // "registerMyQQ"
-QT_MOC_LITERAL(71, 829, 6), // "MyName"
-QT_MOC_LITERAL(72, 836, 6), // "passwd"
-QT_MOC_LITERAL(73, 843, 15), // "saveStringToTxt"
-QT_MOC_LITERAL(74, 859, 3), // "str"
-QT_MOC_LITERAL(75, 863, 5), // "title"
-QT_MOC_LITERAL(76, 869, 3), // "dir"
-QT_MOC_LITERAL(77, 873, 5), // "login"
-QT_MOC_LITERAL(78, 879, 12), // "realseServer"
-QT_MOC_LITERAL(79, 892, 9), // "writeFile"
-QT_MOC_LITERAL(80, 902, 7), // "content"
-QT_MOC_LITERAL(81, 910, 8), // "filepath"
-QT_MOC_LITERAL(82, 919, 10), // "startClock"
-QT_MOC_LITERAL(83, 930, 9), // "stopClock"
-QT_MOC_LITERAL(84, 940, 11), // "setMyCursor"
-QT_MOC_LITERAL(85, 952, 6), // "direct"
-QT_MOC_LITERAL(86, 959, 8), // "QWindow*"
-QT_MOC_LITERAL(87, 968, 1), // "w"
-QT_MOC_LITERAL(88, 970, 14), // "openTempMesWin"
-QT_MOC_LITERAL(89, 985, 13), // "addHeadWidget"
-QT_MOC_LITERAL(90, 999, 1), // "x"
-QT_MOC_LITERAL(91, 1001, 1), // "y"
-QT_MOC_LITERAL(92, 1003, 5), // "isgot"
-QT_MOC_LITERAL(93, 1009, 8), // "openFile"
-QT_MOC_LITERAL(94, 1018, 11), // "closeWidget"
-QT_MOC_LITERAL(95, 1030, 17), // "getHistoryHeadImg"
-QT_MOC_LITERAL(96, 1048, 15), // "updateSignature"
-QT_MOC_LITERAL(97, 1064, 9), // "signature"
-QT_MOC_LITERAL(98, 1074, 2), // "in"
-QT_MOC_LITERAL(99, 1077, 11), // "updateCover"
-QT_MOC_LITERAL(100, 1089, 11), // "qmlFilePath"
-QT_MOC_LITERAL(101, 1101, 23), // "deleteNetAndUpdateTimer"
-QT_MOC_LITERAL(102, 1125, 14), // "addCoverWidget"
-QT_MOC_LITERAL(103, 1140, 8), // "filePath"
-QT_MOC_LITERAL(104, 1149, 16), // "closeCoverWidget"
-QT_MOC_LITERAL(105, 1166, 17), // "getIndividualData"
-QT_MOC_LITERAL(106, 1184, 15), // "updatePhotoWall"
-QT_MOC_LITERAL(107, 1200, 6), // "length"
-QT_MOC_LITERAL(108, 1207, 13), // "inintCityData"
-QT_MOC_LITERAL(109, 1221, 21), // "updateUserInformation"
-QT_MOC_LITERAL(110, 1243, 4), // "info"
-QT_MOC_LITERAL(111, 1248, 8), // "exitMyQQ"
-QT_MOC_LITERAL(112, 1257, 14), // "getVerifyArray"
-QT_MOC_LITERAL(113, 1272, 6), // "qmlWin"
-QT_MOC_LITERAL(114, 1279, 19), // "openAddFGroupWidget"
-QT_MOC_LITERAL(115, 1299, 9), // "qqMainWin"
-QT_MOC_LITERAL(116, 1309, 13), // "handleFVerify"
-QT_MOC_LITERAL(117, 1323, 20), // "addRemoteFriendGroup"
-QT_MOC_LITERAL(118, 1344, 14), // "QJsonDocument&"
-QT_MOC_LITERAL(119, 1359, 3), // "doc"
-QT_MOC_LITERAL(120, 1363, 12), // "updateFGroup"
-QT_MOC_LITERAL(121, 1376, 22), // "startAddFriendsProcess"
-QT_MOC_LITERAL(122, 1399, 3), // "arr"
-QT_MOC_LITERAL(123, 1403, 14), // "crawWeatherUrl"
-QT_MOC_LITERAL(124, 1418, 3), // "url"
-QT_MOC_LITERAL(125, 1422, 10), // "_3daysdata"
-QT_MOC_LITERAL(126, 1433, 1), // "r"
-QT_MOC_LITERAL(127, 1435, 1), // "c"
-QT_MOC_LITERAL(128, 1437, 6), // "initWh"
-QT_MOC_LITERAL(129, 1444, 5), // "mkDir"
-QT_MOC_LITERAL(130, 1450, 9), // "dirString"
-QT_MOC_LITERAL(131, 1460, 13), // "initLoginInfo"
-QT_MOC_LITERAL(132, 1474, 15), // "readWeatherFile"
-QT_MOC_LITERAL(133, 1490, 8), // "fileName"
-QT_MOC_LITERAL(134, 1499, 16), // "writeWeatherFile"
-QT_MOC_LITERAL(135, 1516, 14), // "connectGetFile"
-QT_MOC_LITERAL(136, 1531, 19), // "instructDescription"
-QT_MOC_LITERAL(137, 1551, 11), // "getCityData"
-QT_MOC_LITERAL(138, 1563, 11), // "setCityData"
-QT_MOC_LITERAL(139, 1575, 1), // "v"
-QT_MOC_LITERAL(140, 1577, 13), // "getWeatherUrl"
-QT_MOC_LITERAL(141, 1591, 5), // "query"
-QT_MOC_LITERAL(142, 1597, 13), // "findCityEvent"
-QT_MOC_LITERAL(143, 1611, 4), // "text"
-QT_MOC_LITERAL(144, 1616, 16), // "indexForCityList"
-QT_MOC_LITERAL(145, 1633, 16), // "clearForCityList"
-QT_MOC_LITERAL(146, 1650, 12), // "getCityCount"
-QT_MOC_LITERAL(147, 1663, 3), // "win"
-QT_MOC_LITERAL(148, 1667, 9), // "sourceIco"
-QT_MOC_LITERAL(149, 1677, 9), // "localCity"
-QT_MOC_LITERAL(150, 1687, 8) // "localUrl"
+QT_MOC_LITERAL(40, 463, 10), // "emitFVeify"
+QT_MOC_LITERAL(41, 474, 3), // "obj"
+QT_MOC_LITERAL(42, 478, 10), // "emitFriend"
+QT_MOC_LITERAL(43, 489, 11), // "emitOffline"
+QT_MOC_LITERAL(44, 501, 12), // "setSourceIco"
+QT_MOC_LITERAL(45, 514, 3), // "arg"
+QT_MOC_LITERAL(46, 518, 13), // "QQuickWindow*"
+QT_MOC_LITERAL(47, 532, 3), // "win"
+QT_MOC_LITERAL(48, 536, 3), // "key"
+QT_MOC_LITERAL(49, 540, 6), // "setWin"
+QT_MOC_LITERAL(50, 547, 12), // "setLocalCity"
+QT_MOC_LITERAL(51, 560, 11), // "setLocalUrl"
+QT_MOC_LITERAL(52, 572, 7), // "setMyQQ"
+QT_MOC_LITERAL(53, 580, 9), // "setPasswd"
+QT_MOC_LITERAL(54, 590, 10), // "analysisWh"
+QT_MOC_LITERAL(55, 601, 12), // "totalGeoAddr"
+QT_MOC_LITERAL(56, 614, 20), // "handleProcessStarted"
+QT_MOC_LITERAL(57, 635, 16), // "registerFinished"
+QT_MOC_LITERAL(58, 652, 21), // "registerConnectFailed"
+QT_MOC_LITERAL(59, 674, 12), // "updateHandle"
+QT_MOC_LITERAL(60, 687, 2), // "ok"
+QT_MOC_LITERAL(61, 690, 10), // "getFVerify"
+QT_MOC_LITERAL(62, 701, 4), // "data"
+QT_MOC_LITERAL(63, 706, 9), // "getFriend"
+QT_MOC_LITERAL(64, 716, 3), // "pix"
+QT_MOC_LITERAL(65, 720, 7), // "offline"
+QT_MOC_LITERAL(66, 728, 2), // "ip"
+QT_MOC_LITERAL(67, 731, 4), // "host"
+QT_MOC_LITERAL(68, 736, 8), // "datetime"
+QT_MOC_LITERAL(69, 745, 13), // "taskDirection"
+QT_MOC_LITERAL(70, 759, 12), // "taskBarWidth"
+QT_MOC_LITERAL(71, 772, 12), // "initImageSet"
+QT_MOC_LITERAL(72, 785, 12), // "registerMyQQ"
+QT_MOC_LITERAL(73, 798, 6), // "MyName"
+QT_MOC_LITERAL(74, 805, 6), // "passwd"
+QT_MOC_LITERAL(75, 812, 15), // "saveStringToTxt"
+QT_MOC_LITERAL(76, 828, 3), // "str"
+QT_MOC_LITERAL(77, 832, 5), // "title"
+QT_MOC_LITERAL(78, 838, 3), // "dir"
+QT_MOC_LITERAL(79, 842, 5), // "login"
+QT_MOC_LITERAL(80, 848, 12), // "realseServer"
+QT_MOC_LITERAL(81, 861, 9), // "writeFile"
+QT_MOC_LITERAL(82, 871, 7), // "content"
+QT_MOC_LITERAL(83, 879, 8), // "filepath"
+QT_MOC_LITERAL(84, 888, 10), // "startClock"
+QT_MOC_LITERAL(85, 899, 9), // "stopClock"
+QT_MOC_LITERAL(86, 909, 11), // "setMyCursor"
+QT_MOC_LITERAL(87, 921, 6), // "direct"
+QT_MOC_LITERAL(88, 928, 8), // "QWindow*"
+QT_MOC_LITERAL(89, 937, 1), // "w"
+QT_MOC_LITERAL(90, 939, 14), // "openTempMesWin"
+QT_MOC_LITERAL(91, 954, 13), // "addHeadWidget"
+QT_MOC_LITERAL(92, 968, 1), // "x"
+QT_MOC_LITERAL(93, 970, 1), // "y"
+QT_MOC_LITERAL(94, 972, 5), // "isgot"
+QT_MOC_LITERAL(95, 978, 8), // "openFile"
+QT_MOC_LITERAL(96, 987, 11), // "closeWidget"
+QT_MOC_LITERAL(97, 999, 17), // "getHistoryHeadImg"
+QT_MOC_LITERAL(98, 1017, 15), // "updateSignature"
+QT_MOC_LITERAL(99, 1033, 9), // "signature"
+QT_MOC_LITERAL(100, 1043, 2), // "in"
+QT_MOC_LITERAL(101, 1046, 11), // "updateCover"
+QT_MOC_LITERAL(102, 1058, 11), // "qmlFilePath"
+QT_MOC_LITERAL(103, 1070, 23), // "deleteNetAndUpdateTimer"
+QT_MOC_LITERAL(104, 1094, 14), // "addCoverWidget"
+QT_MOC_LITERAL(105, 1109, 8), // "filePath"
+QT_MOC_LITERAL(106, 1118, 16), // "closeCoverWidget"
+QT_MOC_LITERAL(107, 1135, 17), // "getIndividualData"
+QT_MOC_LITERAL(108, 1153, 6), // "qmlWin"
+QT_MOC_LITERAL(109, 1160, 15), // "updatePhotoWall"
+QT_MOC_LITERAL(110, 1176, 6), // "length"
+QT_MOC_LITERAL(111, 1183, 25), // "removePhotoFromRemoteWall"
+QT_MOC_LITERAL(112, 1209, 13), // "inintCityData"
+QT_MOC_LITERAL(113, 1223, 21), // "updateUserInformation"
+QT_MOC_LITERAL(114, 1245, 4), // "info"
+QT_MOC_LITERAL(115, 1250, 8), // "exitMyQQ"
+QT_MOC_LITERAL(116, 1259, 14), // "getVerifyArray"
+QT_MOC_LITERAL(117, 1274, 19), // "openAddFGroupWidget"
+QT_MOC_LITERAL(118, 1294, 9), // "qqMainWin"
+QT_MOC_LITERAL(119, 1304, 13), // "handleFVerify"
+QT_MOC_LITERAL(120, 1318, 20), // "addRemoteFriendGroup"
+QT_MOC_LITERAL(121, 1339, 14), // "QJsonDocument&"
+QT_MOC_LITERAL(122, 1354, 3), // "doc"
+QT_MOC_LITERAL(123, 1358, 12), // "updateFGroup"
+QT_MOC_LITERAL(124, 1371, 10), // "moveFriend"
+QT_MOC_LITERAL(125, 1382, 6), // "before"
+QT_MOC_LITERAL(126, 1389, 5), // "after"
+QT_MOC_LITERAL(127, 1395, 12), // "deleteFriend"
+QT_MOC_LITERAL(128, 1408, 5), // "index"
+QT_MOC_LITERAL(129, 1414, 9), // "alterFTag"
+QT_MOC_LITERAL(130, 1424, 3), // "map"
+QT_MOC_LITERAL(131, 1428, 9), // "dmrFriend"
+QT_MOC_LITERAL(132, 1438, 12), // "QJsonObject&"
+QT_MOC_LITERAL(133, 1451, 22), // "startAddFriendsProcess"
+QT_MOC_LITERAL(134, 1474, 3), // "arr"
+QT_MOC_LITERAL(135, 1478, 27), // "updateAuxiliaryProcessFGoup"
+QT_MOC_LITERAL(136, 1506, 14), // "crawWeatherUrl"
+QT_MOC_LITERAL(137, 1521, 3), // "url"
+QT_MOC_LITERAL(138, 1525, 10), // "_3daysdata"
+QT_MOC_LITERAL(139, 1536, 1), // "r"
+QT_MOC_LITERAL(140, 1538, 1), // "c"
+QT_MOC_LITERAL(141, 1540, 6), // "initWh"
+QT_MOC_LITERAL(142, 1547, 5), // "mkDir"
+QT_MOC_LITERAL(143, 1553, 9), // "dirString"
+QT_MOC_LITERAL(144, 1563, 13), // "initLoginInfo"
+QT_MOC_LITERAL(145, 1577, 15), // "readWeatherFile"
+QT_MOC_LITERAL(146, 1593, 8), // "fileName"
+QT_MOC_LITERAL(147, 1602, 16), // "writeWeatherFile"
+QT_MOC_LITERAL(148, 1619, 14), // "connectGetFile"
+QT_MOC_LITERAL(149, 1634, 19), // "instructDescription"
+QT_MOC_LITERAL(150, 1654, 11), // "getCityData"
+QT_MOC_LITERAL(151, 1666, 11), // "setCityData"
+QT_MOC_LITERAL(152, 1678, 1), // "v"
+QT_MOC_LITERAL(153, 1680, 13), // "getWeatherUrl"
+QT_MOC_LITERAL(154, 1694, 5), // "query"
+QT_MOC_LITERAL(155, 1700, 13), // "findCityEvent"
+QT_MOC_LITERAL(156, 1714, 4), // "text"
+QT_MOC_LITERAL(157, 1719, 16), // "indexForCityList"
+QT_MOC_LITERAL(158, 1736, 16), // "clearForCityList"
+QT_MOC_LITERAL(159, 1753, 12), // "getCityCount"
+QT_MOC_LITERAL(160, 1766, 9), // "sourceIco"
+QT_MOC_LITERAL(161, 1776, 9), // "localCity"
+QT_MOC_LITERAL(162, 1786, 8) // "localUrl"
 
     },
     "FuncC\0winChanged\0\0sourceIcoChanged\0"
@@ -198,40 +209,44 @@ QT_MOC_LITERAL(150, 1687, 8) // "localUrl"
     "emitCloseCover\0emitCloseAddFGroup\0"
     "emitHeadImgOKClicked\0Images*\0images\0"
     "emitCoverOKClicked\0myqq\0emitReadHistory\0"
-    "emitSelectedImg\0pixmap\0emitPersonalJsonInfo\0"
-    "obj\0emitPersonalCoverAndPhoto\0"
-    "QVector<QString>\0walls\0cover\0emitFVeify\0"
-    "emitFriend\0setSourceIco\0arg\0setWin\0"
-    "QQuickWindow*\0setLocalCity\0setLocalUrl\0"
-    "setMyQQ\0setPasswd\0analysisWh\0totalGeoAddr\0"
+    "emitSelectedImg\0pixmap\0emitFVeify\0obj\0"
+    "emitFriend\0emitOffline\0setSourceIco\0"
+    "arg\0QQuickWindow*\0win\0key\0setWin\0"
+    "setLocalCity\0setLocalUrl\0setMyQQ\0"
+    "setPasswd\0analysisWh\0totalGeoAddr\0"
     "handleProcessStarted\0registerFinished\0"
     "registerConnectFailed\0updateHandle\0"
     "ok\0getFVerify\0data\0getFriend\0pix\0"
-    "taskDirection\0taskBarWidth\0initImageSet\0"
-    "registerMyQQ\0MyName\0passwd\0saveStringToTxt\0"
-    "str\0title\0dir\0login\0realseServer\0"
-    "writeFile\0content\0filepath\0startClock\0"
-    "stopClock\0setMyCursor\0direct\0QWindow*\0"
-    "w\0openTempMesWin\0addHeadWidget\0x\0y\0"
-    "isgot\0openFile\0closeWidget\0getHistoryHeadImg\0"
+    "offline\0ip\0host\0datetime\0taskDirection\0"
+    "taskBarWidth\0initImageSet\0registerMyQQ\0"
+    "MyName\0passwd\0saveStringToTxt\0str\0"
+    "title\0dir\0login\0realseServer\0writeFile\0"
+    "content\0filepath\0startClock\0stopClock\0"
+    "setMyCursor\0direct\0QWindow*\0w\0"
+    "openTempMesWin\0addHeadWidget\0x\0y\0isgot\0"
+    "openFile\0closeWidget\0getHistoryHeadImg\0"
     "updateSignature\0signature\0in\0updateCover\0"
     "qmlFilePath\0deleteNetAndUpdateTimer\0"
     "addCoverWidget\0filePath\0closeCoverWidget\0"
-    "getIndividualData\0updatePhotoWall\0"
-    "length\0inintCityData\0updateUserInformation\0"
-    "info\0exitMyQQ\0getVerifyArray\0qmlWin\0"
+    "getIndividualData\0qmlWin\0updatePhotoWall\0"
+    "length\0removePhotoFromRemoteWall\0"
+    "inintCityData\0updateUserInformation\0"
+    "info\0exitMyQQ\0getVerifyArray\0"
     "openAddFGroupWidget\0qqMainWin\0"
     "handleFVerify\0addRemoteFriendGroup\0"
     "QJsonDocument&\0doc\0updateFGroup\0"
-    "startAddFriendsProcess\0arr\0crawWeatherUrl\0"
-    "url\0_3daysdata\0r\0c\0initWh\0mkDir\0"
-    "dirString\0initLoginInfo\0readWeatherFile\0"
-    "fileName\0writeWeatherFile\0connectGetFile\0"
-    "instructDescription\0getCityData\0"
-    "setCityData\0v\0getWeatherUrl\0query\0"
-    "findCityEvent\0text\0indexForCityList\0"
-    "clearForCityList\0getCityCount\0win\0"
-    "sourceIco\0localCity\0localUrl"
+    "moveFriend\0before\0after\0deleteFriend\0"
+    "index\0alterFTag\0map\0dmrFriend\0"
+    "QJsonObject&\0startAddFriendsProcess\0"
+    "arr\0updateAuxiliaryProcessFGoup\0"
+    "crawWeatherUrl\0url\0_3daysdata\0r\0c\0"
+    "initWh\0mkDir\0dirString\0initLoginInfo\0"
+    "readWeatherFile\0fileName\0writeWeatherFile\0"
+    "connectGetFile\0instructDescription\0"
+    "getCityData\0setCityData\0v\0getWeatherUrl\0"
+    "query\0findCityEvent\0text\0indexForCityList\0"
+    "clearForCityList\0getCityCount\0sourceIco\0"
+    "localCity\0localUrl"
 };
 #undef QT_MOC_LITERAL
 
@@ -241,107 +256,114 @@ static const uint qt_meta_data_FuncC[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-      89,   14, // methods
-       6,  728, // properties
+      96,   14, // methods
+       6,  800, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-      27,       // signalCount
+      26,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    0,  459,    2, 0x06 /* Public */,
-       3,    0,  460,    2, 0x06 /* Public */,
-       4,    0,  461,    2, 0x06 /* Public */,
-       5,    0,  462,    2, 0x06 /* Public */,
-       6,    2,  463,    2, 0x06 /* Public */,
-       9,    1,  468,    2, 0x06 /* Public */,
-      10,    3,  471,    2, 0x06 /* Public */,
-      14,    1,  478,    2, 0x06 /* Public */,
-      16,    0,  481,    2, 0x06 /* Public */,
-      17,    0,  482,    2, 0x06 /* Public */,
-      18,    0,  483,    2, 0x06 /* Public */,
-      19,    1,  484,    2, 0x06 /* Public */,
-      21,    0,  487,    2, 0x06 /* Public */,
-      22,    3,  488,    2, 0x06 /* Public */,
-      26,    0,  495,    2, 0x06 /* Public */,
-      27,    1,  496,    2, 0x06 /* Public */,
-      29,    0,  499,    2, 0x06 /* Public */,
-      30,    0,  500,    2, 0x06 /* Public */,
-      31,    0,  501,    2, 0x06 /* Public */,
-      32,    1,  502,    2, 0x06 /* Public */,
-      35,    1,  505,    2, 0x06 /* Public */,
-      37,    1,  508,    2, 0x06 /* Public */,
-      38,    1,  511,    2, 0x06 /* Public */,
-      40,    1,  514,    2, 0x06 /* Public */,
-      42,    2,  517,    2, 0x06 /* Public */,
-      46,    1,  522,    2, 0x06 /* Public */,
-      47,    1,  525,    2, 0x06 /* Public */,
+       1,    0,  494,    2, 0x06 /* Public */,
+       3,    0,  495,    2, 0x06 /* Public */,
+       4,    0,  496,    2, 0x06 /* Public */,
+       5,    0,  497,    2, 0x06 /* Public */,
+       6,    2,  498,    2, 0x06 /* Public */,
+       9,    1,  503,    2, 0x06 /* Public */,
+      10,    3,  506,    2, 0x06 /* Public */,
+      14,    1,  513,    2, 0x06 /* Public */,
+      16,    0,  516,    2, 0x06 /* Public */,
+      17,    0,  517,    2, 0x06 /* Public */,
+      18,    0,  518,    2, 0x06 /* Public */,
+      19,    1,  519,    2, 0x06 /* Public */,
+      21,    0,  522,    2, 0x06 /* Public */,
+      22,    3,  523,    2, 0x06 /* Public */,
+      26,    0,  530,    2, 0x06 /* Public */,
+      27,    1,  531,    2, 0x06 /* Public */,
+      29,    0,  534,    2, 0x06 /* Public */,
+      30,    0,  535,    2, 0x06 /* Public */,
+      31,    0,  536,    2, 0x06 /* Public */,
+      32,    1,  537,    2, 0x06 /* Public */,
+      35,    1,  540,    2, 0x06 /* Public */,
+      37,    1,  543,    2, 0x06 /* Public */,
+      38,    1,  546,    2, 0x06 /* Public */,
+      40,    1,  549,    2, 0x06 /* Public */,
+      42,    1,  552,    2, 0x06 /* Public */,
+      43,    1,  555,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-      48,    1,  528,    2, 0x0a /* Public */,
-      50,    1,  531,    2, 0x0a /* Public */,
-      52,    1,  534,    2, 0x0a /* Public */,
-      53,    1,  537,    2, 0x0a /* Public */,
-      54,    1,  540,    2, 0x0a /* Public */,
-      55,    1,  543,    2, 0x0a /* Public */,
-      56,    1,  546,    2, 0x08 /* Private */,
-      58,    0,  549,    2, 0x08 /* Private */,
-      59,    0,  550,    2, 0x08 /* Private */,
-      60,    0,  551,    2, 0x08 /* Private */,
-      61,    1,  552,    2, 0x08 /* Private */,
-      63,    1,  555,    2, 0x08 /* Private */,
-      65,    2,  558,    2, 0x08 /* Private */,
+      44,    1,  558,    2, 0x0a /* Public */,
+      44,    2,  561,    2, 0x0a /* Public */,
+      49,    1,  566,    2, 0x0a /* Public */,
+      50,    1,  569,    2, 0x0a /* Public */,
+      51,    1,  572,    2, 0x0a /* Public */,
+      52,    1,  575,    2, 0x0a /* Public */,
+      53,    1,  578,    2, 0x0a /* Public */,
+      54,    1,  581,    2, 0x08 /* Private */,
+      56,    0,  584,    2, 0x08 /* Private */,
+      57,    0,  585,    2, 0x08 /* Private */,
+      58,    0,  586,    2, 0x08 /* Private */,
+      59,    1,  587,    2, 0x08 /* Private */,
+      61,    1,  590,    2, 0x08 /* Private */,
+      63,    2,  593,    2, 0x08 /* Private */,
+      65,    3,  598,    2, 0x08 /* Private */,
 
  // methods: name, argc, parameters, tag, flags
-      67,    0,  563,    2, 0x02 /* Public */,
-      68,    0,  564,    2, 0x02 /* Public */,
-      69,    1,  565,    2, 0x02 /* Public */,
-      70,    2,  568,    2, 0x02 /* Public */,
-      73,    3,  573,    2, 0x02 /* Public */,
-      77,    2,  580,    2, 0x02 /* Public */,
-      78,    0,  585,    2, 0x02 /* Public */,
-      79,    2,  586,    2, 0x02 /* Public */,
-      82,    0,  591,    2, 0x02 /* Public */,
-      83,    0,  592,    2, 0x02 /* Public */,
-      84,    2,  593,    2, 0x02 /* Public */,
-      88,    0,  598,    2, 0x02 /* Public */,
-      89,    6,  599,    2, 0x02 /* Public */,
-      93,    1,  612,    2, 0x02 /* Public */,
-      94,    0,  615,    2, 0x02 /* Public */,
-      95,    1,  616,    2, 0x02 /* Public */,
-      96,    2,  619,    2, 0x02 /* Public */,
-      99,    1,  624,    2, 0x02 /* Public */,
-     101,    0,  627,    2, 0x02 /* Public */,
-     102,    4,  628,    2, 0x02 /* Public */,
-     104,    0,  637,    2, 0x02 /* Public */,
-     105,    0,  638,    2, 0x02 /* Public */,
-     106,    1,  639,    2, 0x02 /* Public */,
-     108,    1,  642,    2, 0x02 /* Public */,
-     109,    1,  645,    2, 0x02 /* Public */,
-     111,    1,  648,    2, 0x02 /* Public */,
-     111,    0,  651,    2, 0x22 /* Public | MethodCloned */,
-     112,    2,  652,    2, 0x02 /* Public */,
-     114,    2,  657,    2, 0x02 /* Public */,
-     116,    1,  662,    2, 0x02 /* Public */,
-     117,    1,  665,    2, 0x02 /* Public */,
-     117,    1,  668,    2, 0x02 /* Public */,
-     120,    1,  671,    2, 0x02 /* Public */,
-     121,    3,  674,    2, 0x02 /* Public */,
-     123,    1,  681,    2, 0x02 /* Public */,
-     125,    2,  684,    2, 0x02 /* Public */,
-     128,    0,  689,    2, 0x02 /* Public */,
-     129,    1,  690,    2, 0x02 /* Public */,
-     131,    0,  693,    2, 0x02 /* Public */,
-     132,    1,  694,    2, 0x02 /* Public */,
-     134,    1,  697,    2, 0x02 /* Public */,
-     135,    1,  700,    2, 0x02 /* Public */,
-     137,    2,  703,    2, 0x02 /* Public */,
-     138,    3,  708,    2, 0x02 /* Public */,
-     140,    1,  715,    2, 0x02 /* Public */,
-     142,    1,  718,    2, 0x02 /* Public */,
-     144,    2,  721,    2, 0x02 /* Public */,
-     145,    0,  726,    2, 0x02 /* Public */,
-     146,    0,  727,    2, 0x02 /* Public */,
+      69,    0,  605,    2, 0x02 /* Public */,
+      70,    0,  606,    2, 0x02 /* Public */,
+      71,    1,  607,    2, 0x02 /* Public */,
+      72,    2,  610,    2, 0x02 /* Public */,
+      75,    3,  615,    2, 0x02 /* Public */,
+      79,    2,  622,    2, 0x02 /* Public */,
+      80,    0,  627,    2, 0x02 /* Public */,
+      81,    2,  628,    2, 0x02 /* Public */,
+      84,    0,  633,    2, 0x02 /* Public */,
+      85,    0,  634,    2, 0x02 /* Public */,
+      86,    2,  635,    2, 0x02 /* Public */,
+      90,    0,  640,    2, 0x02 /* Public */,
+      91,    6,  641,    2, 0x02 /* Public */,
+      95,    1,  654,    2, 0x02 /* Public */,
+      96,    0,  657,    2, 0x02 /* Public */,
+      97,    1,  658,    2, 0x02 /* Public */,
+      98,    2,  661,    2, 0x02 /* Public */,
+     101,    1,  666,    2, 0x02 /* Public */,
+     103,    0,  669,    2, 0x02 /* Public */,
+     104,    4,  670,    2, 0x02 /* Public */,
+     106,    0,  679,    2, 0x02 /* Public */,
+     107,    3,  680,    2, 0x02 /* Public */,
+     109,    1,  687,    2, 0x02 /* Public */,
+     111,    1,  690,    2, 0x02 /* Public */,
+     112,    1,  693,    2, 0x02 /* Public */,
+     113,    1,  696,    2, 0x02 /* Public */,
+     115,    1,  699,    2, 0x02 /* Public */,
+     115,    0,  702,    2, 0x22 /* Public | MethodCloned */,
+     116,    2,  703,    2, 0x02 /* Public */,
+     117,    2,  708,    2, 0x02 /* Public */,
+     119,    1,  713,    2, 0x02 /* Public */,
+     120,    1,  716,    2, 0x02 /* Public */,
+     120,    1,  719,    2, 0x02 /* Public */,
+     123,    1,  722,    2, 0x02 /* Public */,
+     124,    3,  725,    2, 0x02 /* Public */,
+     127,    2,  732,    2, 0x02 /* Public */,
+     129,    1,  737,    2, 0x02 /* Public */,
+     131,    1,  740,    2, 0x02 /* Public */,
+     133,    3,  743,    2, 0x02 /* Public */,
+     135,    1,  750,    2, 0x02 /* Public */,
+     136,    1,  753,    2, 0x02 /* Public */,
+     138,    2,  756,    2, 0x02 /* Public */,
+     141,    0,  761,    2, 0x02 /* Public */,
+     142,    1,  762,    2, 0x02 /* Public */,
+     144,    0,  765,    2, 0x02 /* Public */,
+     145,    1,  766,    2, 0x02 /* Public */,
+     147,    1,  769,    2, 0x02 /* Public */,
+     148,    1,  772,    2, 0x02 /* Public */,
+     150,    2,  775,    2, 0x02 /* Public */,
+     151,    3,  780,    2, 0x02 /* Public */,
+     153,    1,  787,    2, 0x02 /* Public */,
+     155,    1,  790,    2, 0x02 /* Public */,
+     157,    2,  793,    2, 0x02 /* Public */,
+     158,    0,  798,    2, 0x02 /* Public */,
+     159,    0,  799,    2, 0x02 /* Public */,
 
  // signals: parameters
     QMetaType::Void,
@@ -368,83 +390,90 @@ static const uint qt_meta_data_FuncC[] = {
     QMetaType::Void, QMetaType::Int,   15,
     QMetaType::Void, QMetaType::QPixmap,   39,
     QMetaType::Void, QMetaType::QVariantMap,   41,
-    QMetaType::Void, 0x80000000 | 43, QMetaType::QString,   44,   45,
     QMetaType::Void, QMetaType::QVariantMap,   41,
     QMetaType::Void, QMetaType::QVariantMap,   41,
 
  // slots: parameters
-    QMetaType::Void, QMetaType::QString,   49,
-    QMetaType::Void, 0x80000000 | 51,   49,
-    QMetaType::Void, QMetaType::QString,   49,
-    QMetaType::Void, QMetaType::QString,   49,
+    QMetaType::Void, QMetaType::QString,   45,
+    QMetaType::Void, 0x80000000 | 46, QMetaType::QString,   47,   48,
+    QMetaType::Void, 0x80000000 | 46,   45,
+    QMetaType::Void, QMetaType::QString,   45,
+    QMetaType::Void, QMetaType::QString,   45,
     QMetaType::Void, QMetaType::QString,    2,
     QMetaType::Void, QMetaType::QString,    2,
-    QMetaType::Void, QMetaType::QString,   57,
+    QMetaType::Void, QMetaType::QString,   55,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::Bool,   62,
-    QMetaType::Void, QMetaType::QByteArray,   64,
-    QMetaType::Void, QMetaType::QByteArray, QMetaType::QPixmap,   64,   66,
+    QMetaType::Void, QMetaType::Bool,   60,
+    QMetaType::Void, QMetaType::QByteArray,   62,
+    QMetaType::Void, QMetaType::QByteArray, QMetaType::QPixmap,   62,   64,
+    QMetaType::Void, QMetaType::QString, QMetaType::QString, QMetaType::QString,   66,   67,   68,
 
  // methods: parameters
     QMetaType::Int,
     QMetaType::Int,
-    QMetaType::Void, 0x80000000 | 33,   49,
-    QMetaType::Void, QMetaType::QString, QMetaType::QString,   71,   72,
-    QMetaType::Bool, QMetaType::QString, QMetaType::QString, QMetaType::QString,   74,   75,   76,
-    QMetaType::Void, QMetaType::QString, QMetaType::QString,   36,   72,
+    QMetaType::Void, 0x80000000 | 33,   45,
+    QMetaType::Void, QMetaType::QString, QMetaType::QString,   73,   74,
+    QMetaType::Bool, QMetaType::QString, QMetaType::QString, QMetaType::QString,   76,   77,   78,
+    QMetaType::Void, QMetaType::QString, QMetaType::QString,   36,   74,
     QMetaType::Void,
-    QMetaType::Bool, QMetaType::QByteArray, QMetaType::QString,   80,   81,
+    QMetaType::Bool, QMetaType::QByteArray, QMetaType::QString,   82,   83,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::Int, 0x80000000 | 86,   85,   87,
+    QMetaType::Void, QMetaType::Int, 0x80000000 | 88,   87,   89,
     QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 86, QMetaType::Int, QMetaType::Int, QMetaType::QPixmap, QMetaType::QString, QMetaType::Bool,   87,   90,   91,   39,   36,   92,
+    QMetaType::Void, 0x80000000 | 88, QMetaType::Int, QMetaType::Int, QMetaType::QPixmap, QMetaType::QString, QMetaType::Bool,   89,   92,   93,   39,   36,   94,
     QMetaType::Void, QMetaType::QString,   28,
     QMetaType::Void,
     QMetaType::Void, QMetaType::QString,   36,
-    QMetaType::Void, QMetaType::QString, QMetaType::QString,   97,   98,
-    QMetaType::Void, QMetaType::QString,  100,
+    QMetaType::Void, QMetaType::QString, QMetaType::QString,   99,  100,
+    QMetaType::Void, QMetaType::QString,  102,
     QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 86, QMetaType::Int, QMetaType::Int, QMetaType::QString,   87,   90,   91,  103,
+    QMetaType::Void, 0x80000000 | 88, QMetaType::Int, QMetaType::Int, QMetaType::QString,   89,   92,   93,  105,
     QMetaType::Void,
+    QMetaType::Void, QMetaType::QString, QMetaType::QString, 0x80000000 | 46,   82,   25,  108,
+    QMetaType::Void, QMetaType::UChar,  110,
+    QMetaType::Void, QMetaType::Int,   13,
+    QMetaType::Void, 0x80000000 | 46,   89,
+    QMetaType::Void, QMetaType::QVariantMap,  114,
+    QMetaType::Void, 0x80000000 | 46,   89,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::UChar,  107,
-    QMetaType::Void, 0x80000000 | 51,   87,
-    QMetaType::Void, QMetaType::QVariantMap,  110,
-    QMetaType::Void, 0x80000000 | 51,   87,
-    QMetaType::Void,
-    QMetaType::Void, QMetaType::QString, 0x80000000 | 51,   36,  113,
-    QMetaType::Void, 0x80000000 | 51, 0x80000000 | 51,   87,  115,
+    QMetaType::Void, QMetaType::QString, 0x80000000 | 46,   36,  108,
+    QMetaType::Void, 0x80000000 | 46, 0x80000000 | 46,   89,  118,
     QMetaType::Void, QMetaType::QVariantMap,   41,
-    QMetaType::Void, 0x80000000 | 118,  119,
+    QMetaType::Void, 0x80000000 | 121,  122,
     QMetaType::Void, QMetaType::QVariantMap,   41,
     QMetaType::Void, QMetaType::QVariantMap,   41,
-    QMetaType::Void, 0x80000000 | 51, QMetaType::QVariantMap, QMetaType::QVariantList,   49,   41,  122,
-    QMetaType::Void, QMetaType::QString,  124,
-    QMetaType::QString, QMetaType::Int, QMetaType::Int,  126,  127,
+    QMetaType::Void, QMetaType::Int, QMetaType::Int, QMetaType::QString,  125,  126,   25,
+    QMetaType::Void, QMetaType::Int, QMetaType::QString,  128,   25,
+    QMetaType::Void, QMetaType::QVariantMap,  130,
+    QMetaType::Void, 0x80000000 | 132,   41,
+    QMetaType::Void, 0x80000000 | 46, QMetaType::QVariantMap, QMetaType::QVariantList,   45,   41,  134,
+    QMetaType::Void, QMetaType::QVariantList,  134,
+    QMetaType::Void, QMetaType::QString,  137,
+    QMetaType::QString, QMetaType::Int, QMetaType::Int,  139,  140,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::QString,  130,
-    QMetaType::Void,
-    QMetaType::Void, QMetaType::QString,  133,
-    QMetaType::Void, QMetaType::QString,  133,
-    QMetaType::Void, QMetaType::QString,  136,
-    QMetaType::QString, QMetaType::Int, QMetaType::Int,  126,  127,
-    QMetaType::Void, QMetaType::QString, QMetaType::Int, QMetaType::Int,  139,  126,  127,
-    QMetaType::QString, QMetaType::QString,  141,
     QMetaType::Void, QMetaType::QString,  143,
-    QMetaType::QString, QMetaType::Int, QMetaType::Int,  126,  127,
+    QMetaType::Void,
+    QMetaType::Void, QMetaType::QString,  146,
+    QMetaType::Void, QMetaType::QString,  146,
+    QMetaType::Void, QMetaType::QString,  149,
+    QMetaType::QString, QMetaType::Int, QMetaType::Int,  139,  140,
+    QMetaType::Void, QMetaType::QString, QMetaType::Int, QMetaType::Int,  152,  139,  140,
+    QMetaType::QString, QMetaType::QString,  154,
+    QMetaType::Void, QMetaType::QString,  156,
+    QMetaType::QString, QMetaType::Int, QMetaType::Int,  139,  140,
     QMetaType::Void,
     QMetaType::Int,
 
  // properties: name, type, flags
-     147, 0x80000000 | 51, 0x0049510b,
-     148, QMetaType::QString, 0x00495103,
-     149, QMetaType::QString, 0x00495103,
-     150, QMetaType::QString, 0x00495103,
+      47, 0x80000000 | 46, 0x0049510b,
+     160, QMetaType::QString, 0x00495103,
+     161, QMetaType::QString, 0x00495103,
+     162, QMetaType::QString, 0x00495103,
        8, QMetaType::QString, 0x00495103,
-      72, QMetaType::QString, 0x00495103,
+      74, QMetaType::QString, 0x00495103,
 
  // properties: notify_signal_id
        0,
@@ -486,11 +515,11 @@ void FuncC::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void 
         case 20: _t->emitCoverOKClicked((*reinterpret_cast< const QString(*)>(_a[1]))); break;
         case 21: _t->emitReadHistory((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 22: _t->emitSelectedImg((*reinterpret_cast< QPixmap(*)>(_a[1]))); break;
-        case 23: _t->emitPersonalJsonInfo((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
-        case 24: _t->emitPersonalCoverAndPhoto((*reinterpret_cast< QVector<QString>(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
-        case 25: _t->emitFVeify((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
-        case 26: _t->emitFriend((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
-        case 27: _t->setSourceIco((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 23: _t->emitFVeify((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
+        case 24: _t->emitFriend((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
+        case 25: _t->emitOffline((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
+        case 26: _t->setSourceIco((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 27: _t->setSourceIco((*reinterpret_cast< QQuickWindow*(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
         case 28: _t->setWin((*reinterpret_cast< QQuickWindow*(*)>(_a[1]))); break;
         case 29: _t->setLocalCity((*reinterpret_cast< const QString(*)>(_a[1]))); break;
         case 30: _t->setLocalUrl((*reinterpret_cast< const QString(*)>(_a[1]))); break;
@@ -503,63 +532,70 @@ void FuncC::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void 
         case 37: _t->updateHandle((*reinterpret_cast< const bool(*)>(_a[1]))); break;
         case 38: _t->getFVerify((*reinterpret_cast< QByteArray(*)>(_a[1]))); break;
         case 39: _t->getFriend((*reinterpret_cast< QByteArray(*)>(_a[1])),(*reinterpret_cast< QPixmap(*)>(_a[2]))); break;
-        case 40: { int _r = _t->taskDirection();
+        case 40: _t->offline((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2])),(*reinterpret_cast< QString(*)>(_a[3]))); break;
+        case 41: { int _r = _t->taskDirection();
             if (_a[0]) *reinterpret_cast< int*>(_a[0]) = std::move(_r); }  break;
-        case 41: { int _r = _t->taskBarWidth();
+        case 42: { int _r = _t->taskBarWidth();
             if (_a[0]) *reinterpret_cast< int*>(_a[0]) = std::move(_r); }  break;
-        case 42: _t->initImageSet((*reinterpret_cast< Images*(*)>(_a[1]))); break;
-        case 43: _t->registerMyQQ((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
-        case 44: { bool _r = _t->saveStringToTxt((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])),(*reinterpret_cast< const QString(*)>(_a[3])));
+        case 43: _t->initImageSet((*reinterpret_cast< Images*(*)>(_a[1]))); break;
+        case 44: _t->registerMyQQ((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
+        case 45: { bool _r = _t->saveStringToTxt((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])),(*reinterpret_cast< const QString(*)>(_a[3])));
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
-        case 45: _t->login((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
-        case 46: _t->realseServer(); break;
-        case 47: { bool _r = _t->writeFile((*reinterpret_cast< const QByteArray(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])));
+        case 46: _t->login((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
+        case 47: _t->realseServer(); break;
+        case 48: { bool _r = _t->writeFile((*reinterpret_cast< const QByteArray(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])));
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
-        case 48: _t->startClock(); break;
-        case 49: _t->stopClock(); break;
-        case 50: _t->setMyCursor((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< QWindow*(*)>(_a[2]))); break;
-        case 51: _t->openTempMesWin(); break;
-        case 52: _t->addHeadWidget((*reinterpret_cast< QWindow*(*)>(_a[1])),(*reinterpret_cast< const int(*)>(_a[2])),(*reinterpret_cast< const int(*)>(_a[3])),(*reinterpret_cast< QPixmap(*)>(_a[4])),(*reinterpret_cast< const QString(*)>(_a[5])),(*reinterpret_cast< const bool(*)>(_a[6]))); break;
-        case 53: _t->openFile((*reinterpret_cast< QString(*)>(_a[1]))); break;
-        case 54: _t->closeWidget(); break;
-        case 55: _t->getHistoryHeadImg((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 56: _t->updateSignature((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
-        case 57: _t->updateCover((*reinterpret_cast< QString(*)>(_a[1]))); break;
-        case 58: _t->deleteNetAndUpdateTimer(); break;
-        case 59: _t->addCoverWidget((*reinterpret_cast< QWindow*(*)>(_a[1])),(*reinterpret_cast< const int(*)>(_a[2])),(*reinterpret_cast< const int(*)>(_a[3])),(*reinterpret_cast< QString(*)>(_a[4]))); break;
-        case 60: _t->closeCoverWidget(); break;
-        case 61: _t->getIndividualData(); break;
-        case 62: _t->updatePhotoWall((*reinterpret_cast< quint8(*)>(_a[1]))); break;
-        case 63: _t->inintCityData((*reinterpret_cast< QQuickWindow*(*)>(_a[1]))); break;
-        case 64: _t->updateUserInformation((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
-        case 65: _t->exitMyQQ((*reinterpret_cast< QQuickWindow*(*)>(_a[1]))); break;
-        case 66: _t->exitMyQQ(); break;
-        case 67: _t->getVerifyArray((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< QQuickWindow*(*)>(_a[2]))); break;
-        case 68: _t->openAddFGroupWidget((*reinterpret_cast< QQuickWindow*(*)>(_a[1])),(*reinterpret_cast< QQuickWindow*(*)>(_a[2]))); break;
-        case 69: _t->handleFVerify((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
-        case 70: _t->addRemoteFriendGroup((*reinterpret_cast< QJsonDocument(*)>(_a[1]))); break;
-        case 71: _t->addRemoteFriendGroup((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
-        case 72: _t->updateFGroup((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
-        case 73: _t->startAddFriendsProcess((*reinterpret_cast< QQuickWindow*(*)>(_a[1])),(*reinterpret_cast< QMap<QString,QVariant>(*)>(_a[2])),(*reinterpret_cast< QList<QVariant>(*)>(_a[3]))); break;
-        case 74: _t->crawWeatherUrl((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 75: { QString _r = _t->_3daysdata((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const int(*)>(_a[2])));
+        case 49: _t->startClock(); break;
+        case 50: _t->stopClock(); break;
+        case 51: _t->setMyCursor((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< QWindow*(*)>(_a[2]))); break;
+        case 52: _t->openTempMesWin(); break;
+        case 53: _t->addHeadWidget((*reinterpret_cast< QWindow*(*)>(_a[1])),(*reinterpret_cast< const int(*)>(_a[2])),(*reinterpret_cast< const int(*)>(_a[3])),(*reinterpret_cast< QPixmap(*)>(_a[4])),(*reinterpret_cast< const QString(*)>(_a[5])),(*reinterpret_cast< const bool(*)>(_a[6]))); break;
+        case 54: _t->openFile((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 55: _t->closeWidget(); break;
+        case 56: _t->getHistoryHeadImg((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 57: _t->updateSignature((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
+        case 58: _t->updateCover((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 59: _t->deleteNetAndUpdateTimer(); break;
+        case 60: _t->addCoverWidget((*reinterpret_cast< QWindow*(*)>(_a[1])),(*reinterpret_cast< const int(*)>(_a[2])),(*reinterpret_cast< const int(*)>(_a[3])),(*reinterpret_cast< QString(*)>(_a[4]))); break;
+        case 61: _t->closeCoverWidget(); break;
+        case 62: _t->getIndividualData((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2])),(*reinterpret_cast< QQuickWindow*(*)>(_a[3]))); break;
+        case 63: _t->updatePhotoWall((*reinterpret_cast< quint8(*)>(_a[1]))); break;
+        case 64: _t->removePhotoFromRemoteWall((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 65: _t->inintCityData((*reinterpret_cast< QQuickWindow*(*)>(_a[1]))); break;
+        case 66: _t->updateUserInformation((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
+        case 67: _t->exitMyQQ((*reinterpret_cast< QQuickWindow*(*)>(_a[1]))); break;
+        case 68: _t->exitMyQQ(); break;
+        case 69: _t->getVerifyArray((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< QQuickWindow*(*)>(_a[2]))); break;
+        case 70: _t->openAddFGroupWidget((*reinterpret_cast< QQuickWindow*(*)>(_a[1])),(*reinterpret_cast< QQuickWindow*(*)>(_a[2]))); break;
+        case 71: _t->handleFVerify((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
+        case 72: _t->addRemoteFriendGroup((*reinterpret_cast< QJsonDocument(*)>(_a[1]))); break;
+        case 73: _t->addRemoteFriendGroup((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
+        case 74: _t->updateFGroup((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
+        case 75: _t->moveFriend((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const int(*)>(_a[2])),(*reinterpret_cast< const QString(*)>(_a[3]))); break;
+        case 76: _t->deleteFriend((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
+        case 77: _t->alterFTag((*reinterpret_cast< QVariantMap(*)>(_a[1]))); break;
+        case 78: _t->dmrFriend((*reinterpret_cast< QJsonObject(*)>(_a[1]))); break;
+        case 79: _t->startAddFriendsProcess((*reinterpret_cast< QQuickWindow*(*)>(_a[1])),(*reinterpret_cast< QMap<QString,QVariant>(*)>(_a[2])),(*reinterpret_cast< QList<QVariant>(*)>(_a[3]))); break;
+        case 80: _t->updateAuxiliaryProcessFGoup((*reinterpret_cast< QList<QVariant>(*)>(_a[1]))); break;
+        case 81: _t->crawWeatherUrl((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 82: { QString _r = _t->_3daysdata((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const int(*)>(_a[2])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = std::move(_r); }  break;
-        case 76: _t->initWh(); break;
-        case 77: _t->mkDir((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 78: _t->initLoginInfo(); break;
-        case 79: _t->readWeatherFile((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 80: _t->writeWeatherFile((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 81: _t->connectGetFile((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 82: { QString _r = _t->getCityData((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const int(*)>(_a[2])));
+        case 83: _t->initWh(); break;
+        case 84: _t->mkDir((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 85: _t->initLoginInfo(); break;
+        case 86: _t->readWeatherFile((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 87: _t->writeWeatherFile((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 88: _t->connectGetFile((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 89: { QString _r = _t->getCityData((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const int(*)>(_a[2])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = std::move(_r); }  break;
-        case 83: _t->setCityData((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const int(*)>(_a[2])),(*reinterpret_cast< const int(*)>(_a[3]))); break;
-        case 84: { QString _r = _t->getWeatherUrl((*reinterpret_cast< const QString(*)>(_a[1])));
+        case 90: _t->setCityData((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const int(*)>(_a[2])),(*reinterpret_cast< const int(*)>(_a[3]))); break;
+        case 91: { QString _r = _t->getWeatherUrl((*reinterpret_cast< const QString(*)>(_a[1])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = std::move(_r); }  break;
-        case 85: _t->findCityEvent((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 86: { QString _r = _t->indexForCityList((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2])));
+        case 92: _t->findCityEvent((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 93: { QString _r = _t->indexForCityList((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2])));
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = std::move(_r); }  break;
-        case 87: _t->clearForCityList(); break;
-        case 88: { int _r = _t->getCityCount();
+        case 94: _t->clearForCityList(); break;
+        case 95: { int _r = _t->getCityCount();
             if (_a[0]) *reinterpret_cast< int*>(_a[0]) = std::move(_r); }  break;
         default: ;
         }
@@ -573,11 +609,11 @@ void FuncC::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void 
                 *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< Images* >(); break;
             }
             break;
-        case 24:
+        case 27:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<int*>(_a[0]) = -1; break;
             case 0:
-                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QVector<QString> >(); break;
+                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QQuickWindow* >(); break;
             }
             break;
         case 28:
@@ -587,38 +623,38 @@ void FuncC::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void 
                 *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QQuickWindow* >(); break;
             }
             break;
-        case 42:
+        case 43:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<int*>(_a[0]) = -1; break;
             case 0:
                 *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< Images* >(); break;
             }
             break;
-        case 50:
+        case 51:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<int*>(_a[0]) = -1; break;
             case 1:
                 *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QWindow* >(); break;
             }
             break;
-        case 52:
+        case 53:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<int*>(_a[0]) = -1; break;
             case 0:
                 *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QWindow* >(); break;
             }
             break;
-        case 59:
+        case 60:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<int*>(_a[0]) = -1; break;
             case 0:
                 *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QWindow* >(); break;
             }
             break;
-        case 63:
+        case 62:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<int*>(_a[0]) = -1; break;
-            case 0:
+            case 2:
                 *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QQuickWindow* >(); break;
             }
             break;
@@ -632,11 +668,18 @@ void FuncC::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void 
         case 67:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<int*>(_a[0]) = -1; break;
+            case 0:
+                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QQuickWindow* >(); break;
+            }
+            break;
+        case 69:
+            switch (*reinterpret_cast<int*>(_a[1])) {
+            default: *reinterpret_cast<int*>(_a[0]) = -1; break;
             case 1:
                 *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QQuickWindow* >(); break;
             }
             break;
-        case 68:
+        case 70:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<int*>(_a[0]) = -1; break;
             case 1:
@@ -644,7 +687,7 @@ void FuncC::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void 
                 *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QQuickWindow* >(); break;
             }
             break;
-        case 73:
+        case 79:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<int*>(_a[0]) = -1; break;
             case 0:
@@ -817,29 +860,22 @@ void FuncC::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void 
         }
         {
             using _t = void (FuncC::*)(QVariantMap );
-            if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&FuncC::emitPersonalJsonInfo)) {
-                *result = 23;
-                return;
-            }
-        }
-        {
-            using _t = void (FuncC::*)(QVector<QString> , QString );
-            if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&FuncC::emitPersonalCoverAndPhoto)) {
-                *result = 24;
-                return;
-            }
-        }
-        {
-            using _t = void (FuncC::*)(QVariantMap );
             if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&FuncC::emitFVeify)) {
-                *result = 25;
+                *result = 23;
                 return;
             }
         }
         {
             using _t = void (FuncC::*)(QVariantMap );
             if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&FuncC::emitFriend)) {
-                *result = 26;
+                *result = 24;
+                return;
+            }
+        }
+        {
+            using _t = void (FuncC::*)(QVariantMap );
+            if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&FuncC::emitOffline)) {
+                *result = 25;
                 return;
             }
         }
@@ -912,13 +948,13 @@ int FuncC::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 89)
+        if (_id < 96)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 89;
+        _id -= 96;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 89)
+        if (_id < 96)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 89;
+        _id -= 96;
     }
 #ifndef QT_NO_PROPERTIES
     else if (_c == QMetaObject::ReadProperty || _c == QMetaObject::WriteProperty
@@ -1090,31 +1126,24 @@ void FuncC::emitSelectedImg(QPixmap _t1)
 }
 
 // SIGNAL 23
-void FuncC::emitPersonalJsonInfo(QVariantMap _t1)
+void FuncC::emitFVeify(QVariantMap _t1)
 {
     void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
     QMetaObject::activate(this, &staticMetaObject, 23, _a);
 }
 
 // SIGNAL 24
-void FuncC::emitPersonalCoverAndPhoto(QVector<QString> _t1, QString _t2)
+void FuncC::emitFriend(QVariantMap _t1)
 {
-    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)) };
+    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
     QMetaObject::activate(this, &staticMetaObject, 24, _a);
 }
 
 // SIGNAL 25
-void FuncC::emitFVeify(QVariantMap _t1)
+void FuncC::emitOffline(QVariantMap _t1)
 {
     void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
     QMetaObject::activate(this, &staticMetaObject, 25, _a);
-}
-
-// SIGNAL 26
-void FuncC::emitFriend(QVariantMap _t1)
-{
-    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
-    QMetaObject::activate(this, &staticMetaObject, 26, _a);
 }
 QT_WARNING_POP
 QT_END_MOC_NAMESPACE

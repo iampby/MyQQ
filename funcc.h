@@ -82,22 +82,28 @@ public:
     Q_INVOKABLE void deleteNetAndUpdateTimer();//删除网络监测器
     Q_INVOKABLE void addCoverWidget(QWindow *w, const int&x, const int&y,QString filePath)const;//更改封面界面打开时添加一个QWidget控件到qml控件w
     Q_INVOKABLE void closeCoverWidget();//发送信号删除更改封面界面的widget控件
-    Q_INVOKABLE void getIndividualData();//获取远程个人资料
+    Q_INVOKABLE void getIndividualData(QString content, QString number, QQuickWindow *qmlWin);//获取远程个人资料 arg1:指令内容 arg2:号码 arg3:对应的qml资料窗口
     Q_INVOKABLE void updatePhotoWall(quint8 length);//更新用户远程照片墙
+    Q_INVOKABLE void removePhotoFromRemoteWall(int pos);//删除远程 照片墙的一张照片
     Q_INVOKABLE void inintCityData(QQuickWindow*w);//初始化城市数据 数据源sqlite
     Q_INVOKABLE void updateUserInformation(QVariantMap info);//更新远程的用户信息
     Q_INVOKABLE void exitMyQQ(QQuickWindow *w=nullptr);//退出处理
     Q_INVOKABLE void getVerifyArray(const QString&myqq, QQuickWindow *qmlWin);//获取验证消息组
-    Q_INVOKABLE void openAddFGroupWidget(QQuickWindow *w, QQuickWindow *qqMainWin);//打开widget 用于添加hao'you分组
+    Q_INVOKABLE void openAddFGroupWidget(QQuickWindow *w, QQuickWindow *qqMainWin);//打开widget 用于添加h好友分组
     Q_INVOKABLE void handleFVerify(QVariantMap obj);//处理好友验证消息
     Q_INVOKABLE void addRemoteFriendGroup(QJsonDocument &doc);//远程添加分组
     Q_INVOKABLE void addRemoteFriendGroup(QVariantMap obj);//远程添加分组
     Q_INVOKABLE void updateFGroup(QVariantMap obj);//更新远程好友分组 顺序变换 删除 rename
-
+    Q_INVOKABLE void moveFriend(const int& before, const int&after, const QString &number);//远程好友表更新 好友number从before  移动到 after
+    Q_INVOKABLE void deleteFriend(const int&index,const QString &number);//远程好友删除
+    Q_INVOKABLE void alterFTag(QVariantMap map);//修改好友备注
+    Q_INVOKABLE void dmrFriend(QJsonObject&obj);//好友删除移动修改备注
 
 
     Q_INVOKABLE void startAddFriendsProcess(QQuickWindow*arg, QMap<QString, QVariant> obj, QList<QVariant> arr);//添加好友进程
     unsigned short addFriendsProcessCount()const;//返回当前进程启动的好友进程数
+    Q_INVOKABLE void updateAuxiliaryProcessFGoup(QList<QVariant> arr);//好友组发送变化 更新辅助进程的组数据
+
     Q_INVOKABLE void crawWeatherUrl(const QString&url);//获取天气数据并进行处理
     Q_INVOKABLE QString _3daysdata(const int& r,const int& c);//返回day3Weather指定索引处的数据
     Q_INVOKABLE void initWh();
@@ -121,6 +127,7 @@ public:
     }
 public Q_SLOTS://使用第三方源码解析时相当有用 这里用来给qml传递信号比较好
     void setSourceIco(const QString &arg);
+    void setSourceIco(QQuickWindow*win, QString key);//设置聊天窗口的图标
     void setWin(QQuickWindow *arg);
     void setLocalCity(const QString&arg);
     void setLocalUrl(const QString&arg);
@@ -154,10 +161,9 @@ Q_SIGNALS:
     void emitCoverOKClicked(const QString&myqq);//更改头像 ok 信号
     void emitReadHistory(int code)const;//更改头像界面点击
     void emitSelectedImg( QPixmap pixmap);//添加qml选中头像到widget
-    void emitPersonalJsonInfo(QVariantMap obj);//添加d大部分信息到qml
-    void emitPersonalCoverAndPhoto(QVector<QString> walls,QString cover);//添加封面和照片到qml
     void emitFVeify(QVariantMap obj);//传好友验证到lqml
     void emitFriend(QVariantMap obj);//传好友到lqml
+    void emitOffline(QVariantMap obj);//发送信号给 qqmainwin 进行下线框弹出
 private slots:
     void analysisWh(QString totalGeoAddr);//解析本地IP获取地理位置及Url
     void handleProcessStarted();
@@ -168,6 +174,7 @@ private slots:
     //server
     void getFVerify(QByteArray data);
     void getFriend(QByteArray data,QPixmap pix);//处理好友
+    void offline(QString ip, QString host, QString datetime);//下线处理
 private:
     QQuickWindow *m_win;//便于调用 不要删除它
     QString m_sourceIco;

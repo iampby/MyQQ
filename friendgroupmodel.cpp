@@ -59,6 +59,11 @@ FriendGroupModel::FriendGroupModel(QObject *parent):QAbstractListModel(parent)
     //this->setObjectName("ff");
 }
 
+FriendGroupModel::~FriendGroupModel()
+{
+    qDebug()<<"~FriendGroupModel()";
+}
+
 QVariant FriendGroupModel::data(const int &i, int role) const
 {
     QModelIndex x= this->createIndex(i,0);
@@ -71,7 +76,7 @@ void FriendGroupModel::update(int index)
     if(rowCount()==0)
         return;
     if(index<0)index=0;
-    if(index>=rowCount())index=rowCount()-1;
+    if(index>rowCount())index=rowCount();
     dataChanged(createIndex(index,0),createIndex(index,0));
 }
 
@@ -99,6 +104,7 @@ void FriendGroupModel::swap(const int &i1, const int &i2)
     }else{
         m_dataList.move(i1,i2);
         this->update(i1,i2);
+         emit groupListChanged();
     }
 }
 
@@ -114,6 +120,7 @@ void FriendGroupModel::setData(const int &i, const QString &value, int role)
         newData.setOnline(oldData.online());
         newData.setSet(oldData.set());
         newData.setGroupName(value);
+        emit groupListChanged();
         break;
     case OnlineRole:
         newData.setCount(oldData.count());
@@ -191,6 +198,7 @@ void FriendGroupModel::insert(const int& index, const Data &data)
     beginInsertRows(QModelIndex(), index, index);
     m_dataList.insert(index, data);
     endInsertRows();
+     emit groupListChanged();
 }
 
 void FriendGroupModel::insert( int index, const QString &group, const QString &online, const QString &count, const QString &set)
@@ -209,6 +217,7 @@ d.setSet(set);
     beginInsertRows(QModelIndex(), index, index);
     m_dataList.insert(index, d);
     endInsertRows();
+     emit groupListChanged();
 }
 
 void FriendGroupModel::remove(const int& index)
@@ -219,6 +228,7 @@ void FriendGroupModel::remove(const int& index)
     beginRemoveRows(QModelIndex(), index, index);
     m_dataList.removeAt(index);
     endRemoveRows();
+    emit groupListChanged();
 }
 
 

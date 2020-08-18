@@ -35,8 +35,8 @@ public:
         SetRole
     };
     FriendGroupModel(QObject*parent=nullptr);
-
-    QHash<int, QByteArray>roleNames()const;
+~FriendGroupModel();
+    QHash<int, QByteArray>roleNames()const;//角色
    Q_INVOKABLE  QVariant data(const int&i, int role = Qt::DisplayRole)const;
     Q_INVOKABLE void update(int index);//更新好友列表
     Q_INVOKABLE void update(int index1,int index2);//更新好友列表
@@ -57,6 +57,8 @@ public:
     Q_INVOKABLE bool append(const QString &group, const QString &online, const QString &count,  const QString &set);
     Q_INVOKABLE int count() const;
     Q_INVOKABLE QVariantList getGroups();
+signals:
+   void groupListChanged();
 private:
     QList<Data>m_dataList;
 };

@@ -24,7 +24,7 @@ void Images::setMyQQ(QString  arg)
 QPixmap Images::findPixmap(const QString &id)
 {
     QPixmap x=provider1->valueOf(id);
-    if(x.isNull())qDebug()<<"image is null "<<id;
+    if(x.isNull())qDebug()<<"image is null: "<<id;
     return x;
 }
 void Images::setPixmap(const QString &id, const QString &pix)
@@ -104,7 +104,7 @@ void Images::insert(QPixmap& pix)
     emit historyImageAdded(url,newImas.size()-1);
 }
 
-void Images::setPixmap2(const QString &id, const QString &pix)
+void Images::setPixmap2(const QString &id, const QString &pix,const QString &status)
 {
     qDebug()<<"setPixmap2 id="<<id;
     QPixmap pixmap;
@@ -114,6 +114,7 @@ void Images::setPixmap2(const QString &id, const QString &pix)
         return;
     }
     provider2->images.insert(id,pixmap);
+    provider2->control.insert(id,status);
 }
 
 bool Images::setPixmap3(const QString& id, const QString&filename)
@@ -126,6 +127,18 @@ bool Images::setPixmap3(const QString& id, const QString&filename)
     }
     provider3->images.insert(id,pix);
     return true;
+}
+
+bool Images::removePixmap3(int pos)
+{
+  int c=provider3->images.size();
+    for(int i=pos+1;i<c;++i){
+        provider3->images.insert(QString("%1").arg(i-1),provider3->valueOf(QString("%1").arg(i-1)));
+    }
+  c= provider3->images.remove(QString("%1").arg(c-1));
+ if(c==0)return false;
+ else
+     return true;
 }
 //添加count个照片到照片墙提供器
 qint32 Images::insertPixmap3(const int &count, QVector<QString> files)
@@ -155,14 +168,6 @@ qint32 Images::insertPixmap3(const int &count, QVector<QString> files)
         ++i;
     }
     provider3->images=temp;//替换数据
-   i =provider3->images.cbegin();
-    end = provider3->images.cend();
-    while (i !=end) {
-       qDebug()<<i.key()<<i.value().size();
-
-        ++i;
-    }
-    qDebug()<<length;
     return length;
 }
 

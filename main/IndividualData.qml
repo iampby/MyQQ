@@ -4,7 +4,8 @@ import QtQuick.Layouts 1.12
 import QtQuick.Controls 2.5
 import QtGraphicalEffects 1.12
 import QtGraphicalEffects 1.12
-import Qt.labs.platform 1.1
+import Qt.labs.platform 1.1 as Lab
+//解决冲突
 import "qrc:/"
 //加载js
 import "../chinese-lunar.js" as CLunar
@@ -38,7 +39,13 @@ Window {
     property string home2: "" //故乡2
     property string home3: "" //故乡3
     property string home4: "" //故乡4
+    property int count: 0
+    signal updateCover
     signal updateInfo(var obj)
+    signal emitPersonalJsonInfo(var obj)
+    //获取my个人数据(不包括图片)
+    signal emitPersonalCoverAndPhoto(var walls, string cover)
+    //获取封面和照片墙
     id: indivadualWin
     width: 722
     height: 522
@@ -46,404 +53,299 @@ Window {
     title: "我的资料"
     flags: Qt.FramelessWindowHint | Qt.Window //显示任务栏
     color: "lightgray" //边界颜色
-    //更改封面完成处理
     Connections {
         target: loaderForAlterCover.item
         onUpdateCover: {
-            console.log("updateCover() function has been called")
-            var path = "../user/" + funcc.myQQ + "/cover"
-            leftImg.source = "" //刷新
-            leftImg.source = "file:" + path
-            funcc.updateCover(path)
-            console.log("updated Cover")
+            leftImg.source = ""
+            try {
+                leftImg.source = "file:../user/" + mainWin.myqq + "/cover"
+                funcc.updateCover("../user/" + mainWin.myqq + "/cover")
+            } catch (e) {
+                console.log(e.message)
+            }
         }
     }
     //获取my个人数据
-    Connections {
-        target: funcc
-        //(QVariantMap obj)
-        onEmitPersonalJsonInfo: {
-            console.log("onEmitPersonalJsonInfo", obj)
-            var birarr = obj["birthday"].split("-")
-            if (birarr.length < 3 | birarr === undefined)
-                console.log("birthday format is not normal")
-            else {
-                for (var i = 0; i < birarr.length; ++i) {
-                    bir[i] = parseInt(birarr[i])
-                }
-            }
-            birthday = bir[1] + "月" + bir[2] + "日(公历)"
-            labMyQQ.text = qqMainWin.myqq //MyQQ
-            labSex.text = qqMainWin.sex
-            age = func.getAge(birarr)
-            //生日
-            constellation = func.getConstellation(birarr) //星座
-            var buttonCount = 0 //计数，如果大于4显示资料按钮
-            //所在地
-            location1 = obj["location1"]
-            var temp = ""
-            if (location1 !== undefined && location1 !== "") {
-                location2 = obj["location2"]
-                location3 = obj["location3"]
-                location4 = obj["location4"]
-                //如果是自治市区,4赋给3
-                if (location2 == location3) {
-                    location3 = location4
-                    location4 = ""
-                }
-                if (location2.length !== 0)
-                    temp = location2
-                if (location3.length !== 0)
-                    temp += " " + location3
-                if (location4.length !== 0)
-                    temp += " " + location4
-                whereInfo.aftLabel.text = temp
-                buttonCount += 1
-            }
-            console.log("where is ", temp)
-            //手机
-            temp = obj["phone"]
-            if (temp !== undefined && temp !== "0") {
-                phone = temp
-                buttonCount += 1
-            }
-            console.log("phone number is ", phone)
-            //Q龄
-            var QAge = obj["registerDateTime"].split("-") //分割日期
-            if (QAge !== undefined && QAge.length > 2) {
-                QAge = func.getQAge(QAge)
-                qage = QAge + "龄"
-                buttonCount += 1
-            } else {
-                console.log("Q age is not normal or null")
-            }
-            console.log("Q age is ", QAge)
-            //家乡
-            home1 = obj["home1"]
-            if (home1 !== undefined && home1 !== "") {
-                home2 = obj["home2"]
-                home3 = obj["home3"]
-                home4 = obj["home4"]
-                if (home2 == home3) {
-                    home3 = home4
-                    home4 = ""
-                }
-
-                temp = "" //归零
-                if (home2.length !== 0)
-                    temp = home2
-                if (home3.length !== 0)
-                    temp += " " + home3
-                if (home4.length !== 0)
-                    temp += " " + home4
-                homeInfo.aftLabel.text = temp
-                buttonCount += 1
-            }
-            console.log("home is ", temp)
-            //职业
-            var prof = obj["profession"]
-            if (prof !== undefined && prof !== "") {
-                profession = prof
-                buttonCount += 1
-            }
-            console.log("profession is ", prof)
-            //公司
-            var corp = obj["corporation"]
-            if (corp !== undefined && corp !== "") {
-                corporation = corp
-                buttonCount += 1
-            }
-            console.log("corporation is ", corp)
-            //教育经历
-            var length
-            var edu = obj["education"]
-            if (edu !== undefined && edu !== "") {
-                var arr = edu.split(";")
-                length = arr.length
-                console.log(length)
-                if (length !== 0)
-                    educationInfo.isEmpty = false
-                //添加教育信息到edumodel
-                for (i = 0; i < length; ++i) {
-                    temp = arr[i].split(",")
-                    var length1 = temp.length
-                    if (length1 < 4) {
-                        console.log("warning:education information is lacked")
-                        continue
-                    }
-                    var school = temp[0]
-                    var institute = temp[1]
-                    var grade = temp[2]
-                    var degree = temp[3]
-                    if (school === undefined || school === "") {
-                        console.log("warning:the school part of education information is not found")
-                        continue
-                    }
-                    var detail = [], flags = "", count = 0
-                    if (institute !== undefined && institute !== "") {
-                        detail[count++] = institute
-                        flags += "1"
-                    }
-                    if (grade !== undefined && grade !== "") {
-                        detail[count++] = grade
-                        flags += "2"
-                    }
-                    if (degree !== undefined && degree !== "") {
-                        detail[count++] = degree
-                        flags += "3"
-                    }
-                    detail = detail.join(",")
-                    eduModel.append({
-                                        "r_school": school,
-                                        "r_detail": detail,
-                                        "r_flags": flags
-                                    })
-                }
-                buttonCount += 1
-            }
-            console.log("education experience is ", edu)
-            //个人说明
-            var perss = obj["personalStatement"]
-            if (perss !== undefined && perss !== "") {
-                personalStatement = perss
-                buttonCount += 1
-            }
-            console.log("personalStatement is ", perss)
-            //获取生肖
-            var f = CLunar._chineseLunar
-            var clyear = f.solarToLunar(new Date(birarr[0], birarr[1],
-                                                 birarr[2])) //农历对象
-            clyear = clyear["year"] //农历年
-            var zodiac = f.animalName(clyear)
-            indivadualWin.zodiac = "属" + zodiac //生肖
-            console.log("zodiac is ", zodiac)
-            //是否显示资料按钮
-            if (buttonCount > 4) {
-                //显示资料按钮
-                separInfo.visible = false
-                moreInfoItem.visible = true
-            } else {
-                showNotEmptyInfo() //显示所有非空资料卡
+    onEmitPersonalJsonInfo: {
+        console.log("onEmitPersonalJsonInfo", obj)
+        var birarr = obj["birthday"].split("-")
+        if (birarr.length < 3 | birarr === undefined)
+            console.log("birthday format is not normal")
+        else {
+            for (var i = 0; i < birarr.length; ++i) {
+                bir[i] = parseInt(birarr[i])
             }
         }
-        //QVector<QString> names
-        onEmitPersonalCoverAndPhoto: {
-            console.log(" onEmitPersonalCoverAndPhoto")
-            if (cover != "")
-                leftImg.source = "file:../user/" + mainWin.myqq + "/" + cover
-            var length = walls.length
-            var id = 0
-            for (var i = 0; i < length; ++i) {
-                if (images.setPixmap3(
-                            id,
-                            "../user/" + mainWin.myqq + "/photoWall/" + walls[i])) {
-                    ++id
-                } else {
-                    console.log("initialization failed to add a photo wall pixmap")
-                }
+        birthday = bir[1] + "月" + bir[2] + "日(公历)"
+        labMyQQ.text = qqMainWin.myqq //MyQQ
+        labSex.text = Qt.binding(function () {
+            return qqMainWin.sex
+        })
+        age = func.getAge(birarr)
+        //生日
+        constellation = func.getConstellation(birarr) //星座
+        var buttonCount = 0 //计数，如果大于4显示资料按钮
+        //所在地
+        location1 = obj["location1"]
+        var temp = ""
+        if (location1 !== undefined && location1 !== "") {
+            location2 = obj["location2"]
+            location3 = obj["location3"]
+            location4 = obj["location4"]
+            //如果是自治市区,4赋给3
+            if (location2 == location3) {
+                location3 = location4
+                location4 = ""
             }
-            length = id //更新图片个数
-            if (length === 0)
-                return
-            //0 个返回
-            wallContiner.setCurrentIndex(1) //显示照片墙视图
-            if (length % 3 == 0) {
-                imgHeader1.sourceSize = Qt.size(216, 216)
-                imgHeader1.source = "image://wall/0"
-                imgHeader1.x = 0
-                imgHeader1.y = 0
-                imgHeader2.sourceSize = Qt.size(108, 108)
-                imgHeader2.source = "image://wall/1"
-                imgHeader2.x = 216
-                imgHeader2.y = 0
-                imgHeader3.sourceSize = Qt.size(108, 108)
-                imgHeader3.source = "image://wall/2"
-                imgHeader3.x = 216
-                imgHeader3.y = 108
-                imgHeader1.visible = true
-                imgHeader2.visible = true
-                imgHeader3.visible = true
-                //第二部分添加图片
-                if (length > 3) {
-                    var h = 108 * parseInt(
-                                (length % 3 != 0 ? length / 3 : length / 3 - 1))
-                    twoPartWall.height = h
-                    wallContiner.contentHeight = h + 216
-                    console.log(h)
-                    twoPartWall.visible = true
-                    for (i = 3; i < length; ++i) {
-                        twoPartPhoWallModel.append({
-                                                       "url": "image://wall/" + i
-                                                   })
-                    }
-                }
-            } else if (length % 3 == 2) {
-                imgHeader1.sourceSize = Qt.size(160, 216)
-                imgHeader1.source = "image://wall/0"
-                imgHeader1.x = 0
-                imgHeader1.y = 0
-                imgHeader2.sourceSize = Qt.size(160, 216)
-                imgHeader2.source = "image://wall/1"
-                imgHeader2.x = 160
-                imgHeader2.y = 0
-                imgHeader1.visible = true
-                imgHeader2.visible = true
-                imgHeader3.visible = false
-                imgHeader3.source = "" //归零
-                //第二部分添加图片
-                if (length > 2) {
-                    h = 108 * parseInt(
-                                (length % 3 != 0 ? length / 3 : length / 3 - 1))
-                    twoPartWall.height = h
-                    wallContiner.contentHeight = h + 216
-                    console.log(h)
-                    twoPartWall.visible = true
-                    for (i = 2; i < length; ++i) {
-                        twoPartPhoWallModel.append({
-                                                       "url": "image://wall/" + i
-                                                   })
-                    }
-                }
-            } else if (length % 3 == 1) {
-                imgHeader1.sourceSize = Qt.size(320, 216)
-                imgHeader1.source = "image://wall/0"
-                imgHeader1.x = 0
-                imgHeader1.y = 0
-
-                imgHeader1.visible = true
-                imgHeader2.visible = false
-                imgHeader3.visible = false
-                imgHeader2.source = "" //归零
-                imgHeader3.source = "" //归零
-                //第二部分添加图片
-                if (length > 1) {
-                    h = 108 * parseInt(
-                                (length % 3 != 0 ? length / 3 : length / 3 - 1))
-                    twoPartWall.height = h
-                    wallContiner.contentHeight = h + 216
-                    console.log(h)
-                    twoPartWall.visible = true
-                    for (i = 1; i < length; ++i) {
-                        twoPartPhoWallModel.append({
-                                                       "url": "image://wall/" + i
-                                                   })
-                    }
-                }
-            }
-            console.log("photo wall initialization is of success")
-            cont2.count = length
+            if (location2.length !== 0)
+                temp = location2
+            if (location3.length !== 0)
+                temp += " " + location3
+            if (location4.length !== 0)
+                temp += " " + location4
+            whereInfo.aftLabel.text = temp
+            buttonCount += 1
         }
-    }
-
-    //关闭处理
-    onClosing: {
-        console.log("invidualData onClosing")
-        indivadualWin.opacity = 0.0 //躲藏 不释放资源
-        close.accepted = false //拒绝close
-        indivadualWin.flags = Qt.FramelessWindowHint | Qt.Widget
-    }
-    //窗口可视化变化处理
-    onOpacityChanged: {
-        if (opacity == 1.0) {
-            console.log("invidiualData win is visible")
-            if (infoCount > 4) {
-                infoBtn.text = qsTr("更多资料")
-                infoBtn.rightText = "▼"
-                separInfo.visible = false
-                moreInfoItem.visible = true
-            } else {
-                moreInfoItem.visible = false
-                showNotEmptyInfo()
-            }
+        console.log("where is ", temp)
+        //手机
+        temp = obj["phone"]
+        if (temp !== undefined && temp !== "0") {
+            phone = temp
+            buttonCount += 1
+        }
+        console.log("phone number is ", phone)
+        //Q龄
+        var QAge = obj["registerDateTime"].split("-") //分割日期
+        if (QAge !== undefined && QAge.length > 2) {
+            QAge = func.getQAge(QAge)
+            qage = QAge + "龄"
+            buttonCount += 1
         } else {
-            console.log("invidiualData win is't  visible")
+            console.log("Q age is not normal or null")
         }
-    }
+        console.log("Q age is ", QAge)
+        //家乡
+        home1 = obj["home1"]
+        if (home1 !== undefined && home1 !== "") {
+            home2 = obj["home2"]
+            home3 = obj["home3"]
+            home4 = obj["home4"]
+            if (home2 == home3) {
+                home3 = home4
+                home4 = ""
+            }
 
-    //显示所有非空资料
-    function showNotEmptyInfo() {
-        separInfo.visible = true
-        whereInfo.visible = !whereInfo.isEmpty
-        phoneInfo.visible = !phoneInfo.isEmpty
-        qAgeInfo.visible = !qAgeInfo.isEmpty
-        bloodGroupInfo.visible = !bloodGroupInfo.isEmpty
-        homeInfo.visible = !homeInfo.isEmpty
-        professInfo.visible = !professInfo.isEmpty
-        corporationInfo.visible = !corporationInfo.isEmpty
-        educationInfo.visible = !educationInfo.isEmpty
-        statementInfo.visible = !statementInfo.isEmpty
-    }
-
-    //处理国家数据
-    function addCountryData(arr) {
-        console.log("addCountryData()")
-        var length = arr.length
-        if ((length & 1) == 1) {
-            console.log("warning:country data is not normal")
-            return
+            temp = "" //归零
+            if (home2.length !== 0)
+                temp = home2
+            if (home3.length !== 0)
+                temp += " " + home3
+            if (home4.length !== 0)
+                temp += " " + home4
+            homeInfo.aftLabel.text = temp
+            buttonCount += 1
         }
-
-        for (var i = 0; i < length; ) {
-            countryModel.append({
-                                    "id": arr[i],
-                                    "name": arr[i + 1]
+        console.log("home is ", temp)
+        //职业
+        var prof = obj["profession"]
+        if (prof !== undefined && prof !== "") {
+            profession = prof
+            buttonCount += 1
+        }
+        console.log("profession is ", prof)
+        //公司
+        var corp = obj["corporation"]
+        if (corp !== undefined && corp !== "") {
+            corporation = corp
+            buttonCount += 1
+        }
+        console.log("corporation is ", corp)
+        //教育经历
+        var length
+        var edu = obj["education"]
+        if (edu !== undefined && edu !== "") {
+            var arr = edu.split(";")
+            length = arr.length
+            console.log(length)
+            if (length !== 0)
+                educationInfo.isEmpty = false
+            //添加教育信息到edumodel
+            for (i = 0; i < length; ++i) {
+                temp = arr[i].split(",")
+                var length1 = temp.length
+                if (length1 < 4) {
+                    console.log("warning:education information is lacked")
+                    continue
+                }
+                var school = temp[0]
+                var institute = temp[1]
+                var grade = temp[2]
+                var degree = temp[3]
+                if (school === undefined || school === "") {
+                    console.log("warning:the school part of education information is not found")
+                    continue
+                }
+                var detail = [], flags = "", count = 0
+                if (institute !== undefined && institute !== "") {
+                    detail[count++] = institute
+                    flags += "1"
+                }
+                if (grade !== undefined && grade !== "") {
+                    detail[count++] = grade
+                    flags += "2"
+                }
+                if (degree !== undefined && degree !== "") {
+                    detail[count++] = degree
+                    flags += "3"
+                }
+                detail = detail.join(",")
+                eduModel.append({
+                                    "r_school": school,
+                                    "r_detail": detail,
+                                    "r_flags": flags
                                 })
-            i += 2
+            }
+            buttonCount += 1
+        }
+        console.log("education experience is ", edu)
+        //个人说明
+        var perss = obj["personalStatement"]
+        if (perss !== undefined && perss !== "") {
+            personalStatement = perss
+            buttonCount += 1
+        }
+        console.log("personalStatement is ", perss)
+        //获取生肖
+        var f = CLunar._chineseLunar
+        var clyear = f.solarToLunar(new Date(birarr[0], birarr[1],
+                                             birarr[2])) //农历对象
+        clyear = clyear["year"] //农历年
+        var zodiac = f.animalName(clyear)
+        indivadualWin.zodiac = "属" + zodiac //生肖
+        console.log("zodiac is ", zodiac)
+        indivadualWin.count = buttonCount
+        //是否显示资料按钮
+        if (buttonCount > 4) {
+            //显示资料按钮
+            separInfo.visible = false
+            moreInfoItem.visible = true
+        } else {
+            showNotEmptyInfo() //显示所有非空资料卡
         }
     }
-    //处理省级数据
-    function addProvinceData(arr) {
-        console.log("addProvinceData()")
-        var length = arr.length
-        if ((length % 3) != 0) {
-            console.log("warning:province data is not normal")
+    //QVector<QString> names
+    onEmitPersonalCoverAndPhoto: {
+        console.log(" onEmitPersonalCoverAndPhoto")
+        if (cover != "")
+            leftImg.source = "file:../user/" + mainWin.myqq + "/" + cover
+        var length = walls.length
+        var id = 0
+        for (var i = 0; i < length; ++i) {
+            if (images.setPixmap3(
+                        id,
+                        "../user/" + mainWin.myqq + "/photoWall/" + walls[i])) {
+                ++id
+            } else {
+                console.log("initialization failed to add a photo wall pixmap")
+            }
+        }
+        //激活按钮
+        loadPhotoBtn1.enabled = true
+        loadPhotoBtn2.enabled = true
+        editMaterialBtn.enabled = true
+        renewCover.enabled = true
+
+        length = id //更新图片个数
+        if (length === 0) {
             return
         }
+        //0 个返回
+        wallContiner.setCurrentIndex(1) //显示照片墙视图
+        if (length % 3 == 0) {
+            imgHeader1.sourceSize = Qt.size(216, 216)
+            imgHeader1.source = "image://wall/0"
+            btn1.x = 0
+            btn1.y = 0
+            imgHeader2.sourceSize = Qt.size(108, 108)
+            imgHeader2.source = "image://wall/1"
+            btn2.x = 216
+            btn2.y = 0
+            imgHeader3.sourceSize = Qt.size(108, 108)
+            imgHeader3.source = "image://wall/2"
+            btn3.x = 216
+            btn3.y = 108
+            btn1.visible = true
+            btn2.visible = true
+            btn3.visible = true
+            //第二部分添加图片
+            if (length > 3) {
+                var h = 108 * parseInt(
+                            (length % 3 != 0 ? length / 3 : length / 3 - 1))
+                twoPartWall.height = h
+                wallContiner.contentHeight = h + 216
+                console.log(h)
+                twoPartWall.visible = true
+                for (i = 3; i < length; ++i) {
+                    twoPartPhoWallModel.append({
+                                                   "url": "image://wall/" + i
+                                               })
+                }
+            }
+        } else if (length % 3 == 2) {
+            imgHeader1.sourceSize = Qt.size(160, 216)
+            imgHeader1.source = "image://wall/0"
+            btn1.x = 0
+            btn1.y = 0
+            imgHeader2.sourceSize = Qt.size(160, 216)
+            imgHeader2.source = "image://wall/1"
+            btn2.x = 160
+            btn2.y = 0
+            btn1.visible = true
+            btn2.visible = true
+            btn3.visible = false
+            imgHeader3.source = "" //归零
+            //第二部分添加图片
+            if (length > 2) {
+                h = 108 * parseInt(
+                            (length % 3 != 0 ? length / 3 : length / 3 - 1))
+                twoPartWall.height = h
+                wallContiner.contentHeight = h + 216
+                console.log(h)
+                twoPartWall.visible = true
+                for (i = 2; i < length; ++i) {
+                    twoPartPhoWallModel.append({
+                                                   "url": "image://wall/" + i
+                                               })
+                }
+            }
+        } else if (length % 3 == 1) {
+            imgHeader1.sourceSize = Qt.size(320, 216)
+            imgHeader1.source = "image://wall/0"
+            btn1.x = 0
+            btn1.y = 0
 
-        for (var i = 0; i < length; ) {
-            provinceModel.append({
-                                     "id": arr[i],
-                                     "name": arr[i + 1],
-                                     "fid": arr[i + 2]
-                                 })
-            i += 3
+            btn1.visible = true
+            btn2.visible = false
+            btn3.visible = false
+            imgHeader2.source = "" //归零
+            imgHeader3.source = "" //归零
+            //第二部分添加图片
+            if (length > 1) {
+                h = 108 * parseInt(
+                            (length % 3 != 0 ? length / 3 : length / 3 - 1))
+                twoPartWall.height = h
+                wallContiner.contentHeight = h + 216
+                console.log(h)
+                twoPartWall.visible = true
+                for (i = 1; i < length; ++i) {
+                    twoPartPhoWallModel.append({
+                                                   "url": "image://wall/" + i
+                                               })
+                }
+            }
         }
-    }
-    //处理市级数据
-    function addCityData(arr) {
-        console.log("addCityData()")
-        var length = arr.length
-        if ((length % 3) != 0) {
-            console.log("warning:city data is not normal")
-            return
-        }
-
-        for (var i = 0; i < length; ) {
-            cityModel.append({
-                                 "id": arr[i],
-                                 "name": arr[i + 1],
-                                 "fid": arr[i + 2]
-                             })
-            i += 3
-        }
-    }
-    //处理县级数据
-    function addCountyData(arr) {
-        console.log("addCountyData()")
-        var length = arr.length
-        if ((length % 3) != 0) {
-            console.log("warning:county data is not normal")
-            return
-        }
-
-        for (var i = 0; i < length; ) {
-            countyModel.append({
-                                   "id": arr[i],
-                                   "name": arr[i + 1],
-                                   "fid": arr[i + 2]
-                               })
-            i += 3
-        }
+        console.log("photo wall initialization is of success")
+        cont2.count = length
     }
     //更新修改的资料
     onUpdateInfo: {
@@ -465,7 +367,7 @@ Window {
         birthday = bir[1] + "月" + bir[2] + "日(公历)"
         qqMainWin.sex = obj["sex"]
         qqMainWin.signature = obj["signature"] //个性签名
-        labSex.text = qqMainWin.sex
+        //labSex.text = qqMainWin.sex
         age = func.getAge(bir)
         qqMainWin.name = obj["name"] //昵称
         //生日
@@ -627,6 +529,7 @@ Window {
         clyear = clyear["year"] //农历年
         var zodiac = f.animalName(clyear)
         indivadualWin.zodiac = "属" + zodiac //生肖
+        indivadualWin.count = buttonCount
         console.log("zodiac is ", zodiac)
         //是否显示资料按钮
         if (buttonCount > 4) {
@@ -668,6 +571,205 @@ Window {
         funcc.updateUserInformation(obj)
         console.log("start to update remote user information")
     }
+
+    //关闭处理
+    onClosing: {
+        console.log("invidualData onClosing")
+        indivadualWin.opacity = 0.0 //躲藏 不释放资源
+        close.accepted = false //拒绝close
+        indivadualWin.flags = Qt.FramelessWindowHint | Qt.Widget
+    }
+    //窗口可视化变化处理
+    onOpacityChanged: {
+        if (opacity == 1.0) {
+            console.log("invidiualData win is visible")
+            if (count > 4) {
+                infoBtn.text = qsTr("更多资料")
+                infoBtn.rightText = "▼"
+                separInfo.visible = false
+                moreInfoItem.visible = true
+            } else {
+                moreInfoItem.visible = false
+                showNotEmptyInfo()
+            }
+        } else {
+            console.log("invidiualData win is't  visible")
+        }
+    }
+
+    //显示所有非空资料
+    function showNotEmptyInfo() {
+        separInfo.visible = true
+        whereInfo.visible = !whereInfo.isEmpty
+        phoneInfo.visible = !phoneInfo.isEmpty
+        qAgeInfo.visible = !qAgeInfo.isEmpty
+        bloodGroupInfo.visible = !bloodGroupInfo.isEmpty
+        homeInfo.visible = !homeInfo.isEmpty
+        professInfo.visible = !professInfo.isEmpty
+        corporationInfo.visible = !corporationInfo.isEmpty
+        educationInfo.visible = !educationInfo.isEmpty
+        statementInfo.visible = !statementInfo.isEmpty
+    }
+
+    //处理国家数据
+    function addCountryData(arr) {
+        console.log("addCountryData()")
+        var length = arr.length
+        if ((length & 1) == 1) {
+            console.log("warning:country data is not normal")
+            return
+        }
+
+        for (var i = 0; i < length; ) {
+            countryModel.append({
+                                    "id": arr[i],
+                                    "name": arr[i + 1]
+                                })
+            i += 2
+        }
+    }
+    //处理省级数据
+    function addProvinceData(arr) {
+        console.log("addProvinceData()")
+        var length = arr.length
+        if ((length % 3) != 0) {
+            console.log("warning:province data is not normal")
+            return
+        }
+
+        for (var i = 0; i < length; ) {
+            provinceModel.append({
+                                     "id": arr[i],
+                                     "name": arr[i + 1],
+                                     "fid": arr[i + 2]
+                                 })
+            i += 3
+        }
+    }
+    //处理市级数据
+    function addCityData(arr) {
+        console.log("addCityData()")
+        var length = arr.length
+        if ((length % 3) != 0) {
+            console.log("warning:city data is not normal")
+            return
+        }
+
+        for (var i = 0; i < length; ) {
+            cityModel.append({
+                                 "id": arr[i],
+                                 "name": arr[i + 1],
+                                 "fid": arr[i + 2]
+                             })
+            i += 3
+        }
+    }
+    //处理县级数据
+    function addCountyData(arr) {
+        console.log("addCountyData()")
+        var length = arr.length
+        if ((length % 3) != 0) {
+            console.log("warning:county data is not normal")
+            return
+        }
+
+        for (var i = 0; i < length; ) {
+            countyModel.append({
+                                   "id": arr[i],
+                                   "name": arr[i + 1],
+                                   "fid": arr[i + 2]
+                               })
+            i += 3
+        }
+    }
+    //重置照片墙照片 参数为照片总数
+    function resetWall(sum) {
+        var i
+        twoPartPhoWallModel.clear() //归零第二部分
+        wallContiner.setCurrentIndex(1) //显示照片墙视图
+        if (sum % 3 == 0) {
+            imgHeader1.sourceSize = Qt.size(216, 216)
+            imgHeader1.source = "image://wall/0"
+            btn1.x = 0
+            btn1.y = 0
+            imgHeader2.sourceSize = Qt.size(108, 108)
+            imgHeader2.source = "image://wall/1"
+            btn2.x = 216
+            btn2.y = 0
+            imgHeader3.sourceSize = Qt.size(108, 108)
+            imgHeader3.source = "image://wall/2"
+            btn3.x = 216
+            btn3.y = 108
+            btn1.visible = true
+            btn2.visible = true
+            btn3.visible = true
+            //第二部分添加图片
+            if (sum > 3) {
+                var h = 108 * parseInt((sum % 3 != 0 ? sum / 3 : sum / 3 - 1))
+                twoPartWall.height = h
+                wallContiner.contentHeight = h + 216
+                console.log(h)
+                twoPartWall.visible = true
+                for (i = 3; i < sum; ++i) {
+                    twoPartPhoWallModel.append({
+                                                   "url": "image://wall/" + i
+                                               })
+                }
+            }
+        } else if (sum % 3 == 2) {
+            imgHeader1.sourceSize = Qt.size(160, 216)
+            imgHeader1.source = "image://wall/0"
+            btn1.x = 0
+            btn1.y = 0
+            imgHeader2.sourceSize = Qt.size(160, 216)
+            imgHeader2.source = "image://wall/1"
+            btn2.x = 160
+            btn2.y = 0
+            btn1.visible = true
+            btn2.visible = true
+            btn3.visible = false
+            imgHeader3.source = "" //归零
+            //第二部分添加图片
+            if (sum > 2) {
+                h = 108 * parseInt((sum % 3 != 0 ? sum / 3 : sum / 3 - 1))
+                twoPartWall.height = h
+                wallContiner.contentHeight = h + 216
+                console.log(h)
+                twoPartWall.visible = true
+                for (i = 2; i < sum; ++i) {
+                    twoPartPhoWallModel.append({
+                                                   "url": "image://wall/" + i
+                                               })
+                }
+            }
+        } else if (sum % 3 == 1) {
+            imgHeader1.sourceSize = Qt.size(320, 216)
+            imgHeader1.source = "image://wall/0"
+            btn1.x = 0
+            btn1.y = 0
+
+            btn1.visible = true
+            btn2.visible = false
+            btn3.visible = false
+            imgHeader2.source = "" //归零
+            imgHeader3.source = "" //归零
+            //第二部分添加图片
+            if (sum > 1) {
+                h = 108 * parseInt((sum % 3 != 0 ? sum / 3 : sum / 3 - 1))
+                twoPartWall.height = h
+                wallContiner.contentHeight = h + 216
+                console.log(h)
+                twoPartWall.visible = true
+                for (i = 1; i < sum; ++i) {
+                    twoPartPhoWallModel.append({
+                                                   "url": "image://wall/" + i
+                                               })
+                }
+            }
+        }
+        cont2.count = sum
+    }
+
     //移动鼠标
     MouseCustomForWindow {
         onSendPos: {
@@ -703,6 +805,7 @@ Window {
                 y: 12
                 width: 70
                 height: 18
+                enabled: false
                 MouseArea {
                     anchors.fill: parent
                     hoverEnabled: true
@@ -875,16 +978,16 @@ Window {
                 //昵称
                 Label {
                     id: nameLab
-                    height: 24
+                    height: 30
                     width: 170
                     x: recHead.x + recHead.width + 10
                     y: recHead.y
-                    font.pointSize: 13
+                    font.pointSize: 20
                     font.family: song.name
                     verticalAlignment: Text.AlignVCenter
                     elide: Text.ElideRight
                     maximumLineCount: 1
-                    text: inCenterLoader.item.name
+                    text: qqMainWin.name
                     color: "#ffffff"
                     MouseForShape {
                         shapeInside: Qt.SizeVerCursor
@@ -897,7 +1000,7 @@ Window {
                     property int posy: 0
                     id: signatureTF
                     x: nameLab.x
-                    y: nameLab.y + nameLab.height
+                    y: parent.height - height - 3
                     hoverEnabled: true
                     placeholderText: "编辑个性签名"
                     placeholderTextColor: "white"
@@ -971,9 +1074,12 @@ Window {
                     TextMetrics {
                         id: sigMetrics
                         font: signatureTF.font
-                        text: inCenterLoader.item.signature
+                        text: qqMainWin.signature
                         elideWidth: signatureTF.width
                         elide: Text.ElideRight
+                        onTextChanged: {
+                            signatureTF.text = elidedText
+                        }
                     }
                 }
                 //个性签名提示
@@ -984,7 +1090,7 @@ Window {
                     delay: 1000
                     visible: false
                     background: Label {
-                        property string str: "个性签名更新:" + signature
+                        property string str: "个性签名更新:" + qqMainWin.signature
                         property int bw: 0
                         property int bh: 0
                         id: sigTipBack
@@ -1244,6 +1350,7 @@ Window {
                             x: 324 - width
                             width: 62
                             height: 16
+                            enabled: false
                             onClicked: {
                                 console.log("editMaterialBtn clicked")
                                 actions.editMyInfoAct.trigger()
@@ -1616,7 +1723,7 @@ Window {
                             width: 62
                             height: 16
                             visible: !loadPhotoBtn2.visible
-
+                            enabled: false
                             onClicked: {
                                 console.log("editMaterialBtn clicked")
                                 mFDlog.open()
@@ -1669,6 +1776,7 @@ Window {
                                 visible: true
                                 width: 178
                                 height: 46
+                                enabled: false
                                 onClicked: mFDlog.open()
                                 background: Rectangle {
                                     implicitHeight: 46
@@ -1696,29 +1804,87 @@ Window {
                                 width: 324
                                 height: 216
                                 clip: true
-                                Image {
-                                    id: imgHeader1
-                                    fillMode: Image.Stretch
-                                    asynchronous: true
+
+                                Button {
+                                    id: btn1
                                     visible: false
-                                    width: sourceSize.width
-                                    height: sourceSize.height
+                                    width: imgHeader1.width
+                                    height: imgHeader1.height
+                                    x: imgHeader1.x
+                                    y: imgHeader1.y
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            if (mouse.button == Qt.RightButton) {
+                                                dmenu.pos = 0
+                                                console.log(width, height)
+                                                dmenu.popup()
+                                            }
+                                        }
+                                    }
+                                    background: Image {
+                                        id: imgHeader1
+                                        fillMode: Image.Stretch
+                                        asynchronous: true
+                                        width: sourceSize.width
+                                        height: sourceSize.height
+                                    }
                                 }
-                                Image {
-                                    id: imgHeader2
-                                    asynchronous: true
-                                    fillMode: Image.Stretch
+                                Button {
+                                    id: btn2
                                     visible: false
-                                    width: sourceSize.width
-                                    height: sourceSize.height
+                                    width: imgHeader2.width
+                                    height: imgHeader2.height
+                                    x: imgHeader2.x
+                                    y: imgHeader2.y
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            if (mouse.button == Qt.RightButton) {
+                                                dmenu.pos = 1
+                                                console.log(width, height)
+                                                dmenu.popup()
+                                            }
+                                        }
+                                    }
+                                    background: Image {
+                                        id: imgHeader2
+                                        asynchronous: true
+                                        fillMode: Image.Stretch
+                                        width: sourceSize.width
+                                        height: sourceSize.height
+                                    }
                                 }
-                                Image {
-                                    id: imgHeader3
-                                    asynchronous: true
-                                    fillMode: Image.Stretch
+                                Button {
+                                    id: btn3
                                     visible: false
-                                    width: sourceSize.width
-                                    height: sourceSize.height
+                                    height: imgHeader3.height
+                                    width: imgHeader3.width
+                                    x: imgHeader3.x
+                                    y: imgHeader3.y
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            if (mouse.button == Qt.RightButton) {
+                                                dmenu.pos = 2
+                                                console.log(width, height)
+                                                dmenu.popup()
+                                            }
+                                        }
+                                    }
+                                    background: Image {
+                                        id: imgHeader3
+                                        asynchronous: true
+                                        fillMode: Image.Stretch
+                                        width: sourceSize.width
+                                        height: sourceSize.height
+                                    }
                                 }
                             }
                             GridView {
@@ -1733,11 +1899,45 @@ Window {
                                 model: twoPartPhoWallModel
                                 cellHeight: 108
                                 cellWidth: 108
-                                delegate: Image {
-                                    source: url
-                                    sourceSize: Qt.size(108, 108)
+                                delegate: Button {
+                                    id: witem
                                     width: 108
                                     height: 108
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            if (mouse.button == Qt.RightButton) {
+                                                let pos = twoPartWall.indexAt(
+                                                        witem.x, witem.y)
+                                                if (pos == -1) {
+                                                    console.log("warning:pos is invaild")
+                                                    return
+                                                }
+                                                switch (cont2.count % 3) {
+                                                case 0:
+                                                    pos += 3
+                                                    break
+                                                case 1:
+                                                    pos += 1
+                                                    break
+                                                case 2:
+                                                    pos += 2
+                                                    break
+                                                }
+                                                dmenu.pos = pos
+                                                dmenu.popup()
+                                            }
+                                        }
+                                    }
+
+                                    Image {
+                                        source: url
+                                        sourceSize: Qt.size(108, 108)
+                                        width: 108
+                                        height: 108
+                                    }
                                 }
                             }
                         }
@@ -1749,6 +1949,7 @@ Window {
     //界面
     //更改封面
     Loader {
+        // signal updateCover()
         id: loaderForAlterCover
         visible: loaderForAlterCover.status == Loader.Ready
     }
@@ -1757,12 +1958,84 @@ Window {
         id: loaderForEditInfo
         visible: loaderForAlterCover.status == Loader.Ready
     }
+    //删除照片菜单
+    Menu {
+        property int pos: -1
+        id: dmenu
+        width: 140
+        height: contentHeight + 12
+        visible: false
+        topPadding: 6
+        bottomPadding: 6
+        leftPadding: 1
+        rightPadding: 1
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+        parent: body //视觉对象 开启相对对象坐标定位
+        modal: false
 
-    //文件打开框，不要用Qtc++的静态调用文件对话框，Qtc++的静态调用文件对话框不会自动释放资源，应该是里面有指针实现部分，我用这个可是异常延迟一天爆发
-    FileDialog {
+        //修改好友备注
+        MenuItem {
+            height: 30
+            width: 138
+            leftPadding: 12
+            text: qsTr("删除")
+            onTriggered: {
+                let pos = dmenu.pos
+                console.log("删除", pos)
+                let b = images.removePixmap3(pos) //获取实际插入的图片数
+                if (b) {
+                    cont2.count -= 1
+                    resetWall(cont2.count) //重置照片墙
+                    funcc.removePhotoFromRemoteWall(pos)
+                }
+                dmenu.pos = -1 //重置
+            }
+        }
+
+        delegate: MenuItem {
+            id: menuItem
+            implicitWidth: 138
+            implicitHeight: 30
+            arrow: Rectangle {
+                x: parent.width - width
+                implicitWidth: 30
+                implicitHeight: 30
+                color: "transparent"
+                visible: menuItem.subMenu
+                Image {
+                    anchors.centerIn: parent
+                    asynchronous: true
+                    source: "qrc:images/mainInterface/arrowLeft.png"
+                }
+            }
+            indicator: null
+            contentItem: Text {
+                leftPadding: 0
+                text: menuItem.text
+                font: menuItem.font
+                opacity: enabled ? 1.0 : 0.3
+                elide: Text.ElideRight
+            }
+            background: Rectangle {
+                implicitWidth: 138
+                implicitHeight: 30
+                opacity: enabled ? 1 : 0.3
+                color: menuItem.highlighted ? Qt.lighter("lightgray",
+                                                         1.15) : "transparent"
+            }
+        }
+        background: Rectangle {
+            implicitHeight: parent.height
+            implicitWidth: 140
+            radius: 3
+            border.color: "lightgray"
+        }
+    }
+    //文件打开框
+    Lab.FileDialog {
         id: fDlog
         title: "打开"
-        fileMode: FileDialog.OpenFile
+        fileMode: Lab.FileDialog.OpenFile
         defaultSuffix: "../"
         nameFilters: ["图像文件(*.jpeg;*.jpg;*.png)"]
         onAccepted: {
@@ -1775,11 +2048,11 @@ Window {
         }
     }
     //上传照片文件对话框 多个
-    FileDialog {
+    Lab.FileDialog {
         property string temp: "" //一个中转属性  用于qjsvalue 到 qurl的过度
         id: mFDlog
         title: "打开"
-        fileMode: FileDialog.OpenFiles
+        fileMode: Lab.FileDialog.OpenFiles
         defaultSuffix: "../"
         nameFilters: ["图像文件(*.jpeg;*.jpg;*.png)"]
         onAccepted: {
@@ -1799,90 +2072,7 @@ Window {
             }
             length = images.insertPixmap3(length, addFiles) //获取实际插入的图片数
             sum = length + cont2.count //重置总图片数
-            twoPartPhoWallModel.clear() //归零第二部分
-            wallContiner.setCurrentIndex(1) //显示照片墙视图
-            if (sum % 3 == 0) {
-                imgHeader1.sourceSize = Qt.size(216, 216)
-                imgHeader1.source = "image://wall/0"
-                imgHeader1.x = 0
-                imgHeader1.y = 0
-                imgHeader2.sourceSize = Qt.size(108, 108)
-                imgHeader2.source = "image://wall/1"
-                imgHeader2.x = 216
-                imgHeader2.y = 0
-                imgHeader3.sourceSize = Qt.size(108, 108)
-                imgHeader3.source = "image://wall/2"
-                imgHeader3.x = 216
-                imgHeader3.y = 108
-                imgHeader1.visible = true
-                imgHeader2.visible = true
-                imgHeader3.visible = true
-                //第二部分添加图片
-                if (sum > 3) {
-                    var h = 108 * parseInt(
-                                (sum % 3 != 0 ? sum / 3 : sum / 3 - 1))
-                    twoPartWall.height = h
-                    wallContiner.contentHeight = h + 216
-                    console.log(h)
-                    twoPartWall.visible = true
-                    for (i = 3; i < sum; ++i) {
-                        twoPartPhoWallModel.append({
-                                                       "url": "image://wall/" + i
-                                                   })
-                    }
-                }
-            } else if (sum % 3 == 2) {
-                imgHeader1.sourceSize = Qt.size(160, 216)
-                imgHeader1.source = "image://wall/0"
-                imgHeader1.x = 0
-                imgHeader1.y = 0
-                imgHeader2.sourceSize = Qt.size(160, 216)
-                imgHeader2.source = "image://wall/1"
-                imgHeader2.x = 160
-                imgHeader2.y = 0
-                imgHeader1.visible = true
-                imgHeader2.visible = true
-                imgHeader3.visible = false
-                imgHeader3.source = "" //归零
-                //第二部分添加图片
-                if (sum > 2) {
-                    h = 108 * parseInt((sum % 3 != 0 ? sum / 3 : sum / 3 - 1))
-                    twoPartWall.height = h
-                    wallContiner.contentHeight = h + 216
-                    console.log(h)
-                    twoPartWall.visible = true
-                    for (i = 2; i < sum; ++i) {
-                        twoPartPhoWallModel.append({
-                                                       "url": "image://wall/" + i
-                                                   })
-                    }
-                }
-            } else if (sum % 3 == 1) {
-                imgHeader1.sourceSize = Qt.size(320, 216)
-                imgHeader1.source = "image://wall/0"
-                imgHeader1.x = 0
-                imgHeader1.y = 0
-
-                imgHeader1.visible = true
-                imgHeader2.visible = false
-                imgHeader3.visible = false
-                imgHeader2.source = "" //归零
-                imgHeader3.source = "" //归零
-                //第二部分添加图片
-                if (sum > 1) {
-                    h = 108 * parseInt((sum % 3 != 0 ? sum / 3 : sum / 3 - 1))
-                    twoPartWall.height = h
-                    wallContiner.contentHeight = h + 216
-                    console.log(h)
-                    twoPartWall.visible = true
-                    for (i = 1; i < sum; ++i) {
-                        twoPartPhoWallModel.append({
-                                                       "url": "image://wall/" + i
-                                                   })
-                    }
-                }
-            }
-            cont2.count = sum
+            resetWall(sum)
             funcc.updatePhotoWall(length) //更新照片墙
         }
         onRejected: {

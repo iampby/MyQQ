@@ -3,19 +3,18 @@ import QtQuick.Controls 2.5
 import QtQuick.Window 2.11
 import QtGraphicalEffects 1.0
 import Qt.labs.platform 1.0
-import "qrc:/login"
-import "qrc:/register"
-import "qrc:/main"
 import FuncC 1.0
 import QtQuick.Particles 2.0
 import QtWinExtras 1.0
+import Model 1.0
+
+import "qrc:/login"
+import "qrc:/register"
+import "qrc:/main"
 
 //本应用通过Qml开发界面，Qt C++开发底层逻辑
 ApplicationWindow {
-    id: mainWin
-    visible: true
-    // x: (mainWin.desktopAvailableWidth / 2 - width / 2) * dp
-    // y: (mainWin.desktopAvailableHeight / 2 - height / 2) * dp //实时更新属性赋值后会无效,需重新绑定
+    property var list: []
     //公式：px=dp*(ppi/160) -> px/dp=ppi/160=Screen.devicePixelRatio(不固定),这个程序只是用来勘测分辨率变化，dp是用于安卓适配屏幕的
     property real dp: Screen.pixelDensity * 25.4 / 16 * 1.43 //初始化可变数值时会自动发送一次信号
     property real preDp: 0.0
@@ -27,8 +26,12 @@ ApplicationWindow {
     property string passwd: funcc.passwd
 
     // signal dpChanged 无需定义，属性自动生成槽函数与信号
-    signal adjustCoordination
-    //获得所有的设置信息  过渡信号
+    //打开消息框信号
+    signal trayClicked
+    id: mainWin
+    // x: (mainWin.desktopAvailableWidth / 2 - width / 2) * dp
+    // y: (mainWin.desktopAvailableHeight / 2 - height / 2) * dp //实时更新属性赋值后会无效,需重新绑定
+    visible: true
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint //取消窗口边缘框架 topmost（任务栏之上）
     //property alias actions: actions
     width: 495
@@ -37,6 +40,15 @@ ApplicationWindow {
 
     onClosing: {
         console.log("main close")
+        //释放资源
+         if (mainWin.inf == Math.pow(2, 2)) {
+             try{
+                 inCenterLoader.item.close()//释放qqMainWin
+             }catch(err){
+             console.log(err.message)//打印编译器错误提示
+         }
+         }
+
         // funcc.closeWidget()
     }
     title: qsTr("MyQQ")
@@ -59,20 +71,23 @@ ApplicationWindow {
         property bool hasInfo: false
         property string midSource: "./images/QQTray.png"
         property string initSource: "./images/QQTray.png"
+        signal reset
         id: tray
 
-        tooltip: "有新消息到来"
         visible: true
         iconSource: initSource
-
-        onMessageClicked: console.log("Message clicked")
+        onReset: {
+            console.log("A dialog box will be opened")
+            hasInfo = false
+            timer1s.stop()
+            tooltip = ""
+            iconSource = initSource
+        }
         onActivated: {
             //打开对话框
             if (hasInfo) {
-                console.log("A dialog box will be opened")
-                hasInfo = false
-                timer1s.stop()
-                iconSource = initSource
+                reset()
+                trayClicked()
             }
             if (mainWin.inf != Math.pow(2, 2)) {
                 mainWin.show()
@@ -102,15 +117,17 @@ ApplicationWindow {
         id: comptLogin
         LoginTotalInterface {}
     }
-
+    //funcc连接信号器
     Connections {
         target: funcc
+        //验证信息到来
         onEmitFVeify: {
             console.log("the qml get a friend verify:")
             tray.iconSource = "qrc:/images/bellinfo.png"
             tray.midSource = "qrc:/images/bellinfo.png"
+            tray.tooltip = "有新消息到来"
             timer1s.start()
-            tray.hasInfo = true
+            tray.hasInfo = true //有信息标记
         }
     }
     //tray定时器 闪烁效果

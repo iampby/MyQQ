@@ -19,6 +19,7 @@
 #include <QBuffer>
 #include<qmessagebox.h>
 #include <qjsonarray.h>
+#include<qmath.h>
 //funcc类
 FuncC::FuncC(QObject *parent):QObject(parent)
 {
@@ -174,6 +175,7 @@ void FuncC::initLoginInfo()
         }
     }
     info.close();
+    info.remove();
     qDebug()<<"initLoginInfo() function running successfully.";
 }
 
@@ -250,6 +252,7 @@ void FuncC::parseFriendInfo(QXmlStreamReader &reader, QString &endString,int&pos
                     if(reader.name().toString()=="set"){
                         QString info=reader.attributes().value("info").toString();
                         QString status=reader.attributes().value("status").toString();
+
                         myqqMap.insert("Message-Settin",info);
                         myqqMap.insert("Status-Settin",status);
                     }else if(reader.name().toString()==QStringLiteral("个性签名")||reader.name().toString()==QStringLiteral("备注")){
@@ -489,7 +492,9 @@ void FuncC::newServer()
     });
     //验证消息
     connect(server,&NativeServer::emitFverify,this,&FuncC::getFVerify);
+    //添加好友消息
     connect(server,&NativeServer::emitGetFriend,this,&FuncC::getFriend);
+    connect(server,&NativeServer::emitOffline,this,&FuncC::offline);
     thread->start();
 }
 
@@ -579,10 +584,24 @@ void FuncC::getFriend(QByteArray data, QPixmap pix)
         qDebug()<<"data is not correct because number is empty";
         return;
     }
+    QDir dir("../user/"+m_myQQ+"/friends"+"/"+number+"1.png");
+    if(!dir.exists()){
+        dir.mkpath("./");
+    }
     pix.save("../user/"+m_myQQ+"/friends"+"/"+number+"1.png","png");
     images->provider2->images.insert(number+"1",pix);
     emit emitFriend(map);
 
+}
+
+void FuncC::offline(QString ip, QString host,QString datetime)
+{
+    QVariantMap map;
+    map.insert("ip",ip);
+    map.insert("host",host);
+    datetime.replace("/","-");
+    map.insert("datetime",datetime);
+    emit emitOffline(map);
 }
 bool FuncC::writeFile(const QByteArray &content, const QString &filepath)
 {
@@ -921,9 +940,10 @@ void FuncC::addCoverWidget(QWindow *w, const int &x, const int &y, QString fileP
         temp->setGeometry(x,y,temp->width(),temp->height());//定位
         connect(this,&FuncC::emitCloseCover,widget,&HeadImgWidget::deleteLater);//删除widget资源
         connect(this,&FuncC::emitCoverOKClicked,widget,&HeadImgWidget::okCoverClicked);// 创建一个本地文件过渡
+
         widget->show();//重新show
-        //注意：不知名原因导致更改封面（也就是无遮罩）的图像坐标总是大100左右，这里是通过观测纠正的具体原因不知道
-        //原因 必须先show再设置图片
+        //注意：不知名原因导致更改封面（也就是无遮罩）的图像坐标总是大100左右
+        //解决 必须先show再设置图片
         widget->openFile(filePath);//加载图片
     }else{
         qDebug()<<"widget is null";
@@ -936,15 +956,15 @@ void FuncC::closeCoverWidget()
     emit emitCloseCover();//关闭信号
 }
 //获取远程个人资料
-void FuncC::getIndividualData()
+void FuncC::getIndividualData(QString content,QString number,QQuickWindow*qmlWin)
 {
     qDebug()<<"getIndividualData()";
-    QString instructDescription="8 getPersonalData "+m_myQQ;//更新封面
+    QString instructDescription="8 "+content+" "+number;//更新封面
     BigFileSocket*getPersonalDataSock=new BigFileSocket();//子线程对象最好不要有父类
     getPersonalDataSock->setInstruct(instructDescription);
     getPersonalDataSock->setIp(ip);
     getPersonalDataSock->setPort(loginPort);
-    getPersonalDataSock->setTimeout(50000);//超时50s
+    getPersonalDataSock->setTimeout(40000);//超时40s
     QThread*thread=new QThread();
     getPersonalDataSock->moveToThread(thread);
     thread->start();
@@ -954,42 +974,42 @@ void FuncC::getIndividualData()
         QVariantMap jsonObj=(QJsonDocument::fromJson(getPersonalDataSock->carrier)).object().toVariantMap();
         if(!jsonObj.isEmpty()){
             qDebug()<<"the most personal  json-data would be dispatched ";
-            emit emitPersonalJsonInfo(jsonObj);
+            //添加d大部分信息到qml
+            QMetaObject::invokeMethod((QObject*)qmlWin,"emitPersonalJsonInfo",Qt::DirectConnection,Q_ARG(QVariant,QVariant::fromValue(jsonObj)));
         }else{
             qDebug()<<"the most personal  json-data is not got ";
         }
         QDir dir;
-        dir.mkpath("../user/"+m_myQQ+"/photowall");
-        if(!getPersonalDataSock->img.isEmpty()){
-            qDebug()<<"the user's cover and photowall would be dispatched ";
-            QMap<QString,QByteArray>::const_iterator i=getPersonalDataSock->img.cbegin();
-            QMap<QString,QByteArray>::const_iterator end=getPersonalDataSock->img.cend();
-            QVector<QString>names;
-            QString cover;
-            while (i!=end) {
-                QString name=i.key();
-                qDebug()<<"a file name is "<<name<<i.value().size();
-                QPixmap pix;
-                pix.loadFromData(i.value());
-                //注意保存时指定格式
-                if(name!="cover"){
-                    if(!pix.save("../user/"+m_myQQ+"/photowall/"+name,"png"))
-                        qDebug()<<"warning:file is not save,named "<<name;
-                    else {
-                        names.append(name);
-                    }
-                }else{
-                    if(!pix.save("../user/"+m_myQQ+"/"+name,"png")){
-                        qDebug()<<"warning:file is not save,named "<<name;
-                    }else
-                        cover=name;
+        dir.mkpath("../user/"+number+"/photowall");
+        qDebug()<<"the user's cover and photowall would be dispatched ";
+        QMap<QString,QByteArray>::const_iterator i=getPersonalDataSock->img.cbegin();
+        QMap<QString,QByteArray>::const_iterator end=getPersonalDataSock->img.cend();
+        QVector<QString>names;
+        QString cover;
+        while (i!=end) {
+            QString name=i.key();
+            qDebug()<<"a file name is "<<name<<i.value().size();
+            QPixmap pix;
+            pix.loadFromData(i.value());
+            //注意保存时指定格式
+            if(name!="cover"){
+                if(!pix.save("../user/"+m_myQQ+"/photowall/"+name,"png"))
+                    qDebug()<<"warning:file is not save,named "<<name;
+                else {
+                    names.append(name);
                 }
-                ++i;
+            }else{
+                if(!pix.save("../user/"+m_myQQ+"/"+name,"png")){
+                    qDebug()<<"warning:file is not save,named "<<name;
+                }else
+                    cover=name;
             }
-            emit emitPersonalCoverAndPhoto(names,cover);
-        }else{
-            qDebug()<<"the user's cover and photowall would be not set";
+            ++i;
         }
+        //添加封面和照片到qml
+        QMetaObject::invokeMethod((QObject*)qmlWin,"emitPersonalCoverAndPhoto",Qt::DirectConnection,Q_ARG(QVariant,QVariant::fromValue(names)),
+                                  Q_ARG(QString,cover));
+
         //超时放弃或完成结束线程
         thread->exit(0);
         thread->quit();
@@ -1059,11 +1079,41 @@ void FuncC::updatePhotoWall(quint8 length)
         //保存数据
         for (quint8 var = 0; var < length; ++var) {
             totalData.append(dataVector[var]);
-            qDebug()<<"size?"<<dataVector[var].size();
         }
         updateWallSock->write(totalData);
         if(!totalData.isEmpty())
             updateWallSock->loop.exec();
+        thread->exit(0);
+        thread->quit();
+        qDebug()<<"updating photo wall thread had exited";
+    });
+}
+
+void FuncC::removePhotoFromRemoteWall(int pos)
+{
+    QJsonObject obj;
+    obj.insert("myqq",QJsonValue(m_myQQ));
+    obj.insert("pos",QJsonValue(pos));
+    obj.insert("instruct",QJsonValue("9"));
+    obj.insert("content",QJsonValue("removePhotoWall"));
+    obj.insert("headerSize",QJsonValue(true));
+
+    BigFileSocket*updateWallSock=new BigFileSocket();//子线程对象最好不要有父类
+    updateWallSock->setInstruct(obj);
+    updateWallSock->setIp(ip);
+    updateWallSock->setPort(updatePort);
+    updateWallSock->setTimeout(5000);//5s超时
+    QThread*thread=new QThread();
+    updateWallSock->moveToThread(thread);
+    thread->start();
+    emit updateWallSock->start();//转移到新线程去post host
+    //删除套接字
+    connect(thread,&QThread::finished,updateWallSock,&BigFileSocket::deleteLater);
+    //删除线程
+    connect(thread,&QThread::finished,thread,&QThread::deleteLater);
+    connect(updateWallSock,&BigFileSocket::finished,thread,&QThread::quit);//超时放弃
+    //获取文件结果收尾处理
+    connect(updateWallSock,&BigFileSocket::writtenInstruction, updateWallSock,[=](){
         thread->exit(0);
         thread->quit();
         qDebug()<<"updating photo wall thread had exited";
@@ -1241,8 +1291,8 @@ void FuncC::addRemoteFriendGroup(QVariantMap obj)
 {
     QJsonDocument doc(QJsonObject::fromVariantMap(obj));
     if(doc.isEmpty()){
-       qDebug()<<"added a remote group is empty";
-       return;
+        qDebug()<<"added a remote group is empty";
+        return;
     }
     addRemoteFriendGroup(doc);
 }
@@ -1406,7 +1456,7 @@ void FuncC::handleFVerify(QVariantMap obj)
     connect(fVerifySock,&BigFileSocket::writtenInstruction, fVerifySock,[=](){
         thread->exit(0);
         thread->quit();
-       qDebug()<<"handling friend verify thread had exited";
+        qDebug()<<"handling friend verify thread had exited";
     });
 }
 
@@ -1429,17 +1479,77 @@ void FuncC::updateFGroup(QVariantMap obj)
     connect(updateFGroupSock,&BigFileSocket::finished,thread,&QThread::quit);//超时放弃
     //获取文件结果收尾处理
     connect(updateFGroupSock,&BigFileSocket::writtenInstruction,updateFGroupSock,[=](){
-       QJsonObject jobj=QJsonObject::fromVariantMap(obj);
-       QJsonDocument json(jobj);
-       QByteArray data=json.toBinaryData();
-       if(data.isEmpty()){
-        qDebug()<<"a error:data of dispatching is empty ";
-                  thread->exit(0);
-                  thread->quit();
-                  return;
-       }
+        QJsonObject jobj=QJsonObject::fromVariantMap(obj);
+        QJsonDocument json(jobj);
+        QByteArray data=json.toBinaryData();
+        if(data.isEmpty()){
+            qDebug()<<"a error:data of dispatching is empty ";
+            thread->exit(0);
+            thread->quit();
+            return;
+        }
         updateFGroupSock->write(data);
         updateFGroupSock->loop.exec();
+        thread->exit(0);
+        thread->quit();
+        qDebug()<<" thread had exited to move or delete,rename remote group";
+    });
+}
+
+void FuncC::moveFriend(const int &before, const int &after, const QString &number)
+{
+    QJsonObject obj;
+    obj.insert("type",QJsonValue("move"));
+    obj.insert("before",QJsonValue(before));
+    obj.insert("after",QJsonValue(after));
+    obj.insert("number",QJsonValue(number));
+    dmrFriend(obj);
+}
+
+void FuncC::deleteFriend(const int&index,const QString &number)
+{
+    QJsonObject obj;
+    obj.insert("type",QJsonValue("delete"));
+    obj.insert("index",QJsonValue(index));
+    obj.insert("number",QJsonValue(number));
+    dmrFriend(obj);
+}
+
+void FuncC::alterFTag(QVariantMap map)
+{
+    QJsonObject obj=QJsonObject::fromVariantMap(map);
+    dmrFriend(obj);
+}
+
+void FuncC::dmrFriend(QJsonObject &obj)
+{
+    QString instructDescription="16 dmrFriend "+m_myQQ+" writedHeaderSize";//添加分组
+    BigFileSocket*dmrFriendSock=new BigFileSocket();//子线程对象最好不要有父类
+    dmrFriendSock->setInstruct(instructDescription);
+    dmrFriendSock->setIp(ip);
+    dmrFriendSock->setPort(updatePort);
+    dmrFriendSock->setTimeout(10000);//10s超时
+    QThread*thread=new QThread();
+    dmrFriendSock->moveToThread(thread);
+    thread->start();
+    emit  dmrFriendSock->start();//转移到新线程去post host
+    //删除套接字
+    connect(thread,&QThread::finished,dmrFriendSock,&BigFileSocket::deleteLater);
+    //删除线程
+    connect(thread,&QThread::finished,thread,&QThread::deleteLater);
+    connect(dmrFriendSock,&BigFileSocket::finished,thread,&QThread::quit);//超时放弃
+    //获取文件结果收尾处理
+    connect(dmrFriendSock,&BigFileSocket::writtenInstruction,dmrFriendSock,[=](){
+        QJsonDocument json(obj);
+        QByteArray data=json.toBinaryData();
+        if(data.isEmpty()){
+            qDebug()<<"a error:data of dispatching is empty ";
+            thread->exit(0);
+            thread->quit();
+            return;
+        }
+        dmrFriendSock->write(data);
+        dmrFriendSock->loop.exec();
         thread->exit(0);
         thread->quit();
         qDebug()<<" thread had exited to move or delete,rename remote group";
@@ -1472,6 +1582,7 @@ void FuncC::startAddFriendsProcess(QQuickWindow*arg,QMap<QString, QVariant>obj,Q
             QString instruct=obj.value("instruct").toString();
             if(instruct=="add group"){
                 QString group=obj.value("groupName").toString();
+
                 QMetaObject::invokeMethod(arg,"addFGroup",Qt::DirectConnection,Q_ARG(QString,group));
                 addRemoteFriendGroup(tempDoc);
             }
@@ -1503,6 +1614,7 @@ void FuncC::startAddFriendsProcess(QQuickWindow*arg,QMap<QString, QVariant>obj,Q
         addSMm.setKey("addFriendgroups"+m_myQQ);//添加好友用，一旦更新组，就更新内存 key唯一标识 进程唯一
         qDebug()<<"myprocess key is "<<addSMm.key();
         addSMm.create(1024);
+        memset(addSMm.data(),0,1024);//初始化数据
         if(!addSMm.isAttached()){
             qDebug()<<"warning:a unexpected action addSMm is not attached";
             return;
@@ -1521,6 +1633,20 @@ void FuncC::startAddFriendsProcess(QQuickWindow*arg,QMap<QString, QVariant>obj,Q
 unsigned short FuncC::addFriendsProcessCount() const
 {
     return processCount;
+}
+
+void FuncC::updateAuxiliaryProcessFGoup(QList<QVariant>arr)
+{
+    if(addSMm.isAttached()){
+        QJsonDocument sdoc(QJsonArray::fromVariantList(arr));
+        QByteArray sdata=sdoc.toJson();
+        if(sdata.isEmpty()){
+            qDebug()<<"the friend group data is empty and cannot be updated in the auxiliary process";
+            return;
+        }
+        memset(addSMm.data(),0,1024);//清空数据
+        memccpy(addSMm.data(),sdata.data(),'\0',1024);//数据不超过1024字节 最多15个分组
+    }
 }
 
 void FuncC::analysisWh(QString totalGeoAddr)
@@ -1808,6 +1934,52 @@ void FuncC::setSourceIco(const QString &arg)
     m_win->setIcon(tempIco);
     m_win=nullptr;//重置为0
     emit sourceIcoChanged();
+}
+
+void FuncC::setSourceIco(QQuickWindow *win, QString key)
+{
+    QIcon* ico=new QIcon();//数据载体
+    QThread *thread=new QThread();
+    thread->moveToThread(thread);
+    connect(thread,&QThread::finished,this,[=]()mutable{
+        thread->deleteLater();
+    });
+    connect(thread,&QThread::finished,this,[=]()mutable{
+        qDebug()<<"thra???"<<ico->isNull();
+        win->setIcon(*ico);
+        delete ico,ico=nullptr;
+    });
+    //子线程处理数据
+    connect(thread,&QThread::started,thread,[=](){
+        QPixmap pix=images->provider2->images.value(key);
+        if(pix.isNull()){
+            qDebug()<<"not found the pixmap:"<<key;
+            return;
+        }
+        QImage img=pix.toImage();
+       img= img.convertToFormat(QImage::Format_ARGB32_Premultiplied);//格式转换32位
+        int h=img.height(),w=img.width();
+        qreal r=w/2.0;
+        for (int i = 0; i < h; ++i) {
+            for (int j = 0; j < w; ++j) {
+                qreal ti=i-r,tj=j-r;
+                if(ti*ti+tj*tj>r*r){
+                    img.setPixelColor(j,i,QColor(0,0,0,0));
+                }
+            }
+        }
+        pix =QPixmap::fromImage(img);
+         ico->addPixmap(pix);
+
+        if(ico->isNull()){
+            qDebug()<<"it's of failure for converting pixmap to ico";
+            return;
+        }
+
+        thread->exit(0);
+        thread->quit();
+    });
+thread->start();
 }
 
 

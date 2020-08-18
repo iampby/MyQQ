@@ -15,6 +15,7 @@ public:
     void findPort(quint16 port);
     void emitFverify(QByteArray data);
     void emitGetFriend(QByteArray data,QPixmap pix);
+    void emitOffline(QString ip,QString host,QString datetime);//下线通知
  public slots:
     void slotStarted();
 private slots:

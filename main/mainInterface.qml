@@ -20,6 +20,10 @@ ApplicationWindow {
     property alias loaderForAlterHImg: loaderForAlterHImg //更改头像界面
     property alias loaderForAlterInfo: loaderForAlterInfo //修改用户资料界面
     property alias loaderForVerify: loaderForVerify //打开验证页面
+    property alias loaderForOffline: loaderForOffline //弹出下线框
+    property alias loaderForAlterTag: loaderForAlterTag //修改好友备注
+    property alias loaderForChat: loaderForChat //聊天界面
+
     property alias cityWeatherModel: cityWeatherModel //保存3天天气信息
     property int weatherCanShow: 0 //2表示准备好
     property bool isinit: true //用来避免第一次用户信息变化是发送更新信号
@@ -27,6 +31,8 @@ ApplicationWindow {
     property alias histroyImgModel: histroyImgModel //历史头像model
     property alias gradeModel: gradeModel //用户等级模型
     property alias viewFriend: viewFriend //好友视图
+    property var mapInfo: new Map() //好友资料列表 map
+    property var mapChat: new Map() //聊天界面列表 map 不模仿为统合界面
 
     property var friendsModel: [] //保存好友模型，用来过渡且便于使用
     //好友代理数，由于代理动态加载，在friendGroupModel添加数据过程中一直处于线程忙碌，无法直接构造，所以标记是否构造完用来加载好友模型
@@ -43,6 +49,10 @@ ApplicationWindow {
         "pm"//PM 2.5
         : ""
     }
+    property int sum: 0 //好友数
+    property bool hasMyself: false
+    property int fgIndex: -1 //自己处于的好友组位置
+
     //用户属性
     property string myqq: ""
     property string name: "我的昵称"
@@ -60,7 +70,7 @@ ApplicationWindow {
     property bool isPressed: false
     property point customPoint: Qt.point(0, 0)
 
-    property int headImgY: qqMainWin.y + bodyRec.y + headRec.y + recHead.y //头像窗口的Y坐标
+    property bool isOffline: false //是否已离线
 
     signal move(point movedCoordinate)
     signal sendLeaveForMenuBtnItems
@@ -79,7 +89,9 @@ ApplicationWindow {
     //打开信息对话框
     signal clickedInfo(var id)
     //打开好友对话框
-    signal clickedFriend(var id)
+    signal clickedFriend(var obj)
+    //更新好友备注
+    signal updateTag(var obj)
     id: qqMainWin
     visible: true
     x: func.qqMainX() //初始化窗口位置于贴右，或者右贴任务栏
@@ -110,6 +122,48 @@ ApplicationWindow {
         console.log("dispatched myqq to images")
         images.setMyQQ(myqq)
     }
+    //如果包含自己为好友 则本地好友昵称更新
+    onNameChanged: {
+        if (hasMyself) {
+            for (var i = 0; i < friendsModel.length; ++i) {
+                var m = friendsModel[i]
+                var row = m.rowOf(myqq)
+                if (row !== -1) {
+                    console.log("find myself,the number is ", myqq)
+                    m.setData(row, name, 1)
+                    console.log("updated show: ", name)
+                    console.log("end update")
+                    break
+                }
+            }
+        }
+    }
+    //个性签名更新
+    onSignatureChanged: {
+        console.log("onSignatureChanged:")
+        if (isinit) {
+            isinit = false
+            return
+        }
+        //5 更新个性签名
+        var ins = "5 updateSianature  " + myqq + "  headerSize"
+        funcc.updateSignature(qqMainWin.signature, ins)
+        //本地更新
+        if (hasMyself) {
+            for (var i = 0; i < friendsModel.length; ++i) {
+                var m = friendsModel[i]
+                var row = m.rowOf(myqq)
+                if (row !== -1) {
+                    console.log("find myself,the number is ", myqq)
+                    m.setData(row, signature, 2)
+                    console.log("updated show: ", signature)
+                    console.log("end update")
+                    break
+                }
+            }
+        }
+        signatureTF.text = signature //更新显示签名
+    }
 
     //利用元对象信号槽通信机制，把参数从Qtc++->qml 获取user信息
     onRunGetUserInfo: {
@@ -118,10 +172,12 @@ ApplicationWindow {
         name = obj["name"]
         sex = obj["sex"]
         signature = obj["signature"]
+        if (signature == "")
+            isinit = false //如果不触发第一次变化则设置为false
         activeDays = obj["days"]
         grade = obj["grade"]
-        grade = 600
-        status = obj["status"]
+        grade = 300
+        status = "1" //obj["status"]
         where = obj["所在地"]
         townmans = obj["故乡"]
         var tag = qqMainWin.myqq + "101"
@@ -131,35 +187,7 @@ ApplicationWindow {
                                    "index": 0
                                })
         gradeTip.days = func.computeToUpgrade(grade, activeDays)
-        gradeModel.clear() //重置模型数据
-        var crown = parseInt(grade / 64), cur //JS除法默认为浮点数运算，需显示认定为整型
-        cur = parseInt(grade - crown * 64)
-        var sun = parseInt(cur / 16) //显示认定为整型
-        cur = cur - sun * 16
-        var moon = parseInt(cur / 4)
-        var star = parseInt(cur - moon * 4)
-        console.log(crown, sun, moon, star)
-        //添加皇冠图像路径
-        for (var i = 0; i < crown; i++) {
-            gradeModel.append({
-                                  "img": "qrc:/images/mainInterface/crown.png"
-                              })
-        }
-        for (i = 0; i < sun; i++) {
-            gradeModel.append({
-                                  "img": "qrc:/images/mainInterface/sun.png"
-                              })
-        }
-        for (i = 0; i < moon; i++) {
-            gradeModel.append({
-                                  "img": "qrc:/images/mainInterface/moon.png"
-                              })
-        }
-        for (i = 0; i < star; i++) {
-            gradeModel.append({
-                                  "img": "qrc:/images/mainInterface/star.png"
-                              })
-        }
+        func.resetGradeModel(gradeModel, grade)
     }
     //利用元对象信号槽通信机制，把参数从Qtc++->qml 获取好友信息
     onRunGetFriendInfoFunction: {
@@ -170,14 +198,23 @@ ApplicationWindow {
         } //如果为空则等待其加载
         var mq = obj["myqq"]
         var imgPath = "../user/" + mainWin.myqq + "/friends/" + mq + "1.png" //换为List.qml本地路径
-        images.setPixmap2(mq + "1", imgPath)
+        var status = obj["状态"]
+        var grade = obj["等级"]
+        grade = qqMainWin.grade
+        if (myqq == mq) {
+            //自己总是在线
+            status = "1"
+            hasMyself = true
+        }
+        images.setPixmap2(mq + "1", imgPath, status)
         //添加数据到模型
         //qvariantmap转过来的只能[string]获取属性
         console.log("obj[\"个性签名\"]=", obj["个性签名"])
         var url = "image://friends/" + mq + "1"
-        console.log("mq:", mq)
-        m.append(mq, obj["昵称"], obj["个性签名"], url, obj["备注"], obj["等级"],
-                 obj["状态"], obj["Message - Settin"], obj["Status_Settin"])
+
+        m.append(mq, obj["昵称"], obj["个性签名"], url, obj["备注"], grade, status,
+                 obj["Message - Settin"], obj["Status_Settin"])
+        sum += 1 //好友数加一
     }
     //利用元对象信号槽通信机制，把参数从Qtc++->qml,获取设置信息
     onRunGetSetInfoFunction: {
@@ -189,23 +226,40 @@ ApplicationWindow {
     onClosing: {
         console.log("closing")
         realse() //释放资源
-        funcc.exitMyQQ(qqMainWin) //发送退出到远程
+        //强制下线不推送远程
+        if (!isOffline)
+            funcc.exitMyQQ(qqMainWin) //发送退出到远程
     }
     //程序退出处理
     onAboutToQuit: {
         //退出
         Qt.quit()
     }
-    //拖拽便条随窗口位置变化而毁灭
+    //2个拖拽便条随窗口位置变化而不可视
     onXChanged: {
         if (loaderForFG.status != Loader.Null) {
             loaderForFG.item.close()
         }
+        if (loaderForFriend.status != Loader.Null) {
+            loaderForFriend.item.close()
+        }
     }
-    //拖拽便条随窗口可视变化而毁灭
+    onYChanged: {
+        if (loaderForFG.status != Loader.Null) {
+            loaderForFG.item.close()
+        }
+        if (loaderForFriend.status != Loader.Null) {
+            loaderForFriend.item.close()
+        }
+    }
+
+    //2个拖拽便条随窗口可视变化而不可视
     onVisibleChanged: {
         if (loaderForFG.status != Loader.Null) {
             loaderForFG.item.close()
+        }
+        if (loaderForFriend.status != Loader.Null) {
+            loaderForFriend.item.close()
         }
     }
 
@@ -236,11 +290,10 @@ ApplicationWindow {
         //添加模型
         if (friendDelegateCount === length) {
             var listM = viewFriend.contentItem.children
-
-            for (var i = 0; i < viewFriend.count; i++) {
+            for (var i = 0; i < length; i++) {
+                friendsModel[i].sort()
                 listM[i].delegateModel = friendsModel[i]
                 listM[i].pos = i
-                listM[i].update(0, 10000)
             }
             if (fgMenu.addIndex != -1) {
                 scrFriend.closeAllHovered()
@@ -256,31 +309,12 @@ ApplicationWindow {
             friendGroupModel.update(0, 1000)
         }
     }
-    //个性签名更新
-    onSignatureChanged: {
-        console.log("onSignatureChanged:")
-        //5 更新个性签名
-        if (isinit) {
-            isinit = false
-            console.log("isinit=true")
-            return
-        }
-        var ins = "5 updateSianature  " + myqq + "  headerSize"
-        funcc.updateSignature(qqMainWin.signature, ins)
-        for (var i = 0; i < friendsModel.length; ++i) {
-            console.log("onSignatureChanged:i=", i)
-            var m = friendsModel[i]
-            var row = m.rowOf(myqq)
-            if (row !== -1) {
-                console.log("find myself,the number is ", myqq)
-                m.setData(row, signature, 2)
-                console.log("updated show: ", signature)
-                console.log("end update")
-            }
-        }
-    }
     //添加好友组
     onAddFGroup: {
+        if (friendGroupModel.count() > 15) {
+            console.log("the number of friend group is not more than fifteen")
+            return
+        }
         loaderForFG.item.hide()
         friendGroupModel.insert(friendGroupModel.rowCount() - 1, value, "",
                                 "", "none")
@@ -289,6 +323,7 @@ ApplicationWindow {
     //点击信息
     onClickedInfo: {
         console.log("onClickedInfo:id=", id)
+        tray.reset()
         //打开验证信息界面
         if (id === "-1") {
             actions.openVerifyAct.trigger(qqMainWin)
@@ -296,42 +331,36 @@ ApplicationWindow {
     }
     //点击好友
     onClickedFriend: {
-        console.log("onClickedFriend:id=", id)
+        console.log("发送即时消息")
+        try {
+            var cw = mapChat.get(obj.number + "1") //号码加1 表示好友
+            if (cw == undefined) {
+                cw = chatComp.createObject(null)
+                if (!cw) {
+                    console.log("created a object is of failure")
+                    return
+                }
+            }
+            cw.obj = obj
+        } catch (e) {
+            console.log("warning:", e.message)
+        }
+        actions.openChatWinAct.trigger(cw) //打开好友资料 传要创建的部件
     }
+    //更新好友备注
+    onUpdateTag: {
+        funcc.alterFTag(obj) //远程更新
+        var index = obj.index
+        var tag = obj.tag
+        var number = obj.number
+        var m = friendsModel[index]
+        m.setData(m.rowOf(number), tag, 4)
+    }
+
     //target func
     Connections {
         target: func
-        //拖拽调整大小
-        onSizeChanged: {
-            console.log("onSizeChanged:", w, h)
-            if (w < qqMainWin.minimumWidth) {
-                if (directX < 0)
-                    qqMainWin.x += (qqMainWin.width - qqMainWin.minimumWidth)
-                qqMainWin.width = qqMainWin.minimumWidth
-            } else if (w > qqMainWin.maximumWidth) {
-                if (directX < 0)
-                    qqMainWin.x += (qqMainWin.width - qqMainWin.maximumWidth)
-                qqMainWin.width = qqMainWin.maximumWidth
-            } else {
-                qqMainWin.width = w
-                if (directX < 0)
-                    qqMainWin.x += delta.x
-            }
 
-            if (h < qqMainWin.minimumHeight) {
-                if (directY < 0)
-                    qqMainWin.y += (qqMainWin.height - qqMainWin.minimumHeight)
-                qqMainWin.height = qqMainWin.minimumHeight
-            } else if (h > qqMainWin.maximumHeight) {
-                if (directY < 0)
-                    qqMainWin.y += (qqMainWin.height - qqMainWin.maximumHeight)
-                qqMainWin.height = qqMainWin.maximumHeight
-            } else {
-                qqMainWin.height = h
-                if (directY < 0)
-                    qqMainWin.y += delta.y
-            }
-        }
         onMakeRequestFinished: {
             if (weatherCanShow === 0)
                 weatherCanShow = 1
@@ -425,9 +454,14 @@ ApplicationWindow {
                                       "r_number": "-1"
                                   })
                     infoModel.move(i, 0, 1)
+                    if (loaderForVerify.item.visible) {
+                        var item = infoView.contentItem.children[0]
+                        item.clicked()
+                    }
                 }
             }
             if (!existis) {
+
                 infoModel.insert(0, {
                                      "r_imgPath": "qrc:/images/bellinfo.png",
                                      "r_title": "验证消息",
@@ -459,13 +493,39 @@ ApplicationWindow {
                     console.log("find the group name:", groupName)
                     m.append(number, name, signature, imgPath, tag, grade,
                              status, infoSet, statusSet)
-                    friendGroupModel.update(i) //更新好友列表
+                    viewFriend.model = null
+                    friendDelegateCount = 0
+                    viewFriend.model = friendGroupModel
+
+                    //friendGroupModel.update(i) //更新好友列表
                     break
                 }
             }
         }
+        //下线通知
+        onEmitOffline: {
+            loaderForOffline.obj = obj //赋值ip host time信息
+            if (!qqMainWin.visible) {
+                qqMainWin.show()
+                qqMainWin.raise()
+                qqMainWin.requestActivate()
+            }
+            qqMainWin.isOffline = true
+            actions.openOfflineAct.trigger() //打开下线框
+        }
+    }
+    //mainWin
+    //托盘点击
+    Connections {
+        target: mainWin
+        onTrayClicked: {
+            console.log(" onTrayClicked")
+            var item = infoView.contentItem.children[0]
+            item.clicked()
+        }
     }
 
+    //images
     //历史头像添加时
     Connections {
         target: images
@@ -522,11 +582,100 @@ ApplicationWindow {
             console.log("realsed head-image win")
             loaderForHeadImg.source = ""
         }
+        //关于
+        if (loaderForAbout.status == Loader.Ready) {
+            loaderForAbout.item = ""
+        }
+        //好友组小标签
+        if (loaderForFG.status == Loader.Ready) {
+            loaderForFG.sourceComponent = undefined
+        }
+        //好友小标签
+        if (loaderForFriend.status == Loader.Ready) {
+            loaderForFriend.sourceComponent = undefined
+        }
+        //验证界面
+        if (loaderForVerify.status == Loader.Ready) {
+            loaderForVerify.item = ""
+        }
+        //释放资料列表
+        for (let value in mapInfo.values()) {
+            value.close()
+        }
+        mapInfo = null
+        //释放聊天界面
+        for (let value in mapChat.values()) {
+            value.close()
+        }
+        mapChat = null
         //释放server
         funcc.realseServer()
         funcc.deleteNetAndUpdateTimer() //删除网络监测器
     }
+    //移动位于index的好友from 分组 before to after
+    function moveFriend(before, after, index) {
+        if (before == after)
+            return false
+        //不移动
+        if (before < 0 || after < 0 || index < 0) {
+            console.log("moveFriend(before,after,index) arguments including negative")
+            return false
+        }
+        console.log("moved Friend with", index, " to group from ", before,
+                    " to ", after, " position")
+        var bm = friendsModel[before]
+        var am = friendsModel[after]
+        var item = bm.takeItem(index)
+        var number = item.myqq()
+        am.append(item)
+        //更新
+        bm.update(before, 10000)
+        am.sort() //重排序
+        var items = viewFriend.contentItem.children
+        //对于qwidget的嵌套模型 重赋值来刷新代理
+        items[before].friend.model = null
+        items[before].friend.model = friendsModel[before]
+        items[after].friend.model = null
+        items[after].friend.model = friendsModel[after]
+        friendGroupModel.update(before, after) //更新外层代理项
+        //更新远程
+        funcc.moveFriend(before, after, number)
+        //更新 组位置
+        qqMainWin.fgIndex = after
+        return number
+    }
+    //打开资料页面 参数：号码 头像url 备注或昵称
+    function sentFriendInfo(number, url, title) {}
+    //拖拽调整大小 回调函数
+    function sizeChanged(w, h, delta, directX, directY) {
+        if (w < qqMainWin.minimumWidth) {
+            if (directX < 0)
+                qqMainWin.x += (qqMainWin.width - qqMainWin.minimumWidth)
+            qqMainWin.width = qqMainWin.minimumWidth
+        } else if (w > qqMainWin.maximumWidth) {
+            if (directX < 0)
+                qqMainWin.x += (qqMainWin.width - qqMainWin.maximumWidth)
+            qqMainWin.width = qqMainWin.maximumWidth
+        } else {
+            qqMainWin.width = w
+            if (directX < 0)
+                qqMainWin.x += delta.x
+        }
 
+        if (h < qqMainWin.minimumHeight) {
+            if (directY < 0)
+                qqMainWin.y += (qqMainWin.height - qqMainWin.minimumHeight)
+            qqMainWin.height = qqMainWin.minimumHeight
+        } else if (h > qqMainWin.maximumHeight) {
+            if (directY < 0)
+                qqMainWin.y += (qqMainWin.height - qqMainWin.maximumHeight)
+            qqMainWin.height = qqMainWin.maximumHeight
+        } else {
+            qqMainWin.height = h
+            if (directY < 0)
+                qqMainWin.y += delta.y
+        }
+    }
     //实体
     Rectangle {
         id: bodyRec
@@ -830,6 +979,13 @@ ApplicationWindow {
                     }
                     onHoveredChanged: {
                         if (containsMouse) {
+                            var obj = {}
+                            obj.posY = qqMainWin.y + bodyRec.y + headRec.y + recHead.y //与头像对齐
+                            obj.name = name
+                            obj.tag = "" //无就更新tag为空
+                            obj.grade = grade
+                            obj.signature = signature
+                            loaderForHeadImg.obj = obj
                             actions.headImgAct.trigger() //调用相应动作
                         } else {
                             loaderForHeadImg.item.headImgHovered = false //标记为不悬浮
@@ -1097,7 +1253,6 @@ ApplicationWindow {
                     }
 
                     onHoveredChanged: {
-                        console.log("signature tip hovered change")
                         if (containsMouse) {
                             sigTip.visible = true
                         } else {
@@ -1363,7 +1518,6 @@ ApplicationWindow {
             currentIndex: 0
 
             onCurrentIndexChanged: {
-                console.log("??c")
                 recContact.visible = !recContact.visible
                 scrInformation.visible = !scrInformation.visible
             }
@@ -1503,6 +1657,12 @@ ApplicationWindow {
                     signal checkedFG(int index)
                     signal closeAllHovered
                     signal openAllHovered
+
+                    //好友部分信号
+                    signal closeAllFChecked
+                    signal clickF(int fgIndex, int fIndex, var mouse)
+                    signal checkedF(int fgIndex, int fIndex)
+                    signal closeFChecked(int fgIndex, int fIndex)
                     id: scrFriend
                     visible: true
                     y: 40
@@ -1568,8 +1728,10 @@ ApplicationWindow {
                             item.he = false
                         }
                     }
+
                     //滚动栏
                     ScrollBar.vertical: ScrollBar {
+                        property bool isInint: true
                         id: fgScroll
                         padding: 0
                         parent: scrFriend //必须设置父对象才能启动hovered and pressed以及鼠标事件
@@ -1596,16 +1758,21 @@ ApplicationWindow {
                             }
                         }
                         onPositionChanged: {
+                            if (isInint)
+                                return
                             timer50msForFG.restart()
                             if (loaderForFG.status == loaderForFG.Ready)
                                 loaderForFG.item.hide()
                         }
                         contentItem: Rectangle {
                             implicitWidth: 6
-                            implicitHeight: parent.size * scrFriend.contentHeight
+                            implicitHeight: parent.size * scrFriend.height
                             radius: width / 2
                             color: parent.hovered ? Qt.darker("#d7d7d7",
                                                               1.3) : "#d7d7d7"
+                        }
+                        Component.onCompleted: {
+                            isInint = false
                         }
                     }
                     contentItem: ListView {
@@ -1657,9 +1824,6 @@ ApplicationWindow {
                                             loaderForFG.item.btn.backColor = fgitem.color
                                         }
                                     }
-                                    console.log("rotat",
-                                                loaderForFG.item.btn.rotat,
-                                                loaderForFG.status == loaderForFG.Ready)
                                 }
                                 onEditFinished: {
                                     var index = viewFriend.indexAt(fgitem.x,
@@ -1699,16 +1863,15 @@ ApplicationWindow {
                                         if (mouse.button == Qt.LeftButton)
                                             parent.clicked()
                                         else {
-
-                                            fgMenu.x = mouseX + 5 + fgitem.x
-                                            fgMenu.y = mouseY + 5 + fgitem.y - fgScroll.position
-                                                    * scrFriend.contentHeight
                                             var index = viewFriend.indexAt(
                                                         fgitem.x, fgitem.y)
                                             if (index == -1) {
                                                 console.log("get -1 opened friend group munu ")
                                                 return
                                             }
+                                            fgMenu.x = mouseX + 5
+                                            fgMenu.y = mouseY + 5 + fgitem.y - fgScroll.position
+                                                    * scrFriend.contentHeight
                                             //不可动组
                                             if (index == 0)
                                                 return
@@ -1727,9 +1890,6 @@ ApplicationWindow {
                                                 fgitem.listGroup.isChecked = true
                                                 return
                                             }
-                                            scrFriend.closeAllFGChecked()
-                                            parent.isChecked = true
-                                            fgScroll.visible = true //显示滚动栏？
                                             var obj = loaderForFG.item
                                             var items = viewFriend.contentItem.children
                                             var length = friendGroupModel.count(
@@ -1757,6 +1917,9 @@ ApplicationWindow {
                                                 console.log("index is -1")
                                                 return
                                             }
+                                            scrFriend.closeAllFGChecked()
+                                            parent.isChecked = true
+                                            fgScroll.visible = true //显示滚动栏？
                                             if (index > 1 && index < length - 1)
                                                 obj.canDarg = true
                                             else
@@ -1794,13 +1957,11 @@ ApplicationWindow {
                                             obj.btn.set = listGroup.set
                                             obj.index = index
                                             obj.isDarg = false
+                                            obj.opacity = 0.8
                                             obj.show()
                                             obj.raise()
                                         }
                                     }
-                                }
-                                Component.onCompleted: {
-
                                 }
                             }
                             //好友表
@@ -1808,29 +1969,190 @@ ApplicationWindow {
                                 id: listFriend
                                 anchors.top: listGroup.bottom
                                 visible: false
+
                                 onVisibleChanged: {
+                                    console.log("visible changed:", visible)
                                     if (visible)
                                         parent.height += height
                                     else
                                         parent.height -= height
                                 }
                                 onCountChanged: {
-                                    listFriend.height = listFriend.count * 60
+                                    console.log("listFriend count=", count)
+                                    height = count * 60
+                                    //当更新时 强制矫正大小
+                                    if (visible)
+                                        parent.height = height + listGroup.height
+                                    else
+                                        parent.height = listGroup.height
                                 }
+
                                 delegate: Friend {
+                                    property alias fmouse: fmouse
+                                    id: fitem
                                     w: headerRec.width
                                     h: 60
                                     hoverEnabled: true
                                     headImg: r_imgPath
                                     name: r_name
                                     label: r_tag
+                                    status: r_status
                                     bottomText: r_signature
+                                    //好友表信号
+                                    Connections {
+                                        target: scrFriend
+                                        //关闭所有的选择
+                                        onCloseAllFChecked: {
+                                            fitem.isChecked = false
+                                        }
+                                        onClickF: {
+                                            var i1 = viewFriend.indexAt(
+                                                        fgitem.x, fgitem.y)
+                                            var i2 = listFriend.indexAt(
+                                                        fitem.x, fitem.y)
+                                            if (i1 == fgIndex && i2 == fIndex) {
+                                                fmouse.clicked(mouse)
+                                            }
+                                        }
+                                        onCheckedF: {
+                                            var i1 = viewFriend.indexAt(
+                                                        fgitem.x, fgitem.y)
+                                            var i2 = listFriend.indexAt(
+                                                        fitem.x, fitem.y)
+                                            if (i1 == fgIndex && i2 == fIndex) {
+                                                fitem.isChecked = true
+                                                fgScroll.visible = true
+                                            }
+                                        }
+                                        onCloseFChecked: {
+                                            var i1 = viewFriend.indexAt(
+                                                        fgitem.x, fgitem.y)
+                                            var i2 = listFriend.indexAt(
+                                                        fitem.x, fitem.y)
+                                            if (i1 == fgIndex && i2 == fIndex) {
+                                                fitem.isChecked = false
+                                            }
+                                        }
+                                        //控制hover激活与否
+                                        onCloseAllHovered: {
+                                            fitem.hoverEnabled = false
+                                        }
+                                        onOpenAllHovered: {
+                                            fitem.hoverEnabled = true
+                                        }
+                                    }
+
                                     MouseArea {
+                                        id: fmouse
                                         anchors.fill: parent
                                         hoverEnabled: true
                                         acceptedButtons: Qt.LeftButton | Qt.RightButton
                                         onClicked: {
-                                            clickedFriend(r_myqq) //发送号码
+                                            if (mouse.button == Qt.LeftButton) {
+                                                try {
+                                                    var obj = {}
+                                                    obj.number = r_myqq
+                                                    obj.name = r_name
+                                                    obj.headImg = r_imgPath
+                                                    obj.tag = r_tag
+                                                } catch (e) {
+                                                    console.log("warning:",
+                                                                e.message)
+                                                }
+                                                clickedFriend(obj) //发送号码
+                                            } else {
+                                                var fgindex = viewFriend.indexAt(
+                                                            fgitem.x, fgitem.y)
+                                                if (fgindex == -1) {
+                                                    console.log("get -1 opened friend menu ")
+                                                    return
+                                                }
+                                                var findex = listFriend.indexAt(
+                                                            fitem.x, fitem.y)
+                                                if (findex == -1) {
+                                                    console.log("get -1 opened friend menu ")
+                                                    return
+                                                }
+
+                                                fMenu.fgIndex = fgindex
+                                                fMenu.fIndex = findex
+                                                //过滤自己， 自己不可删除
+                                                if (r_myqq == qqMainWin.myqq) {
+                                                    dfmenu.visible = false
+                                                } else {
+                                                    dfmenu.visible = true
+                                                }
+
+                                                fMenu.popup()
+                                            }
+                                        }
+                                        onHoveredChanged: {
+                                            if (containsMouse) {
+                                                var obj = loaderForFriend.item
+                                                var items = viewFriend.contentItem.children
+                                                var length = friendGroupModel.count()
+                                                var item = items[1] //wode好友组
+                                                obj.by = item.y + scrFriend.iy - fgScroll.position
+                                                        * scrFriend.contentHeight
+                                                if (obj.by < scrFriend.iy)
+                                                    obj.by = scrFriend.iy
+
+                                                item = items[length - 1] //黑名单组
+                                                obj.ey = item.y + scrFriend.iy - fgScroll.position
+                                                        * scrFriend.contentHeight
+                                                if (obj.ey > scrFriend.iy + scrFriend.height)
+                                                    obj.ey = scrFriend.iy + scrFriend.height
+
+                                                var fgindex = viewFriend.indexAt(
+                                                            fgitem.x, fgitem.y)
+                                                if (fgindex == -1) {
+                                                    console.log("fgIndex is -1")
+                                                    return
+                                                }
+                                                var fIndex = listFriend.indexAt(
+                                                            fitem.x, fitem.y)
+                                                if (fIndex == -1) {
+                                                    console.log("fIndex is -1")
+                                                    return
+                                                }
+                                                //关闭所有的标签
+                                                scrFriend.closeAllFChecked()
+                                                parent.isChecked = true
+                                                fgScroll.visible = true //显示滚动栏？
+                                                obj.hide()
+                                                var tx = scrFriend.ix + fgitem.x
+                                                var ty = (scrFriend.iy + fgitem.y + listGroup.height) - fgScroll.position * (scrFriend.contentHeight) + fitem.y //定位绝对位置
+                                                if (ty > scrFriend.iy + scrFriend.height - 60) {
+                                                    var temp = ty - (scrFriend.iy
+                                                                     + scrFriend.height - 60)
+                                                    fgScroll.setPosition(
+                                                                fgScroll.position + temp / scrFriend.contentHeight) + listGroup.height
+                                                    obj.y = (scrFriend.iy + fgitem.y) + fitem.y
+                                                            - fgScroll.position
+                                                            * (scrFriend.contentHeight) //定位绝对位置
+                                                } else if (ty < scrFriend.iy) {
+                                                    fgScroll.setPosition(
+                                                                fgScroll.position - (scrFriend.iy - ty) / scrFriend.contentHeight)
+                                                    obj.y = (scrFriend.iy + fgitem.y) + fitem.y
+                                                            + listGroup.height - fgScroll.position
+                                                            * (scrFriend.contentHeight) //定位绝对位置
+                                                } else
+                                                    obj.y = ty
+                                                obj.x = tx
+                                                obj.btn.w = fitem.w
+                                                obj.btn.h = fitem.h
+                                                obj.btn.backColor = fitem.backColor
+                                                obj.img = fitem.headImg
+                                                obj.name = fitem.name
+                                                obj.label = fitem.label
+                                                obj.sig = fitem.bottomText
+                                                obj.grade = r_grade
+                                                obj.isDarg = false
+                                                obj.fIndex = fIndex
+                                                obj.fgIndex = fgindex
+                                                obj.show()
+                                                obj.raise()
+                                            }
                                         }
                                     }
                                 }
@@ -1913,6 +2235,7 @@ ApplicationWindow {
                         }
                     }
                     delegate: Friend {
+                        id: infoItem
                         w: headerRec.width
                         h: 60
 
@@ -2263,6 +2586,7 @@ ApplicationWindow {
     }
     //头像界面
     Loader {
+        property var obj: null
         id: loaderForHeadImg
         visible: Loader.Ready === loaderForAbout.status
     }
@@ -2283,19 +2607,49 @@ ApplicationWindow {
         focus: true
         visible: Loader.Ready === loaderForVerify.status
     }
+    //弹出下线框
+    Loader {
+        property var obj: null
+        id: loaderForOffline
+        focus: true
+        visible: Loader.Ready === loaderForOffline.status
+    }
+    //修改好友备注
+    Loader {
+        property var obj: null
+        id: loaderForAlterTag
+        focus: true
+        visible: Loader.Ready === loaderForAlterTag.status
+    }
+    //好友资料
+    Component {
+        id: friendInfoComp
+        FriendWin {}
+    }
+    //聊天界面 这里使用单独窗口作为各个聊天界面 不模仿qq的统合界面
+    Component {
+        id: chatComp
+        ChatWin {}
+    }
+
+    Loader {
+        id: loaderForChat
+        focus: true
+        visible: Loader.Ready === loaderForChat.status
+    }
 
     //移动好友组
     Loader {
         id: loaderForFG
-        sourceComponent: friendComp
+        sourceComponent: fgComp
         visible: Loader.Ready === loaderForFG.status
     }
     Component {
-        id: friendComp
+        id: fgComp
         Window {
             property alias btn: btn
             property int index: -1
-            property bool firstAllClose: true
+            property bool firstAllClose: false
             property bool isDarg: false
             property bool canDarg: false
             property int bx: scrFriend.ix
@@ -2308,11 +2662,17 @@ ApplicationWindow {
             width: btn.width
             height: btn.height
             flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
-            opacity: 1.0
+            opacity: 0.8
             onClosing: {
                 hide()
             }
-
+            onVisibleChanged: {
+                if (visible) {
+                    var item = loaderForFriend.item
+                    scrFriend.closeFChecked(item.fgIndex, item.fIndex)
+                    item.close()
+                }
+            }
             onXChanged: {
                 if (x == m.tx && m.l) {
                     close()
@@ -2356,6 +2716,7 @@ ApplicationWindow {
                             console.log(fgwin.y, swy)
                             if (offx * offx + offy * offy > 4) {
                                 fgwin.firstAllClose = false
+                                fgwin.opacity = 0.5
                                 scrFriend.closeAllGroup() //关闭所有号好友表
                                 var item = viewFriend.contentItem.children[friendGroupModel.count(
                                                                                ) - 1]
@@ -2374,6 +2735,8 @@ ApplicationWindow {
                             fgMenu.close() //关闭菜单
                         if (menuPop.visible)
                             menuPop.close()
+                        if (fMenu.visible)
+                            fMenu.close()
                         if (mouse.button == Qt.LeftButton) {
                             isLeft = true
                             l = true
@@ -2390,7 +2753,8 @@ ApplicationWindow {
                     onReleased: {
                         if (mouse.button == Qt.LeftButton) {
                             var ix = s.x - scrFriend.ix
-                            var iy = s.y - scrFriend.iy
+                            var iy = s.y - scrFriend.iy + fgScroll.position
+                                    * viewFriend.contentHeight
                             var index = viewFriend.indexAt(ix, iy)
                             if (index == -1) {
                                 console.log("warning:index=-1")
@@ -2407,7 +2771,7 @@ ApplicationWindow {
                                 if (cursorShape != Qt.ForbiddenCursor) {
                                     if (index !== fgwin.index
                                             && index != friendGroupModel.count(
-                                                ) - 1) {
+                                                ) - 1 && index > 1) {
                                         var _1 = friendsModel[index]
                                         friendsModel[index] = friendsModel[fgwin.index]
                                         friendsModel[fgwin.index] = _1
@@ -2446,9 +2810,12 @@ ApplicationWindow {
                         fgwin.y = swy
                         fgwin.firstAllClose = false
                         btn.w = scrFriend.width - fgScroll.width
+                        fgwin.opacity = 0.8
                         //不能移动则不打开
                         if ((!fgwin.canDarg) && b)
                             return
+                        if (mouse.button == Qt.RightButton)
+                            close()
                         scrFriend.clickFG(fgwin.index, mouse)
                     }
                     onContainsMouseChanged: {
@@ -2469,7 +2836,6 @@ ApplicationWindow {
                         if (pressed) {
                             if (!fgwin.canDarg || !isLeft)
                                 return
-                            fgwin.opacity = 0.5
                             btn.rotat = 0
                             fgwin.isDarg = true
                             tx = mouseX - startPoint.x
@@ -2501,31 +2867,350 @@ ApplicationWindow {
             }
         }
     }
+    //移动好友标签
+    Loader {
+        id: loaderForFriend
+        sourceComponent: friendComp
+        visible: Loader.Ready === loaderForFriend.status
+    }
+    Component {
+        id: friendComp
+        Window {
+            property alias btn: btn
+            property int fgIndex: -1
+            property int fIndex: -1
+            property bool firstAllClose: false
+            property bool isDarg: false
+            property int bx: scrFriend.ix
+            property int ex: scrFriend.ix + scrFriend.width
+            property int by: 0
+            property int ey: 0
+            property string img: ""
+            property string name: ""
+            property string label: ""
+            property string sig: ""
+            property int grade: -1
+            id: fwin
+            width: btn.width
+            height: btn.height
+            flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+            opacity: 1.0
+            onClosing: {
+                hide()
+            }
+            onVisibleChanged: {
+                if (visible) {
+                    var item = loaderForFG.item
+                    scrFriend.closeFGChecked(item.index)
+                    item.close()
+                }
+            }
+            onXChanged: {
+                if (x == m.tx && m.l) {
+                    close()
+                    m.l = false
+                }
+            }
+
+            onYChanged: {
+                if (y == m.ty && m.l) {
+                    m.l = false
+                    close()
+                }
+            }
+            Friend {
+                id: btn
+                headImg: fwin.img
+                name: fwin.name
+                label: fwin.label
+                bottomText: fwin.sig
+                MouseArea {
+                    property bool l: false
+                    property bool isLeft: false
+                    property int tx: 0
+                    property int ty: 0
+                    //开始的窗口位置
+                    property int swx: 0
+                    property int swy: 0
+                    //按下位置
+                    property point s: Qt.point(fwin.x + startPoint.x,
+                                               fwin.y + startPoint.y)
+                    property point startPoint: Qt.point(0, 0)
+                    id: m
+
+                    width: parent.width
+                    height: parent.height
+                    hoverEnabled: true
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    //防误移动
+                    onSChanged: {
+                        if (fwin.firstAllClose) {
+                            var offx = Math.abs(fwin.x - swx)
+                            var offy = Math.abs(fwin.y - swy)
+                            if (offx * offx + offy * offy > 4) {
+                                fwin.firstAllClose = false
+                                fwin.opacity = 0.5
+                                fwin.label = ""
+                                fwin.sig = ""
+                                scrFriend.closeAllGroup() //关闭所有号好友表
+                                //更新移动坐标范围 这里缺陷 会有延迟
+                                var length = friendGroupModel.count()
+                                var items = viewFriend.contentItem.children
+                                var item = items[1] //wode好友组
+                                var by = item.y + scrFriend.iy - fgScroll.position
+                                        * scrFriend.contentHeight
+                                if (by < scrFriend.iy)
+                                    by = scrFriend.iy
+                                item = items[length - 1] //黑名单组
+                                var ey = item.y + scrFriend.iy - fgScroll.position
+                                        * scrFriend.contentHeight
+                                if (ey > scrFriend.iy + scrFriend.height)
+                                    ey = scrFriend.iy + scrFriend.height
+                                fwin.by = by
+                                fwin.ey = ey
+                            }
+                        }
+                    }
+                    onPressed: {
+                        //弹窗关闭
+                        if (fgMenu.visible)
+                            fgMenu.close() //关闭菜单
+                        if (menuPop.visible)
+                            menuPop.close()
+                        if (fMenu.visible)
+                            fMenu.close()
+                        if (mouse.button == Qt.LeftButton) {
+                            isLeft = true
+                            l = true
+                            startPoint.x = mouseX
+                            startPoint.y = mouseY
+                            swx = fwin.x
+                            swy = fwin.y
+                            fwin.firstAllClose = true
+                        } else
+                            isLeft = false
+                    }
+
+                    onReleased: {
+                        if (mouse.button == Qt.LeftButton) {
+                            var ix = s.x - scrFriend.ix
+                            var iy = s.y - scrFriend.iy + fgScroll.position
+                                    * viewFriend.contentHeight //相对于viewfriend 内容项起点位置
+                            var index = viewFriend.indexAt(ix, iy)
+                            if (index == -1) {
+                                console.log("warning:index=-1")
+                                cursorShape = Qt.ArrowCursor
+                                return
+                            }
+                            console.log("moveing friend to group with index ",
+                                        index)
+                            var offx = Math.abs(swx - fwin.x)
+                            var offy = Math.abs(swy - fwin.y)
+                            var b = (!(Math.sqrt(
+                                           offx * offx + offy * offy) < 3))
+                            //忽略小弧度位移
+                            if (fwin.isDarg && b) {
+                                //处理移动事件
+                                if (cursorShape != Qt.ForbiddenCursor) {
+                                    if (index !== fwin.index && index > 0) {
+                                        moveFriend(fwin.fgIndex, index,
+                                                   fwin.fIndex0)
+                                    }
+                                }
+                                cursorShape = Qt.ArrowCursor
+                                fwin.close()
+                                return
+                            }
+                            cursorShape = Qt.ArrowCursor
+                        }
+                        fwin.x = swx
+                        fwin.y = swy
+                        fwin.firstAllClose = false
+                        fwin.opacity = 1.0
+                        btn.w = scrFriend.width - fgScroll.width
+                        scrFriend.clickF(fwin.fgIndex, fwin.fIndex, mouse)
+                        if (mouse.button == Qt.RightButton) {
+                            close()
+                        }
+                    }
+                    onContainsMouseChanged: {
+                        if (!containsMouse) {
+                            l = false
+                            if (!pressed) {
+                                scrFriend.closeFChecked(fwin.fgIndex,
+                                                        fwin.fIndex)
+                                fgScroll.visible = false
+                                console.log("fgscroll close")
+                                close()
+                            }
+                        } else {
+                            scrFriend.checkedF(fwin.fgIndex, fwin.fIndex)
+                        }
+                    }
+                    //是否弹出头像窗口
+                    onHoveredChanged: {
+                        if (containsMouse) {
+                            var obj = {}
+                            obj.posY = fwin.y //与标签对齐
+                            obj.name = fwin.name
+                            obj.tag = fwin.label
+                            obj.grade = fwin.grade
+                            obj.signature = fwin.sig
+                            loaderForHeadImg.obj = obj
+                            actions.headImgAct.trigger() //调用相应动作
+                        } else {
+                            loaderForHeadImg.item.headImgHovered = false //标记为不悬浮
+                        }
+                    }
+
+                    //公式：窗口位置+=鼠标位置-起始位置；实现移动效果
+                    onPositionChanged: {
+                        if (pressed) {
+                            if (!isLeft)
+                                return
+                            fwin.isDarg = true
+                            tx = mouseX - startPoint.x
+                            ty = mouseY - startPoint.y
+                            fwin.x += tx
+                            fwin.y += ty
+                            if (s.x < bx || s.x > ex || (s.y < by
+                                                         || s.y > ey)) {
+                                cursorShape = Qt.ForbiddenCursor
+                            } else
+                                cursorShape = Qt.ArrowCursor
+                        } else {
+                            if (fgScroll.visible) {
+                                if (mouseX > fwin.width - fgScroll.width) {
+                                    scrFriend.closeAllHovered()
+                                    close()
+                                    fgScroll.forceActiveFocus()
+                                }
+                            }
+                        }
+                    }
+                    //滚动
+                    onWheel: {
+                        scrFriend.closeAllHovered()
+                        close()
+                        fgScroll.visible = true
+                    }
+                }
+            }
+        }
+    }
     //菜单
     //好友分组菜单
     Menu {
         property int indexOfPressed: -1
         property int addIndex: -1 //标记添加索引
         id: fgMenu
-        width: 164
-        height: 74
+        width: 154
+        height: 210
         visible: false
         topPadding: 9
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
         parent: scrFriend //视觉对象 开启相对对象坐标定位
         modal: true
+
         Overlay.modal: Rectangle {
             color: "#00000000"
         }
         //弹出时初始化添加索引
         onVisibleChanged: {
             if (visible) {
+                fMenu.visible = false
                 addIndex = -1
                 if (loaderForFG.status == Loader.Ready) {
                     loaderForFG.item.visible = false
                 }
+                if (loaderForFriend.status == Loader.Ready) {
+                    loaderForFriend.item.visible = false
+                }
             }
         }
+        //控制是否可以删除和重命名
+        onIndexOfPressedChanged: {
+            if (indexOfPressed < 2
+                    || indexOfPressed == friendGroupModel.count() - 1) {
+                rmenu.enabled = false
+                dmenu.enabled = false
+            } else {
+                rmenu.enabled = true
+                dmenu.enabled = true
+            }
+        }
+
+        //刷新好友联系人
+        MenuItem {
+            x: 1
+            width: 162
+            height: 30
+            text: qsTr("刷新好友联系人")
+            onTriggered: {
+                console.log("刷新好友联系人")
+            }
+            background: Rectangle {
+                implicitHeight: 30
+                implicitWidth: 162
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onPressed: mouse.accepted = false
+                    onHoveredChanged: {
+                        if (containsMouse) {
+                            parent.color = Qt.lighter("lightgray", 1.15)
+                        } else {
+                            parent.color = "transparent"
+                        }
+                    }
+                }
+            }
+        }
+        //显示在线联系人
+        MenuItem {
+            x: 1
+            width: 162
+            height: 30
+            text: qsTr("显示在线联系人")
+
+            onTriggered: {
+                console.log("显示在线联系人")
+            }
+            background: Rectangle {
+                implicitHeight: 30
+                implicitWidth: 162
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onPressed: mouse.accepted = false
+                    onHoveredChanged: {
+                        if (containsMouse) {
+                            parent.color = Qt.lighter("lightgray", 1.15)
+                        } else {
+                            parent.color = "transparent"
+                        }
+                    }
+                }
+            }
+        }
+        //分割条
+        MenuItem {
+            x: 1
+            width: 162
+            height: 11
+            background: Rectangle {
+                implicitHeight: 11
+                implicitWidth: 162
+                color: "transparent"
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: parent.width
+                    height: 1
+                    color: "lightgray"
+                }
+            }
+        }
+        //添加分组
         MenuItem {
             x: 1
             width: 162
@@ -2533,6 +3218,11 @@ ApplicationWindow {
             text: qsTr("添加分组")
             onTriggered: {
                 console.log("添加分组")
+                //最多添加15个分组
+                if (friendGroupModel.count() > 15) {
+                    return
+                }
+
                 fgMenu.addIndex = fgMenu.indexOfPressed + 1 //标记添加索引
                 var index = fgMenu.addIndex
                 var obj = compFriend.createObject(qqMainWin)
@@ -2547,15 +3237,11 @@ ApplicationWindow {
                     friendsModel[i] = friendsModel[i - 1]
                 }
                 friendsModel[index] = obj
-                console.log(index, "=i")
                 viewFriend.model = null
                 qqMainWin.friendDelegateCount = 0
                 //更新插入
-                friendGroupModel.insert(index, "未命名", "0", "0",
-                                        "none") //先添加一个空项
-                viewFriend.model = friendGroupModel
-                // friendGroupModel.update()
-                console.log("insert")
+                friendGroupModel.insert(index, "未命名", "0", "0", "none")
+                viewFriend.model = friendGroupModel //重赋值模型保证刷新视图
             }
             background: Rectangle {
                 implicitHeight: 30
@@ -2576,11 +3262,11 @@ ApplicationWindow {
         }
 
         MenuItem {
+            id: rmenu
             x: 1
             width: 162
             height: 30
             text: qsTr("重命名")
-
             onTriggered: {
                 console.log("重命名")
                 var items = viewFriend.contentItem.children
@@ -2610,13 +3296,396 @@ ApplicationWindow {
                 }
             }
         }
+        MenuItem {
+            id: dmenu
+            x: 1
+            width: 162
+            height: 30
+            text: qsTr("删除该组")
+            onTriggered: {
+                var index = fgMenu.indexOfPressed
+                var obj = {}
+                obj.content = "dmrFGroup"
+                obj.type = "delete"
+                obj.index = index
+                var model = friendsModel[index]
+                // var length = friendGroupModel.count()
+                friendsModel.splice(index, 1) //删除一个
+                friendGroupModel.remove(index)
+                var length = model.rowCount()
+                if (length > 0) {
+                    var fm = friendsModel[1]
+                    for (var i = 0; i < length; ++i) {
+                        var number = model.data(i, 0)
+                        var name = model.data(i, 1)
+                        var signature = model.data(i, 2)
+                        var imgPath = model.data(i, 3)
+                        var tag = model.data(i, 4)
+                        var grade = model.data(i, 5)
+                        var status = model.data(i, 6)
+                        var infoSet = model.data(i, 7)
+                        var statusSet = model.data(i, 8)
+                        fm.append(number, name, signature, imgPath, tag, grade,
+                                  status, infoSet, statusSet)
+                        fm.sort() //排序更新
+                    }
+                }
+                model.deletion() //释放内存
+                funcc.updateFGroup(obj) //更新远程
+            }
+            background: Rectangle {
+                implicitHeight: 30
+                implicitWidth: 162
+
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onPressed: mouse.accepted = false
+                    onHoveredChanged: {
+                        if (containsMouse) {
+                            parent.color = Qt.lighter("lightgray", 1.15)
+                        } else {
+                            parent.color = "transparent"
+                        }
+                    }
+                }
+            }
+        }
         background: Rectangle {
-            implicitHeight: 74
+            implicitHeight: 210
             implicitWidth: 164
             radius: 3
             border.color: "lightgray"
         }
     }
+    //好友菜单
+    Menu {
+        property int fgIndex: -1
+        property int fIndex: -1
+        property int h: 154
+        id: fMenu
+        width: 156
+        height: h
+        visible: false
+        topPadding: 6
+        bottomPadding: 6
+        leftPadding: 1
+        rightPadding: 1
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+        parent: scrFriend //视觉对象 开启相对对象坐标定位
+        modal: true
+        Overlay.modal: Rectangle {
+            color: "#00000000"
+        }
+        //弹出时初始化添加索引
+        onVisibleChanged: {
+            if (visible) {
+                fgMenu.visible = false
+                if (loaderForFG.status == Loader.Ready) {
+                    loaderForFG.item.visible = false
+                }
+                if (loaderForFriend.status == Loader.Ready) {
+                    loaderForFriend.item.visible = false
+                }
+            }
+        }
+        //发送即时消息
+        MenuItem {
+            height: 30
+            width: 154
+            leftPadding: 12
+            text: qsTr("发送即时消息")
+            onTriggered: {
+                console.log("发送即时消息")
+                try {
+                    var obj = {}
+                    var number = friendsModel[fMenu.fgIndex].data(
+                                fMenu.fIndex) //获取号码
+                    var name = friendsModel[fMenu.fgIndex].data(fMenu.fIndex,
+                                                                1) //获取昵称
+                    var img = friendsModel[fMenu.fgIndex].data(fMenu.fIndex,
+                                                               3) //获取头像
+                    var tag = friendsModel[fMenu.fgIndex].data(fMenu.fIndex,
+                                                               4) //获取头像
+                    obj.number = number + "1" //号码加1表示好友
+                    obj.name = name
+                    obj.headImg = img
+                    obj.tag = tag
+                } catch (err) {
+                    console.log(err.message)
+                    return
+                }
+                try {
+                    var cw = mapChat.get(number)
+                    if (cw == undefined) {
+                        cw = chatComp.createObject(null)
+                        if (!cw) {
+                            console.log("created a object is of failure")
+                            return
+                        }
+                    }
+                    cw.obj = obj
+                } catch (e) {
+                    console.log("warning:", e.message)
+                }
+                actions.openChatWinAct.trigger(cw) //打开好友资料 传要创建的部件
+            }
+        }
+        //分割条
+        MenuItem {
+            width: 154
+            height: 11
+            background: Rectangle {
+                implicitHeight: 11
+                implicitWidth: 154
+                color: "transparent"
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: parent.width
+                    height: 1
+                    color: "lightgray"
+                }
+            }
+        }
+        //查看资料
+        MenuItem {
+            height: 30
+            width: 154
+            leftPadding: 12
+            text: qsTr("查看资料")
+            onTriggered: {
+                console.log("查看资料")
+                try {
+                    var number = friendsModel[fMenu.fgIndex].data(
+                                fMenu.fIndex) //获取号码
+                    var name = friendsModel[fMenu.fgIndex].data(fMenu.fIndex,
+                                                                1) //获取昵称
+                    var sig = friendsModel[fMenu.fgIndex].data(fMenu.fIndex,
+                                                               2) //获取签名
+                    var img = friendsModel[fMenu.fgIndex].data(fMenu.fIndex,
+                                                               3) //获取头像
+                    var tag = friendsModel[fMenu.fgIndex].data(fMenu.fIndex,
+                                                               4) //获取头像
+                } catch (err) {
+                    console.log(err.message)
+                    return
+                }
+                if (number == myqq) {
+                    actions.openAlterUserInfoAct.trigger()
+                } else {
+                    try {
+                        var map = qqMainWin.mapInfo
+                        var obj = map.get(number)
+                        console.log(obj == undefined, number)
+                        if (obj == undefined) {
+                            obj = friendInfoComp.createObject(null)
+                            if (!obj)
+                                throw "created a object is null"
+                            map.set(number, obj)
+                            obj.isFirst = true
+                        }
+                    } catch (e) {
+                        switch (typeof e) {
+                        case "string":
+                            console.log("message:", e)
+                            break
+                        default:
+                            console.log("message:", e.message)
+                        }
+                        return
+                    }
+                    obj.number = number
+                    obj.name = name
+                    obj.signature = sig
+                    obj.headImg = img
+                    obj.tag = tag
+                    obj.fgIndex = fMenu.fgIndex
+                    obj.last = fMenu.fgIndex
+                    actions.openFriendInfoAct.trigger(obj) //打开好友资料 传要创建的部件
+                }
+            }
+        }
+        //分割条
+        MenuItem {
+            width: 154
+            height: 11
+            background: Rectangle {
+                implicitHeight: 11
+                implicitWidth: 154
+                color: "transparent"
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: parent.width
+                    height: 1
+                    color: "lightgray"
+                }
+            }
+        }
+        //修改好友备注
+        MenuItem {
+            height: 30
+            width: 154
+            leftPadding: 12
+            text: qsTr("修改好友备注")
+            onTriggered: {
+                var obj = {}
+                var number = friendsModel[fMenu.fgIndex].data(fMenu.fIndex)
+                obj.type = "alias"
+                obj.number = number
+                obj.index = fMenu.fgIndex
+                loaderForAlterTag.obj = obj
+                actions.openAlterTagAct.trigger() //执行对应行为
+            }
+        }
+
+        //移动联系人至
+        Menu {
+            property string color: "transparent"
+            id: mmenu
+            width: 140
+            height: 100
+            title: " 移动联系人至"
+            cascade: true
+            topPadding: 6
+            bottomPadding: 6
+            leftPadding: 1
+            rightPadding: 1
+            delegate: MenuItem {
+                id: cmenuItem
+                implicitWidth: 154
+                implicitHeight: 30
+
+                onTriggered: {
+                    console.log("移动联系人")
+                    var length = mmenu.count
+                    var index = -1
+                    for (var i = 0; i < length; ++i) {
+                        var item = mmenu.itemAt(i)
+                        if (item == cmenuItem) {
+                            index = i + 1
+                        }
+                    }
+
+                    var b = moveFriend(fMenu.fgIndex, index,
+                                       fMenu.fIndex) //移动好友
+                    //更新资料分组
+                    if (typeof b == "string") {
+                        console.log("moveFriend(fMenu.fgIndex, index, fMenu.fIndex) return a string:",
+                                    b)
+                        try {
+                            item = qqMainWin.mapInfo.get(b)
+                            if (item != undefined) {
+                                item.fgIndex = index //更新资料索引
+                                item.last = index
+                            }
+                        } catch (e) {
+                            console.log("warning:", e.message)
+                        }
+                    }
+                }
+
+                arrow: null
+                indicator: null
+                contentItem: Text {
+                    leftPadding: 0
+                    text: cmenuItem.text
+                    font: cmenuItem.font
+                    horizontalAlignment: Text.AlignHCenter
+                    opacity: enabled ? 1.0 : 0.3
+                    elide: Text.ElideRight
+                }
+                background: Rectangle {
+                    implicitWidth: 138
+                    implicitHeight: 30
+                    opacity: enabled ? 1 : 0.3
+                    color: cmenuItem.highlighted ? Qt.lighter(
+                                                       "lightgray",
+                                                       1.15) : "transparent"
+                }
+            }
+            background: Rectangle {
+                implicitHeight: mmenu.height
+                implicitWidth: 140
+                radius: 3
+                border.color: "lightgray"
+            }
+        }
+        //删除好友
+        MenuItem {
+            id: dfmenu
+            height: 30
+            width: 154
+            leftPadding: 12
+            text: qsTr("删除好友")
+            onTriggered: {
+                console.log("删除好友")
+                var index = fMenu.fgIndex
+                var cindex = fMenu.fIndex
+                var number = friendsModel[index].data(cindex)
+                var item = viewFriend.contentItem.children[index]
+                item.friend.model.remove(cindex)
+                item.friend.model = null
+                item.friend.model = friendsModel[index]
+                friendGroupModel.update(index, 10000)
+                funcc.deleteFriend(index, number) //更新远程
+                //更新ismyself
+                if (number == myqq) {
+                    hasMyself = false
+                }
+            }
+            onVisibleChanged: {
+                if (visible) {
+                    fMenu.h = 184
+                } else {
+                    fMenu.h = 154
+                }
+            }
+        }
+        delegate: MenuItem {
+            id: menuItem
+            implicitWidth: 154
+            implicitHeight: 30
+            arrow: Rectangle {
+                x: parent.width - width
+                implicitWidth: 30
+                implicitHeight: 30
+                color: "transparent"
+                visible: menuItem.subMenu
+                Image {
+                    anchors.centerIn: parent
+                    asynchronous: true
+                    source: "qrc:images/mainInterface/arrowLeft.png"
+                }
+            }
+            indicator: null
+            contentItem: Text {
+                leftPadding: 0
+                text: menuItem.text
+                font: menuItem.font
+                opacity: enabled ? 1.0 : 0.3
+                elide: Text.ElideRight
+            }
+            background: Rectangle {
+                implicitWidth: 154
+                implicitHeight: 30
+                opacity: enabled ? 1 : 0.3
+                color: menuItem.highlighted ? Qt.lighter("lightgray",
+                                                         1.15) : "transparent"
+            }
+        }
+        background: Rectangle {
+            implicitHeight: fMenu.h
+            implicitWidth: 156
+            radius: 3
+            border.color: "lightgray"
+        }
+    }
+    //好友组菜单项
+    Component {
+        id: fgMItem
+        Action {}
+    }
+
     //非界面
     //城市天气模型 保存最多4个城市天气
     ListModel {
@@ -2625,6 +3694,9 @@ ApplicationWindow {
     //好友组模型
     FriendGroupModel {
         id: friendGroupModel
+        onGroupListChanged: {
+            fgMItemTimer.restart() //延迟初始化菜单项
+        }
     }
     //分组好友模型
     Component {
@@ -2644,6 +3716,7 @@ ApplicationWindow {
             }
         }
     }
+
     //等级图标模型
     ListModel {
         id: gradeModel
@@ -2689,7 +3762,33 @@ ApplicationWindow {
             item.edit.forceActiveFocus()
         }
     }
-
+    //当好友组变化时延迟初始化菜单
+    Timer {
+        id: fgMItemTimer
+        interval: 2000
+        onTriggered: {
+            var length = mmenu.count
+            //重置为零
+            for (var i = 0; i < length; ++i) {
+                var obj = mmenu.itemAt(i)
+                if (obj != null) {
+                    mmenu.removeItem(obj)
+                }
+            }
+            length = friendGroupModel.count()
+            //第一项不需要
+            for (i = 1; i < length; ++i) {
+                var name = friendGroupModel.data(i)
+                obj = fgMItem.createObject(mmenu, {
+                                               "text": name
+                                           })
+                obj = mmenu.addAction(obj)
+            }
+            mmenu.height = (i - 1) * 30 + 12
+            funcc.updateAuxiliaryProcessFGoup(friendGroupModel.getGroups(
+                                                  )) //更新辅助进程好友分组
+        }
+    }
     //鼠标拉伸
     //左上角
     Item {
@@ -2710,7 +3809,8 @@ ApplicationWindow {
             }
             onEntered: func.enter(1, qqMainWin)
             onReleased: func.release(qqMainWin)
-            onPositionChanged: func.positionChange(mouse, -1, -1, qqMainWin)
+            onPositionChanged: func.positionChange(mouse, -1, -1, qqMainWin,
+                                                   sizeChanged)
         }
     }
 
@@ -2737,7 +3837,7 @@ ApplicationWindow {
 
             onMouseYChanged: func.positionChange(Qt.point(customPoint.x,
                                                           mouseY), 1, -1,
-                                                 qqMainWin)
+                                                 qqMainWin, sizeChanged)
         }
     }
 
@@ -2761,7 +3861,8 @@ ApplicationWindow {
             }
             onEntered: func.enter(3, qqMainWin)
             onReleased: func.release(qqMainWin)
-            onPositionChanged: func.positionChange(mouse, 1, -1, qqMainWin)
+            onPositionChanged: func.positionChange(mouse, 1, -1, qqMainWin,
+                                                   sizeChanged)
         }
     }
 
@@ -2788,7 +3889,7 @@ ApplicationWindow {
 
             onMouseXChanged: func.positionChange(Qt.point(mouseX,
                                                           customPoint.y), -1,
-                                                 1, qqMainWin)
+                                                 1, qqMainWin, sizeChanged)
         }
     }
 
@@ -2816,7 +3917,7 @@ ApplicationWindow {
 
             onMouseXChanged: func.positionChange(Qt.point(mouseX,
                                                           customPoint.y), 1, 1,
-                                                 qqMainWin)
+                                                 qqMainWin, sizeChanged)
         }
     }
 
@@ -2841,7 +3942,8 @@ ApplicationWindow {
             onEntered: func.enter(7, qqMainWin)
             onReleased: func.release(qqMainWin)
 
-            onPositionChanged: func.positionChange(mouse, -1, 1, qqMainWin)
+            onPositionChanged: func.positionChange(mouse, -1, 1, qqMainWin,
+                                                   sizeChanged)
         }
     }
 
@@ -2869,7 +3971,7 @@ ApplicationWindow {
 
             onMouseYChanged: func.positionChange(Qt.point(customPoint.x,
                                                           mouseY), 1, 1,
-                                                 qqMainWin)
+                                                 qqMainWin, sizeChanged)
         }
     }
 
@@ -2895,9 +3997,11 @@ ApplicationWindow {
             onEntered: func.enter(9, qqMainWin)
             onReleased: func.release(qqMainWin)
 
-            onPositionChanged: func.positionChange(mouse, 1, 1, qqMainWin)
+            onPositionChanged: func.positionChange(mouse, 1, 1, qqMainWin,
+                                                   sizeChanged)
         }
     }
+
     Component.onCompleted: {
         //初始化
         mainWin.width = qqMainWin.width

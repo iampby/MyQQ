@@ -59,6 +59,7 @@ void NativeSocket::readD()
                 }
                 IT=VerifyForFriend;
                 continue;
+                //添加好友
             }else if(content=="addFriend"){
                 QString t=obj.value("type").toString();
                 if(t=="json"){
@@ -68,6 +69,13 @@ void NativeSocket::readD()
                 }
                 size=obj.value("size").toInt();
                 continue;
+                //强制下线
+            }else if(content=="offline"){
+                QString ip=obj.value("ip").toString();
+                QString host=obj.value("host").toString();
+                QString dt=obj.value("datetime").toString();
+                emit emitOffline(ip,host,dt);
+                emit finished();
             }
         }
         switch (IT) {

@@ -3,7 +3,7 @@
 Item {
     //注意，不知道是loader原因还是什么的  含有函数的部件属性容易异常,即最好不要设置任何属性
     signal makeRequestFinished
-    signal sizeChanged(int w, int h, point delta, int directX, int directY)
+   // signal sizeChanged(int w, int h, point delta, int directX, int directY)
     function mainWinReSize(x, y, width, height) {
         //调整main窗口大小
         mainWin.width = width
@@ -94,11 +94,26 @@ Item {
                 if (a === null)
                     return
                 var _24hData = JSON.parse(a)
-                array.windGrade = _24hData.od.od2[24].od25
-                array.temperature = _24hData.od.od2[0].od21
-                array.wind = _24hData.od.od2[0].od24
-                array.pm = _24hData.od.od2[24].od28
-                console.log(" array.pm", array.pm)
+                try {
+                    array.windGrade = _24hData.od.od2[24].od25
+                } catch (e1) {
+                    console.log(e1.message)
+                }
+                try {
+                    array.temperature = _24hData.od.od2[0].od21
+                } catch (e2) {
+                    console.log(e2.message)
+                }
+                try {
+                    array.wind = _24hData.od.od2[0].od24
+                } catch (e3) {
+                    console.log(e3.message)
+                }
+                try {
+                    array.pm = _24hData.od.od2[24].od28
+                } catch (e4) {
+                    console.log(e4.message)
+                }
                 makeRequestFinished()
             }
         }
@@ -146,6 +161,7 @@ Item {
         else
             return partPath + "多云.png" //如出意外天气 返回默认多云
     }
+
     //进入鼠标区域时改变鼠标形状
     function enter(direct, win) {
         funcc.setMyCursor(direct, win)
@@ -159,8 +175,8 @@ Item {
     function release(win) {
         win.isPressed = false
     }
-    //拖拽移动处理
-    function positionChange(newPosition, directX, directY, win/*x轴方向*/ /*y轴方向*/ ) {
+    //拖拽移动处理 sizechanged 是一个拖拽变化处理的回调函数
+    function positionChange(newPosition, directX, directY, win/*x轴方向*/ /*y轴方向*/,sizeChanged) {
         if (!win.isPressed)
             return
         var delta = Qt.point(newPosition.x - win.customPoint.x,
@@ -249,6 +265,44 @@ Item {
         console.log("remain=", remain)
         return remain
     }
+   //参数1:listmodel对象 参数2:等级 对等级模型进行重置等级图标数据
+    function resetGradeModel(model,grade){
+        model.clear() //重置模型数据
+        try{
+        var crown = parseInt(grade / 64), cur //JS除法默认为浮点数运算，需显示认定为整型
+        cur = parseInt(grade - crown * 64)
+        var sun = parseInt(cur / 16) //显示认定为整型
+        cur = cur - sun * 16
+        var moon = parseInt(cur / 4)
+        var star = parseInt(cur - moon * 4)
+        console.log(crown, sun, moon, star)
+        //添加皇冠图像路径
+        for (var i = 0; i < crown; i++) {
+            model.append({
+                                  "img": "qrc:/images/mainInterface/crown.png"
+                              })
+        }
+        for (i = 0; i < sun; i++) {
+            model.append({
+                                  "img": "qrc:/images/mainInterface/sun.png"
+                              })
+        }
+        for (i = 0; i < moon; i++) {
+            model.append({
+                                  "img": "qrc:/images/mainInterface/moon.png"
+                              })
+        }
+        for (i = 0; i < star; i++) {
+            model.append({
+                                  "img": "qrc:/images/mainInterface/star.png"
+                              })
+        }
+        }catch(e){
+            console.log("grade model is of failure for reseting")
+            console.log(e.message)
+        }
+    }
+
     //数组 年 月 日 返回年龄
     function getAge(date) {
         var cur = new Date().toJSON().substring(0, 10)
@@ -360,4 +414,5 @@ Item {
         }
         return constellation
     }
+
 }

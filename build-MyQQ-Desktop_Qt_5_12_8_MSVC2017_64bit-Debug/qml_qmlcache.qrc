@@ -102,5 +102,16 @@
         <file alias="images/mainInterface/addFriendMinPressed.png">../images/mainInterface/addFriendMinPressed.png</file>
         <file alias="images/mainInterface/addFriendsCloseHovered.png">../images/mainInterface/addFriendsCloseHovered.png</file>
         <file alias="images/mainInterface/newGroupTitle.png">../images/mainInterface/newGroupTitle.png</file>
+        <file alias="images/mainInterface/userInfoFG.png">../images/mainInterface/userInfoFG.png</file>
+        <file alias="images/mainInterface/userInfoName.png">../images/mainInterface/userInfoName.png</file>
+        <file alias="images/mainInterface/userInfoTag.png">../images/mainInterface/userInfoTag.png</file>
+        <file alias="images/mainInterface/userInfoPen.png">../images/mainInterface/userInfoPen.png</file>
+        <file alias="images/mainInterface/chatClose.png">../images/mainInterface/chatClose.png</file>
+        <file alias="images/mainInterface/chatMax.png">../images/mainInterface/chatMax.png</file>
+        <file alias="images/mainInterface/chatMin.png">../images/mainInterface/chatMin.png</file>
+        <file alias="images/mainInterface/folder.png">../images/mainInterface/folder.png</file>
+        <file alias="images/mainInterface/scissor.png">../images/mainInterface/scissor.png</file>
+        <file alias="images/mainInterface/sendPix.png">../images/mainInterface/sendPix.png</file>
+        <file alias="images/mainInterface/chatMax1.png">../images/mainInterface/chatMax1.png</file>
     </qresource>
 </RCC>

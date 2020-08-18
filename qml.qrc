@@ -132,5 +132,20 @@
         <file>images/mainInterface/addFriendMinPressed.png</file>
         <file>images/mainInterface/addFriendsCloseHovered.png</file>
         <file>images/mainInterface/newGroupTitle.png</file>
+        <file>main/OfflineTip.qml</file>
+        <file>main/AlterSmallWin.qml</file>
+        <file>main/FriendWin.qml</file>
+        <file>images/mainInterface/userInfoFG.png</file>
+        <file>images/mainInterface/userInfoName.png</file>
+        <file>images/mainInterface/userInfoTag.png</file>
+        <file>images/mainInterface/userInfoPen.png</file>
+        <file>main/ChatWin.qml</file>
+        <file>images/mainInterface/chatClose.png</file>
+        <file>images/mainInterface/chatMax.png</file>
+        <file>images/mainInterface/chatMin.png</file>
+        <file>images/mainInterface/folder.png</file>
+        <file>images/mainInterface/scissor.png</file>
+        <file>images/mainInterface/sendPix.png</file>
+        <file>images/mainInterface/chatMax1.png</file>
     </qresource>
 </RCC>

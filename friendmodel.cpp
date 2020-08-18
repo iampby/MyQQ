@@ -2,12 +2,18 @@
 
 #include <qdebug.h>
 
+
 //FriendData class
-FriendData::FriendData():m_myqq(QString()),
-    m_name(QString()),m_signature(QString()),m_imgPath(QString()),m_tag(QString()),
+FriendData::FriendData(QObject *parent):QObject(parent),
+    m_myqq(QString()),m_name(QString()),m_signature(QString()),m_imgPath(QString()),m_tag(QString()),
     m_grade(QString()),m_status(QString()),m_infoSet(QString()),m_statusSet(QString())
 {
 
+}
+
+FriendData::~FriendData()
+{
+    qDebug()<<"~FriendData()";
 }
 
 QString FriendData::myqq() const
@@ -111,10 +117,40 @@ FriendModel::FriendModel(QObject *parent)
 FriendModel::~FriendModel()
 {
     for (FriendData* i : m_dataList) {
-        delete i;
-        i=nullptr;
+      i->deleteLater();
     }
     m_dataList.clear();
+    qDebug()<<"~FriendModel()";
+}
+
+void FriendModel::sort()
+{
+    int total=m_dataList.size();
+    //Ã°ÅÝÅÅÐò status:ÔÚÏß>ÀëÏß name:a>b
+    for (int var = 0; var < total-1; ++var) {
+        for(int j=var;j<total-1;++j){
+            QString status=m_dataList.at(j)->status();
+            //ÀëÏß×´Ì¬
+          if(status=="0"){
+              QString as=m_dataList.at(j+1)->status();
+            if(status<as){
+                m_dataList.swap(j,j+1);
+            }else {
+                if(m_dataList.at(j)->name()>m_dataList.at(j+1)->name())
+                    m_dataList.swap(j,j+1);
+            }
+          }else{
+              if(m_dataList.at(j)->name()>m_dataList.at(j+1)->name())
+                  m_dataList.swap(j,j+1);
+          }
+        }
+    }
+   this->update(0,total);
+}
+
+void FriendModel::deletion()
+{
+    delete this;
 }
 int FriendModel::rowCount(const QModelIndex &parent) const
 {
@@ -127,7 +163,7 @@ void FriendModel::update( int index)
     if(rowCount()==0)
         return;
     if(index<0)index=0;
-    if(index>=rowCount())index=rowCount()-1;
+    if(index>rowCount())index=rowCount();
     dataChanged(createIndex(index,0),createIndex(index,0));
 }
 
@@ -175,7 +211,6 @@ QVariant FriendModel::data(const QModelIndex &index, int role) const
     int row=index.row();
     if(row<0||row>=m_dataList.count())
         return QVariant();
-    qDebug()<<"role"<<role;
     qDebug()<<m_dataList.at(row)->myqq();
     switch (role) {
     case MyQQRole:
@@ -265,6 +300,8 @@ int FriendModel::rowOf(const QVariant &var, int role) const
     }
     return -1;
 }
+
+
 //row<0  value is inserted and before first item or row >=size() value is inserted and after last item
 void FriendModel::insert(int row, FriendData*value)
 {
@@ -275,6 +312,21 @@ void FriendModel::insert(int row, FriendData*value)
     beginInsertRows(this->createIndex(row,0),row,row);
     m_dataList.insert(row,value);
     endInsertRows();
+}
+
+FriendData *FriendModel::takeItem(const int index)
+{
+ try{
+       if(index<0||index>=rowCount())
+           throw -1;
+    }catch(int&code){
+        qDebug()<<"index is more than range of array";
+    }
+   FriendData* item=m_dataList.value(index);
+   beginRemoveRows(this->createIndex(index,0),index,index);
+   m_dataList.removeAt(index);
+     endRemoveRows();
+   return item;
 }
 
 
@@ -334,6 +386,13 @@ void FriendModel::setData(const int &row,const QString& value, int role)
     qDebug()<<" dataChanged(createIndex(row,0),createIndex(row,0))";
 }
 
+void FriendModel::append(FriendData *item)
+{
+    this->insert(this->rowCount(),item);
+}
+
+
+
 void FriendModel::append(const QString &myqq,const QString &name, const QString &signature,
                          const QString &imgPath, const QString &tag, const QString &grade,
                          const QString &status, const QString &infoSet, const QString &statusSet)
@@ -349,5 +408,4 @@ void FriendModel::append(const QString &myqq,const QString &name, const QString 
     data->setInfoSet(infoSet);
     data->setStatusSet(statusSet);
     this->insert(this->rowCount(),data);
-    qDebug()<<"append a friend";
 }

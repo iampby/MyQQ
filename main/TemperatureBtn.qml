@@ -2,7 +2,7 @@
 import QtQuick.Controls 2.5
 import QtQuick.Layouts 1.3
 import QtGraphicalEffects 1.0
-
+//天气按钮 包含信息：如今天温度、天气图标
 Button {
     property alias whichDay: whichday.text
     property alias temperature: tem.text

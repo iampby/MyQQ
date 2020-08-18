@@ -92,7 +92,6 @@ bool BigFileSocket::writeImg(const QByteArray &content, const QString &filepath,
     if(!dir.exists())dir.mkpath("../");
     if(!img.loadFromData(content,format))
         return false;
-    qDebug()<<"?";
     if(!img.save(filepath,format,0))
         return false;
     return true;
@@ -129,9 +128,8 @@ void BigFileSocket::readD()
                 qDebug()<<"obj"<<obj.value("result").toString();
                 if(obj.value("result").toString()=="writing"){ //Ð´ºÃÓÑÍ·Ïñ
                     m_write=Img;
-                    qDebug()<<"writing"<<m_write<<size;
                     imgName=obj.value("name").toString();
-                    qDebug()<<"img "<<imgName;
+                    qDebug()<<"image name: "<<imgName;
                     size=obj.value("size").toVariant().toLongLong();
                     if(size<=0){
                         qDebug()<<"size is less than or equal to zero";
@@ -244,7 +242,7 @@ void BigFileSocket::readD()
                     size=0;
                     QString r=obj.value("result").toString();
                     if(r=="true"){
-                    emit result(0,"../user/"+myqq+"/friendsInfo/verifyFriends/","png");
+                    emit result(0,"../user/"+myqq+"/friends/verifyFriends/","png");
                     }
                     else
                         emit result(-1);
@@ -313,6 +311,7 @@ void BigFileSocket::err(QAbstractSocket::SocketError code)
 void BigFileSocket::post()
 {
     this->connectToHost(ip,port);
+    timeout=6000;
     QTimer::singleShot(timeout,this,[=](){
         qDebug()<<"QTimer::singleShot "<<timeout<<"s";
         emit finished(-1);

@@ -8,6 +8,7 @@ import "qrc:/"
 Window {
     property bool getFocus: false
     property var cwin: null
+    property alias model: listModel
     signal getFVerify(var obj)
     id: win
     width: 602
@@ -41,7 +42,7 @@ Window {
                 return x !== ""
             })
             time = time[0] + "年" + time[1] + "月" + time[2] + "日" + " " + temp
-            var path = "file:../user/" + mainWin.myqq + "/friendsInfo/verifyFriends/" + o
+            var path = "file:../user/" + mainWin.myqq + "/friends/verifyFriends/" + o
             listModel.append({
                                  "r_number": o,
                                  "r_name": cobj["name"],
@@ -1008,8 +1009,12 @@ Window {
                             id: newBtn
                             width: 28
                             height: 22
-                            //打开添加好友对话框
+                            //打开添加好友组对话框
                             onClicked: {
+                                if(qqMainWin.friendGroupModel.count()>15){
+                                  console.log("the number of friend group is not more than fifteen")
+                                    return
+                                }
                                 funcc.openAddFGroupWidget(cwin, qqMainWin)
                             }
                             background: Rectangle {
@@ -1055,6 +1060,7 @@ Window {
                         y: (parent.height - height) / 2
                         text: "确定"
                         onClicked: {
+                            //if()
                             var obj = {}
                             obj.groupName = groupCBox.currentText
                             obj.myqq = qqMainWin.myqq
@@ -1065,6 +1071,7 @@ Window {
                             var items = lview.contentItem.children
                             var length = listModel.count
                             funcc.handleFVerify(obj) //推送远程
+
                             for (var i = 0; i < length; ++i) {
                                 var item = items[i]
                                 if (item.number == cwin.number) {
@@ -1099,20 +1106,24 @@ Window {
         id: groupModel
         Component.onCompleted: {
             console.log(" groupModel")
-            var qm = qqMainWin.friendGroupModel
-            var length = qm.count()
-            console.log(length)
-            for (var i = 1; i < length; ++i) {
-                console.log(qm.data(i))
-                groupModel.append({
-                                      "modelData": qm.data(i)
-                                  })
-            }
+            initGroup()
         }
     }
-
+   //函数
+    //更新好友组模型
+    function initGroup(){
+        groupModel.clear()
+        var qm = qqMainWin.friendGroupModel
+        var length = qm.count()
+        console.log(length)
+        for (var i = 1; i < length; ++i) {
+            console.log(qm.data(i))
+            groupModel.append({
+                                  "modelData": qm.data(i)
+                              })
+        }
+    }
     Component.onCompleted: {
-
         funcc.setWin(win)
         funcc.setSourceIco(":/images/bellinfo.png")
     }

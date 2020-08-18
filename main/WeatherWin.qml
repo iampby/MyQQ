@@ -38,7 +38,7 @@ Window {
     width: 236
     height: 246
     visible: true
-    flags: Qt.Tool | Qt.FramelessWindowHint
+    flags: Qt.Tool | Qt.FramelessWindowHint|Qt.WindowStaysOnTopHint//保持和父窗口同水平
     color: "#00000000"
     onVisibilityChanged: {
         if (visible) {

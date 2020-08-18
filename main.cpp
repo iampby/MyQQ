@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<FuncC>("FuncC",1,0,"FuncC");
     qmlRegisterType<FriendGroupModel>("Model",1,0,"FriendGroupModel");
     qmlRegisterType<FriendModel>("Model",1,0,"FriendModel");
-    // qmlRegisterType<HeadImgWidget>("HeadWidget",1,0,"HeadWidget");
+    qmlRegisterType<FriendData>("Model",1,0,"FriendData");
 
 
 

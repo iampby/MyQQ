@@ -13,7 +13,7 @@ LoginSocket::LoginSocket(const QString &myqq, const QString &passwd, QObject *pa
     connect(this, SIGNAL(bytesWritten(qint64)),&loop,SLOT(quit()));
 
     connect(this,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(err(QAbstractSocket::SocketError)));
-    QTimer::singleShot(10000,this,[=](){
+    QTimer::singleShot(5000,this,[=](){
         qDebug()<<"conection timeout 10s ,login exit";
         if(this->state()==QAbstractSocket::UnconnectedState)
         emit finished(3);
