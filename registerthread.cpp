@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "registerthread.h"
 #include<qdatastream.h>
 #include<qbytearray.h>
@@ -18,7 +21,7 @@ void RegisterThread::run()
     QTcpSocket* tcpsock=new QTcpSocket();
     if(!tcpsock->setSocketDescriptor(socketDescriptor)){
         emit error(tcpsock->error());
-        qDebug()<<QStringLiteral("设置套接字出错!");
+        qDebug()<<("设置套接字出错!");
         return;
     }
     tcpsock->setSocketOption(QAbstractSocket::KeepAliveOption,true);//windows必设

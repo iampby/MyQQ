@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<myqq number="10003">
+<myqq number="10004">
     <set>
         <头像>0</头像>
         <名称>0</名称>
@@ -11,27 +11,28 @@
     <friendGroup count="6">
         <好友组1 name="我的设备" set="none">none</好友组1>
         <好友组2 name="我的好友" set="none">
-            <friend myqq="10003">
-                <昵称>潘佰远1</昵称>
-                <个性签名 isNull="false">我是潘佰远啊</个性签名>
-                <头像路径>../userData/10003/historyHeadImg/01.png</头像路径>
+            <friend myqq="10004">
+                <昵称>5</昵称>
+                <个性签名 isNull="true">none</个性签名>
+                <头像路径>../userData/10004/historyHeadImg/01.png</头像路径>
                 <备注 isNull="true">none</备注>
                 <等级>0</等级>
                 <状态>0</状态>
                 <set status="0" isNull="true" info="0">none</set>
             </friend>
+        </好友组2>
+        <好友组3 name="朋友" set="none">none</好友组3>
+        <好友组4 name="家人" set="none">
             <friend myqq="10002">
                 <昵称>10002</昵称>
                 <个性签名 isNull="false">我是10002</个性签名>
                 <头像路径>../userData/10002/historyHeadImg/01.png</头像路径>
-                <备注 isNull="false">2</备注>
+                <备注 isNull="false">潘佰远</备注>
                 <等级>0</等级>
                 <状态>0</状态>
                 <set status="0" isNull="true" infoet="0">none</set>
             </friend>
-        </好友组2>
-        <好友组3 name="朋友" set="none">none</好友组3>
-        <好友组4 name="家人" set="none"/>
+        </好友组4>
         <好友组5 name="同学" set="none">none</好友组5>
         <好友组6 name="黑名单" set="none">none</好友组6>
     </friendGroup>

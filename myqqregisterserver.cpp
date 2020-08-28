@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "myqqregisterserver.h"
 #include"registerthread.h"
 #include<qsqlquery.h>
@@ -14,7 +17,7 @@ MyQQRegisterServer::MyQQRegisterServer(QObject *parent)
     :QTcpServer (parent)
 {
     count=0;
-    QStringLiteral("");
+    ("");
 }
 
 MyQQRegisterServer::~MyQQRegisterServer()
@@ -38,9 +41,9 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
     db.setUserName("sa");
     db.setPassword("123456x");
     if(db.open())
-        qDebug()<<QStringLiteral("打开数据库成功！");
+        qDebug()<<("打开数据库成功！");
     else {
-        qDebug()<<QStringLiteral("打开数据库失败！");
+        qDebug()<<("打开数据库失败！");
     }
     QSqlQuery query("use myqq",db);
     query.setForwardOnly(true);
@@ -55,7 +58,7 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
             myqq=query.value(0).toLongLong();
             sucessful=query.value(1).toBool();
             if(sucessful){
-                qDebug()<<QStringLiteral("注册成功！qq:")<<myqq<<endl;
+                qDebug()<<("注册成功！qq:")<<myqq<<endl;
                 if(myqq!=0){
                     QDir dir;
                     dir.mkpath(QString("../userData/%1/historyHeadImg").arg(myqq));
@@ -83,15 +86,15 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
                                 doc.appendChild(root);
                                 QDomElement set=doc.createElement("set");
                                 QStringList showList;//显示信息配置
-                                showList<<QStringLiteral("头像")<<QStringLiteral("名称")<<QStringLiteral("列表")
-                                       <<QStringLiteral("联系人")<<QStringLiteral("黑名单");
+                                showList<<("头像")<<("名称")<<("列表")
+                                       <<("联系人")<<("黑名单");
                                 for(int i=0;i<showList.count();i++){
                                     QDomElement showEle=doc.createElement(showList.at(i));
                                     QDomText showT= doc.createTextNode("0");
                                     showEle.appendChild(showT);
                                     set.appendChild(showEle);
                                 }
-                                QDomElement passwdEle=doc.createElement(QStringLiteral("独立密码"));
+                                QDomElement passwdEle=doc.createElement(("独立密码"));
                                 QDomText passwdT= doc.createTextNode("none");
                                 passwdEle.appendChild(passwdT);
                                 set.appendChild(passwdEle);
@@ -99,39 +102,39 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
 
                                 QDomElement friends=doc.createElement("friendGroup");
                                 QStringList friendGroup;
-                                friendGroup<<QStringLiteral("我的设备")<<QStringLiteral("我的好友")
-                                          <<QStringLiteral("朋友")<<QStringLiteral("家人")<<QStringLiteral("同学")
-                                         <<QStringLiteral("黑名单");
+                                friendGroup<<("我的设备")<<("我的好友")
+                                          <<("朋友")<<("家人")<<("同学")
+                                         <<("黑名单");
                                 friends.setAttribute("count",friendGroup.length());//标记数
                                 for(int i=0;i<friendGroup.count();i++){
-                                    QDomElement tempEle=doc.createElement(QStringLiteral("好友组")+QString("%1").arg(i+1));
+                                    QDomElement tempEle=doc.createElement(("好友组")+QString("%1").arg(i+1));
                                     QDomText value=doc.createTextNode("none");
                                     tempEle.setAttribute("name",friendGroup.at(i));
                                     tempEle.setAttribute("set","none");
-                                    if(friendGroup.at(i)==QStringLiteral("我的好友")){
+                                    if(friendGroup.at(i)==("我的好友")){
                                         QDomElement meEle=doc.createElement("friend");
                                         meEle.setAttribute("myqq",QString("%1").arg(myqq));
-                                        QDomElement nameEle=doc.createElement(QStringLiteral("昵称"));
+                                        QDomElement nameEle=doc.createElement(("昵称"));
                                         QDomText nameT=doc.createTextNode(name);
                                         nameEle.appendChild(nameT);
-                                        QDomElement signatureEle=doc.createElement(QStringLiteral("个性签名"));
+                                        QDomElement signatureEle=doc.createElement(("个性签名"));
                                         signatureEle.setAttribute("isNull","true");
                                         QDomText signatureT=doc.createTextNode("none");
                                         signatureEle.appendChild(signatureT);
-                                        QDomElement headPathEle=doc.createElement(QStringLiteral("头像路径"));
+                                        QDomElement headPathEle=doc.createElement(("头像路径"));
                                         QDomText headPathT=doc.createTextNode(headPath);
                                         headPathEle.appendChild(headPathT);
-                                        QDomElement tagEle=doc.createElement(QStringLiteral("备注"));
+                                        QDomElement tagEle=doc.createElement(("备注"));
                                         tagEle.setAttribute("isNull","true");
                                         QDomText tagT=doc.createTextNode("none");//默认为none
                                         tagEle.appendChild(tagT);
-                                        QDomElement gradeEle=doc.createElement(QStringLiteral("等级"));
+                                        QDomElement gradeEle=doc.createElement(("等级"));
                                         QDomText gradeT=doc.createTextNode("0");
                                         gradeEle.appendChild(gradeT);
-                                        QDomElement statusEle=doc.createElement(QStringLiteral("状态"));
+                                        QDomElement statusEle=doc.createElement(("状态"));
                                         QDomText statusT=doc.createTextNode("0");
                                         statusEle.appendChild(statusT);
-                                        QDomElement setEle=doc.createElement(QStringLiteral("set"));
+                                        QDomElement setEle=doc.createElement(("set"));
                                         setEle.setAttribute("isNull","true");
                                         setEle.setAttribute("info","0");
                                         setEle.setAttribute("status","0");
@@ -152,7 +155,7 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
                                     friends.appendChild(tempEle);
                                 }
                                 QDomElement groups=doc.createElement("groupChat");
-                                QDomElement groupChatEle=doc.createElement(QStringLiteral("我的群聊"));
+                                QDomElement groupChatEle=doc.createElement(("我的群聊"));
                                 groupChatEle.setAttribute("isNull","true");
                                 QDomText groupChatT=doc.createTextNode("none");
                                 groups.appendChild(groupChatEle);
@@ -168,11 +171,12 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
                     }
                 }
             }else{
-                qDebug()<<QStringLiteral("注册失败！")<<endl;
+                qDebug()<<("注册失败！")<<endl;
             }
         }
     }else
-        qDebug()<<QStringLiteral("sql 语句执行失败！");
+        qDebug()<<("sql 语句执行失败！");
+     db.close();//记得关闭 好删除文件
     return sucessful;
 }
 

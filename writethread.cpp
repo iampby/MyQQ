@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "writethread.h"
 #include"global.h"
 #include <qsqlquery.h>
@@ -20,7 +23,7 @@ WriteThread::WriteThread(qintptr socketDescriptor, qint64 count,  QObject *paren
     size=0;FT=NoFile;
     tcpsocket=new QTcpSocket(this);//继承父类，线程与父类一致
     if(!tcpsocket->setSocketDescriptor(this->socketDescriptor)) {
-        qDebug()<<QStringLiteral("创建套接字失败！");
+        qDebug()<<("创建套接字失败！");
         emit error(tcpsocket->error());
         return;
     }
@@ -41,7 +44,7 @@ QSqlQuery WriteThread::openDB(bool &ok) const
     //用精确到秒的时间和100个值范围的count计数来控制1秒内可以打开的数据库连接，即100个
     QSqlDatabase db=QSqlDatabase::addDatabase("QODBC",QDateTime::currentDateTime().toString("yy-M-d h:m:s")+QString("%1").arg(count));
 
-    QString connectString = QStringLiteral(
+    QString connectString = (
                 "DRIVER={sql server};"
                 "SERVER=127.0.0.1;"
                 "DATABASENAME:qtmanager;"
@@ -50,15 +53,16 @@ QSqlQuery WriteThread::openDB(bool &ok) const
                 "PWD=123456x;");
     db.setDatabaseName(connectString);
     if(db.open())
-        qDebug()<<QStringLiteral("打开数据库成功！");
+        qDebug()<<("打开数据库成功！");
     else {
-        qDebug()<<QStringLiteral("打开数据库失败！");
+        qDebug()<<("打开数据库失败！");
         ok=false;
         return QSqlQuery();
     }
     qDebug()<<"login"<<db.connectionName()<<db.databaseName();
     QSqlQuery query(" use myqq ",db);
     ok=true;
+
     return query;
 }
 
@@ -286,6 +290,34 @@ bool WriteThread::updateWall(QByteArray &bytes)
     return ok;
 }
 
+bool WriteThread::updateWall(int &pos)
+{
+    QDir dir("../userData/"+myqq+"/photoWall/");
+    QFile file(dir.filePath(QString("%1").arg(pos)));
+    if(!file.exists()){
+        qDebug()<<"warning:can't find the file i want to  remove  ";
+        return false;
+    }
+    if(!file.remove()){
+        qDebug()<<"warning:removing  is of failure to the file";
+        return false;
+    }
+    QStringList list=dir.entryList(QDir::Files,QDir::Name);//按名字排序
+    int length=list.length();
+    for(int i=0;i<length;++i){
+        int name=list.at(i).toInt();
+        if(name>pos){
+            QFile tf(dir.filePath(QString("%1").arg(name)));
+            //序号减1
+            if(!tf.rename(dir.filePath(QString("%1").arg(--name)))){
+                qDebug()<<"warning:renaming  is of failure to the file:"<<name+1;
+                continue;
+            }
+        }
+    }
+    return true;
+}
+
 bool WriteThread::updateUserInfo(QByteArray &bytes)
 {
     qDebug()<<"updateUserInfo(QByteArray &bytes) called";
@@ -362,8 +394,8 @@ bool WriteThread::updateUserInfo(QByteArray &bytes)
             updateNameHandle(name);//标记昵称变换
         }else  {
             qDebug()<<"query.exec() unsuccessfully";
-            return ok;
         }
+        return ok;
     }else{
         qDebug()<<"it's not object";
         return false;
@@ -394,18 +426,18 @@ bool WriteThread::addFGroup(QByteArray &bytes)
     //找插入位置
     qint32 index=obj.value("index").toInt(-1);
     if(index==-1){
-        QDomElement addEle=doc.createElement(QStringLiteral("好友组")+QString("%1").arg(count-1));
+        QDomElement addEle=doc.createElement(("好友组")+QString("%1").arg(count-1));
         addEle.setAttribute("name",name);
         addEle.setAttribute("set","none");
 
         QDomText addText=doc.createTextNode("none");
         addEle.appendChild(addText);
         QDomNode last=dele.lastChild();
-        last.toElement().setTagName(QStringLiteral("好友组")+QString("%1").arg(count));//重设标签名
+        last.toElement().setTagName(("好友组")+QString("%1").arg(count));//重设标签名
         dele.insertBefore(addEle,last);
     }else{
         //先插入
-        QDomElement addEle=doc.createElement(QStringLiteral("好友组")+QString("%1").arg(index+1));
+        QDomElement addEle=doc.createElement(("好友组")+QString("%1").arg(index+1));
         addEle.setAttribute("name",name);
         addEle.setAttribute("set","none");
         QDomNodeList list= dele.childNodes();
@@ -422,7 +454,7 @@ bool WriteThread::addFGroup(QByteArray &bytes)
         count-=1;//遍历排除最后一个
         for(int i=index;i<count;++i){
             QDomNode tnode=list.item(i);
-            tnode.toElement().setTagName(QStringLiteral("好友组")+QString("%1").arg(i+2));//组名进1
+            tnode.toElement().setTagName(("好友组")+QString("%1").arg(i+2));//组名进1
         }
     }
     //文件写入
@@ -510,7 +542,7 @@ bool WriteThread::dmrFGroup(QByteArray &bytes)
             for (int var = index; var < count;++var) {
                 node=list.item(var);
                 qDebug()<<node.toElement().tagName()<<var;
-                node.toElement().setTagName(QStringLiteral("好友组")+QString("%1").arg(var+1));
+                node.toElement().setTagName(("好友组")+QString("%1").arg(var+1));
             }
             //好友移动到第二组好友组
             node=list.item(1);
@@ -717,7 +749,7 @@ bool WriteThread::dmrFriend(QByteArray &bytes)
                 node=list.item(var);
                 if(node.toElement().attribute("myqq")==number){
                     qDebug()<<"found target number "<<number;
-                    QDomElement tele=  node.firstChildElement(QStringLiteral("备注"));
+                    QDomElement tele=  node.firstChildElement(("备注"));
                     if(tele.isNull()){
                         qDebug()<<"found a null node element";
                         return false;
@@ -734,8 +766,8 @@ bool WriteThread::dmrFriend(QByteArray &bytes)
                         }
                     }else{
                         if(tag.isEmpty()){
-                         tele.setAttribute("isNull","true");
-                         tag="none";
+                            tele.setAttribute("isNull","true");
+                            tag="none";
                         }
                         node=tele.firstChild();
                         QDomText ttext=domDoc.createTextNode(tag);
@@ -760,6 +792,138 @@ bool WriteThread::dmrFriend(QByteArray &bytes)
         return true;
     }
     return false;
+}
+//保存好友消息 上线即传
+bool WriteThread::fMessageSave(QByteArray &bytes)
+{
+    QString number=fileName;//接收方号码
+    if(bytes.isEmpty()){
+        qDebug()<<"warning:message is empty";
+        return false;
+    }
+    //打开数据库
+    QDir dir(QString("../userData/%1/friendsInfo/chat").arg(number));
+    if(!dir.mkpath("./")){
+        qDebug()<<"dir mkplath is of failure";
+        return false;
+    }
+    QString tid;
+    std::thread::id id=std::this_thread::get_id();
+    std::stringstream sin;
+    sin << id;
+    tid=QString::fromStdString(sin.str());
+    QSqlDatabase db=QSqlDatabase::addDatabase("QSQLITE",tid+myqq);
+    db.setDatabaseName(dir.absoluteFilePath( QString("_%1.db").arg(myqq)));
+    db.setHostName("MyQQ");
+    db.setUserName("sa");
+    db.setPassword("@123456x");
+    if(db.open())
+        qDebug()<<("打开sqliite数据库成功！");
+    else {
+        qDebug()<<("打开sqliite数据库失败！名字:")<<(db.databaseName());
+        return false;
+    }
+    QSqlQuery query(db);
+    bool ok=  query.exec(QString(" SELECT count(*) FROM sqlite_master WHERE type='table' AND name ='_%1info' ").arg(myqq));
+    if(!ok){
+        qDebug()<<"count of table query is of failure ";
+         db.close();//记得关闭 好删除文件
+        return false;
+    }
+    query.next();
+    if(query.value(0).toInt()==0){
+        //注意autoincrement只与Integer挂钩
+        ok= query.exec(QString( " create table _%1info (\
+                                id integer not null primary key  autoincrement,\
+                                data BLOD not null,\
+                                datetime datetime not null,\
+                                type text not null,\
+                                adhesion bit default 0,\
+                                number text not null\
+                                )").arg(myqq));
+                       if(!ok){
+                           qDebug()<<"create a table is of failure";
+                            db.close();//记得关闭 好删除文件
+                           return false;
+                       }
+    }
+    QXmlStreamReader reader(bytes);
+    while (!reader.atEnd()) {
+        reader.readNext();
+        if(reader.isStartElement()){
+            if(reader.qualifiedName()=="消息"){
+                QString time=reader.attributes().value("datetime").toString();
+                qDebug()<<"message content finding ,sending time"<<time;
+                //内容处理
+                while(!reader.atEnd()){
+                    reader.readNext();
+                    if(reader.isStartElement()){
+                        QString name=reader.qualifiedName().toString();
+                        qDebug()<<"information qualified name:"<<name;
+                        QString type=reader.attributes().value("type").toString();
+                        QString text=reader.readElementText();
+                        if(type=="text"){
+                            query.prepare(QString(" insert into _%1info(data,datetime,type,adhesion,number) values(?,?,?,?,?) ").arg(myqq));
+                            query.addBindValue(QVariant(text));
+                            query.addBindValue(QVariant(time));
+                            query.addBindValue(QVariant(type));
+                            query.addBindValue(QVariant(true));
+                            query.addBindValue(QVariant(myqq));
+                            ok=query.exec();
+                            if(!ok){
+                                qDebug()<<"type:text;query.exec(\" insert into _%1info(data,datetime,type,adhesion) values(?,?,?,?) \")=false";
+                                continue;
+                            }
+                        }else if(type=="pixmap"){//把16进制转为原数据保存
+                            QByteArray pix=QByteArray::fromHex(text.toUtf8());//转化为原数据
+                            query.prepare(QString(" insert into _%1info(data,datetime,type,adhesion,number) values(?,?,?,?,?) ").arg(myqq));
+                            query.addBindValue(QVariant(pix));
+                            query.addBindValue(QVariant(time));
+                            query.addBindValue(QVariant(type));
+                            query.addBindValue(QVariant(true));
+                            query.addBindValue(QVariant(myqq));
+                            ok=query.exec();
+                            if(!ok){
+                                qDebug()<<"type:pixmap; query.exec(\" insert into _%1info(data,datetime,type,adhesion) values(?,?,?,?) \")=false";
+                                continue;
+                            }
+                        }
+                    }else if(reader.isEndElement()){
+                        if(reader.qualifiedName()=="消息")
+                            break;
+                    }
+                }
+                break;
+            }
+        }
+    }
+    ok= query.exec(QString(" select count(*) from _%1info ").arg(myqq));
+    if(!ok){
+        qDebug()<<"query.exec(QString(\" select count(*) from _%1info \").arg(myqq)) is of failure";
+         db.close();//记得关闭 好删除文件
+        return false;
+    }
+    try{
+        query.next();
+        int count=query.value(0).toInt();
+        if(count<=0)throw "table is empty";
+        ok= query.exec(QString(" update _%1info set adhesion=%2 where id=%3 ").arg(myqq).arg(false).arg(count));
+        if(!ok){
+            qDebug()<<" update _%1info set adhesion=%2  failure";
+             db.close();//记得关闭 好删除文件
+            return false;
+        }
+    }catch(_exception&e){
+        qDebug()<<"a exception:"<<"type is "<<e.type<<"name is"<<e.name;
+         db.close();//记得关闭 好删除文件
+        return false;
+    }catch(...){
+        qDebug()<<"a unknow excpetion";
+         db.close();//记得关闭 好删除文件
+        return false;
+    }
+     db.close();//记得关闭 好删除文件
+    return true;
 }
 
 bool WriteThread::updateSignatureHandle(QString &sig)
@@ -787,10 +951,10 @@ bool WriteThread::updateSignatureHandle(QString &sig)
                     qDebug()<<"a number is found:"<<mq;
                     friends.append(mq);
                     if(mq==myqq){
-                        QDomElement myself=friendEle.firstChildElement(QStringLiteral("个性签名"));
+                        QDomElement myself=friendEle.firstChildElement(("个性签名"));
                         if(!myself.isNull()){
                             qDebug()<<"find myself "<<mq<<" signature:"<<myself.text();
-                            QDomElement newele=doc.createElement(QStringLiteral("个性签名"));
+                            QDomElement newele=doc.createElement(("个性签名"));
                             QString value=sig;
                             QDomText text;
                             if(value.isEmpty()){
@@ -906,10 +1070,10 @@ void WriteThread::updateNameHandle(QString &name)
                     qDebug()<<"a number is found:"<<mq;
                     friends.append(mq);
                     if(mq==myqq){
-                        QDomElement myself=friendEle.firstChildElement(QStringLiteral("昵称"));
+                        QDomElement myself=friendEle.firstChildElement(("昵称"));
                         if(!myself.isNull()){
                             qDebug()<<"find myself "<<mq<<" signature:"<<myself.text();
-                            QDomElement newele=doc.createElement(QStringLiteral("昵称"));
+                            QDomElement newele=doc.createElement(("昵称"));
                             QDomText text=doc.createTextNode(name);//保存签名
                             newele.appendChild(text);
                             friendEle.replaceChild(newele,myself);//替换
@@ -1004,7 +1168,7 @@ void WriteThread::updateXMLSignature(QString &number, QString &me,QString&sig)
     QDomElement dele=doc.documentElement();
     dele=dele.firstChildElement("friendGroup");
     QDomNodeList listGroup=dele.childNodes();
-     int length=listGroup.size();
+    int length=listGroup.size();
     for (int var = 0; var <length; ++var) {
         QDomElement ele=listGroup.at(var).toElement();
         if(ele.hasChildNodes()){
@@ -1014,10 +1178,10 @@ void WriteThread::updateXMLSignature(QString &number, QString &me,QString&sig)
                 if(!mq.isEmpty()){
                     qDebug()<<"a number is found:"<<mq;
                     if(mq==myqq){
-                        QDomElement myself=friendEle.firstChildElement(QStringLiteral("个性签名"));
+                        QDomElement myself=friendEle.firstChildElement(("个性签名"));
                         if(!myself.isNull()){
                             qDebug()<<"find myself "<<mq<<" signature:"<<myself.text();
-                            QDomElement newele=doc.createElement(QStringLiteral("个性签名"));
+                            QDomElement newele=doc.createElement(("个性签名"));
                             QDomText text;
                             if(sig.isEmpty()){
                                 text=doc.createTextNode("none");
@@ -1068,10 +1232,10 @@ void WriteThread::updateXMLName(QString &number, QString &me, QString &name)
                 if(!mq.isEmpty()){
                     qDebug()<<"a number is found:"<<mq;
                     if(mq==myqq){
-                        QDomElement myself=friendEle.firstChildElement(QStringLiteral("昵称"));
+                        QDomElement myself=friendEle.firstChildElement(("昵称"));
                         if(!myself.isNull()){
                             qDebug()<<"find myself "<<mq<<" signature:"<<myself.text();
-                            QDomElement newele=doc.createElement(QStringLiteral("昵称"));
+                            QDomElement newele=doc.createElement(("昵称"));
                             QDomText text=doc.createTextNode(name);//保存签名
                             newele.appendChild(text);
                             friendEle.replaceChild(newele,myself);//替换
@@ -1123,11 +1287,10 @@ bool WriteThread::exitStatusHandle(QString&status)
                         if(mq.isEmpty())continue;
                         //改变自己的状态
                         if(mq==myqq){
-                            ele=ele.firstChildElement("状态");
-                            QString oldStatus=ele.nodeValue();
+                            ele=ele.firstChildElement(("状态"));
+                            QString oldStatus=ele.text();
                             if(oldStatus==status)return true;//状态相同还回
                             ele.firstChild().setNodeValue(status);//修改文本节点
-                            qDebug()<<"????????????"<< ele.firstChild().nodeValue();
                             //保存状态改变信息
                         }else {
                             QDir tdir("../userData/"+mq+"/friendsInfo/chat");
@@ -1138,34 +1301,36 @@ bool WriteThread::exitStatusHandle(QString&status)
                                 }
                             }
                             bool ok=true;
+
                             QSqlDatabase db1=QSqlDatabase::addDatabase("QSQLITE",tid+mq);
-                            db1.setDatabaseName(QString("../userData/%1/friendsInfo/chat/_%21.db").arg(mq).arg(myqq));
+                            db1.setDatabaseName(QString("../userData/%1/friendsInfo/chat/_%2.db").arg(mq).arg(myqq));
                             db1.setHostName("MyQQ");
                             db1.setUserName("sa");
                             db1.setPassword("@123456x");
                             if(db1.open())
-                                qDebug()<<QStringLiteral("打开sqliite数据库成功！");
+                                qDebug()<<("打开sqliite数据库成功！");
                             else {
-                                qDebug()<<QStringLiteral("打开sqliite数据库失败！名字:")<<(db1.databaseName());
+                                qDebug()<<("打开sqliite数据库失败！名字:")<<(db1.databaseName());
                                 return false;
                             }
                             QSqlQuery query1(db1);
-                            ok=  query1.exec(QString(" SELECT count(*) FROM sqlite_master WHERE type='table' AND name ='_%1status' ").arg(myqq+"1"));
+                            ok=  query1.exec(QString(" SELECT count(*) FROM sqlite_master WHERE type='table' AND name ='_%1status' ").arg(myqq));
                             if(!ok){
                                 qDebug()<<"count of table query is of failure ";
+                                db1.close();//记得关闭 好删除文件
                                 return false;
                             }
                             query1.next();
                             if(query1.value(0).toInt()==0){
                                 ok= query1.exec(QString( " create table _%1status (\
                                                          status varchar(2)\
-                                                         )").arg(myqq+"1") );
+                                                         )").arg(myqq) );
                                                 if(!ok){
                                                     qDebug()<<"created a table is is of failure ";
                                                     continue;
                                                 }
                             }
-                            ok= query1.exec(QString(" select count(*) from _%1status ").arg(myqq+"1"));
+                            ok= query1.exec(QString(" select count(*) from _%1status ").arg(myqq));
                             if(!ok){
                                 qDebug()<<" select count(*),status from _%1status: failure";
                                 continue;
@@ -1173,7 +1338,7 @@ bool WriteThread::exitStatusHandle(QString&status)
 
                             query1.next();
                             if(query1.value(0).toInt()==0){
-                                query1.prepare(QString(" insert into _%1status values(?) ").arg(myqq+"1"));
+                                query1.prepare(QString(" insert into _%1status values(?) ").arg(myqq));
                                 query1.addBindValue(QVariant(status));
                                 ok= query1.exec();
                                 if(!ok){
@@ -1182,12 +1347,13 @@ bool WriteThread::exitStatusHandle(QString&status)
                                 }
                             }else{
                                 //转义保证非一次性取代时保证符号不发生歧义
-                                ok= query1.exec(QString(" update _%1status  set status=\'%2\' ").arg(myqq+"1").arg(status));
+                                ok= query1.exec(QString(" update _%1status  set status=\'%2\' ").arg(myqq).arg(status));
                                 if(!ok){
-                                    qDebug()<<"update _%11status  set status='%2': failure";
+                                    qDebug()<<"update _%1status  set status='%2': failure";
                                     continue;
                                 }
                             }
+                            db1.close();//记得关闭 好删除文件
                             setXmlStatus(myqq,mq,status);//修改对应文件状态
                         }
                     }
@@ -1196,7 +1362,7 @@ bool WriteThread::exitStatusHandle(QString&status)
         }
         //保存文件
         if(!file.open(QIODevice::WriteOnly|QIODevice::Truncate)){
-           qDebug()<<"warning:opended for second time the  xml file to alter the status  unsuccessfully ";
+            qDebug()<<"warning:opended for second time the  xml file to alter the status  unsuccessfully ";
             return false ;
         }
         QTextStream stream(&file);
@@ -1231,8 +1397,8 @@ void WriteThread::setXmlStatus(QString &opposite, QString &me, QString &status)
                     QString mq=ele.attribute("myqq");
                     //改变xml状态记录
                     if(mq==opposite){
-                        ele=ele.firstChildElement("状态");;
-                        ele.setNodeValue(status);
+                        ele=ele.firstChildElement(("状态"));;
+                        ele.firstChild().setNodeValue(status);
                         j=length1;
                         i=length;
                         break;//跳出循环
@@ -1243,7 +1409,7 @@ void WriteThread::setXmlStatus(QString &opposite, QString &me, QString &status)
     }
     //保存文件
     if(!file.open(QIODevice::WriteOnly|QIODevice::Truncate)){
-       qDebug()<<"warning:opended for second time the opposite xml file to alter the status   unsuccessfully ";
+        qDebug()<<"warning:opended for second time the opposite xml file to alter the status   unsuccessfully ";
         return ;
     }
     QTextStream stream(&file);
@@ -1260,11 +1426,9 @@ void WriteThread::timer()
     });
 }
 
-
-
 void WriteThread::readD()
 {
-    while (tcpsocket->bytesAvailable()>size&&size>=0) {
+    while (tcpsocket->bytesAvailable()>0&&size>=0) {
         if(size==0){
             QByteArray header=tcpsocket->read(1);
             QDataStream stream(&header,QIODevice::ReadOnly);
@@ -1338,17 +1502,30 @@ void WriteThread::readD()
                     }
                     //9 updatePhotoWall
                 }else if(in=="9"){
+                    myqq=obj.value("myqq").toString();
+                    if(myqq.isEmpty()){
+                        qDebug()<<"warning:myqq.isEmpty()";
+                        tcpsocket->disconnectFromHost();
+                        return;//退出线程
+                    }
                     QString content=obj.value("content").toString();
                     if(content=="updatePhotoWall"){
-                        myqq=obj.value("myqq").toString();
-                        if(myqq.isEmpty()){
-                            qDebug()<<"warning:myqq.isEmpty()";
-                            tcpsocket->disconnectFromHost();
-                            return;//退出线程
-                        }
                         FT=PhotoWall;
                         size=1;
                         continue;
+                        //删除照片
+                    }else if(content=="removePhotoWall"){
+                        int pos=obj.value("pos").toInt(-1);
+                        if(pos==-1){
+                            qDebug()<<"went to remove a not existis item ";
+                            emit finished();
+                            return;
+                        }
+                        if(updateWall(pos)){
+                            qDebug()<<"remove a photo from walls successfully";
+                        }
+                        emit finished();
+                        return;
                     }
                     //更新用户修改的信息
                 }else if(in=="10"){
@@ -1406,6 +1583,26 @@ void WriteThread::readD()
                         size=1;
                         continue;
                     }
+                }else if(in=="18"){
+                    //18  sendFMessage
+                    QString content=obj.value("content").toString();
+                    if(content=="sendFMessage"){
+                        myqq=obj.value("myqq").toString();
+                        if(myqq.isEmpty()){
+                            qDebug()<<"warning:myqq.isEmpty()";
+                            tcpsocket->disconnectFromHost();
+                            return;//退出线程
+                        }
+                        fileName=obj.value("number").toString();
+                        if( fileName.isEmpty()){
+                            qDebug()<<"warning:opposite is empty";
+                            tcpsocket->disconnectFromHost();
+                            return;//退出线程
+                        }
+                        FT=FMessageXml;
+                        size=1;
+                       continue;
+                    }
                 }
             }
         }else{
@@ -1421,6 +1618,9 @@ void WriteThread::readD()
             case DMRFiend:
                 bytes.append(data);
                 break;
+            case FMessageXml:
+                bytes.append(data);
+                break;
             default:
                 return;
             }
@@ -1431,7 +1631,6 @@ void WriteThread::readD()
 void WriteThread::disconnected()
 {
     qDebug()<<"  Write QTcpSocket disconnected";
-    qDebug()<<"writethread: the executing thread is "<<this->thread()->currentThread();
     size=0;
     switch (FT) {
     //更新历史头像
@@ -1485,6 +1684,12 @@ void WriteThread::disconnected()
     case DMRFiend:
         if(dmrFriend(bytes)){
             qDebug()<<" updating the friend successfully";
+        }
+        break;
+        //好友消息保存
+    case FMessageXml:
+        if(fMessageSave(bytes)){
+            qDebug()<<" saved friend message successfully";
         }
         break;
     default:

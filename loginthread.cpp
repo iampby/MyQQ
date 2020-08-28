@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "loginthread.h"
 #include"global.h"
 #include<qtcpsocket.h>
@@ -7,7 +10,6 @@
 #include <qdir.h>
 #include <qdatetime.h>
 #include<QXmlStreamReader>
-#include<qeventloop.h>
 #include <qdatastream.h>
 #include <QJsonArray>
 #include <qtimer.h>
@@ -15,6 +17,7 @@
 #include<qdir.h>
 #include <qpixmap.h>
 #include <QDomDocument>
+#include<qsqlerror.h>
 #include<sstream>
 //因为套接字发送数据可能是粘在一起的，所以要先发送个数据大小
 //最好是在发送头字节加个int标记大小，这里用int8标记json数据，因为发送数据的最小单位就是字节了，保证接收到，同时json字节小于256
@@ -25,8 +28,9 @@ LoginThread::LoginThread(qintptr socketDescriptor, qint64 count, QObject *parent
     :QObject(parent),socketDescriptor(socketDescriptor),count(count),noDis(false)
 {
     tcpsocket=new QTcpSocket(this);//tcpsocket 必须继承父类 才能流畅地使用线程
+    loop.setParent(this);//移动到父类
     if(!tcpsocket->setSocketDescriptor(this->socketDescriptor)) {
-        qDebug()<<QStringLiteral("创建套接字失败！");
+        qDebug()<<("创建套接字失败！");
         emit error(tcpsocket->error());
         return;
     }
@@ -34,10 +38,7 @@ LoginThread::LoginThread(qintptr socketDescriptor, qint64 count, QObject *parent
     connect(tcpsocket,&QTcpSocket::readyRead,this,&LoginThread::readD);
     connect(this,&LoginThread::startTimer,this,&LoginThread::timer);
     connect(tcpsocket,&QTcpSocket::disconnected,this,&LoginThread::disconnected);
-    connect(tcpsocket,&QTcpSocket::bytesWritten,this,[=](qint64 bytes){
-        emit loopStop();
-        qDebug()<<"bytesWritten:"<<bytes<<"bytes";
-    });
+    connect(tcpsocket,&QTcpSocket::bytesWritten,&loop,&QEventLoop::quit);//一旦写入完成结束事件循环
 }
 
 LoginThread::~LoginThread()
@@ -126,19 +127,19 @@ void LoginThread::writeInfoToOpposite(QString ip, quint16 port, QJsonObject obj,
     connect(verSock,QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),verSock,[=](QAbstractSocket::SocketError code){
         switch (code) {
         case QAbstractSocket::ConnectionRefusedError:
-            qDebug()<<QStringLiteral("连接被拒接或超时！")<<endl;
+            qDebug()<<("连接被拒接或超时！")<<endl;
             break;
         case QAbstractSocket::RemoteHostClosedError:
-            qDebug()<<QStringLiteral("远程主机已关闭！")<<endl;
+            qDebug()<<("远程主机已关闭！")<<endl;
             break;
         case QAbstractSocket::HostNotFoundError:
-            qDebug()<<QStringLiteral("主机没有发现！")<<endl;
+            qDebug()<<("主机没有发现！")<<endl;
             break;
         case QAbstractSocket::UnknownSocketError:
-            qDebug()<<QStringLiteral("未知错误！")<<endl;
+            qDebug()<<("未知错误！")<<endl;
             break;
         default:
-            qDebug()<<QStringLiteral("出现了错误！")<<endl;
+            qDebug()<<("出现了错误！")<<endl;
         }
         verSock->deleteLater();
         loop->deleteLater();
@@ -155,7 +156,7 @@ void LoginThread::writeInfoToOpposite(QString ip, quint16 port, QJsonObject obj,
 }
 
 //在线状态收尾处理
-void LoginThread::statusChanged(QString &status,QString&myqq)
+void LoginThread::statusChanged(QString status,QString&myqq)
 {
     QFile file("../userData/"+myqq+"/info.xml");
     if(file.open(QIODevice::ReadOnly)){
@@ -186,8 +187,8 @@ void LoginThread::statusChanged(QString &status,QString&myqq)
                         if(mq.isEmpty())continue;
                         //改变自己的状态
                         if(mq==myqq){
-                            ele=ele.firstChildElement(QStringLiteral("状态"));
-                             ele.firstChild().setNodeValue(status);//修改文本节点
+                            ele=ele.firstChildElement(("状态"));
+                            ele.firstChild().setNodeValue(status);//修改文本节点
                             //保存状态改变信息
                         }else {
                             QDir tdir("../userData/"+mq+"/friendsInfo/chat");
@@ -199,41 +200,42 @@ void LoginThread::statusChanged(QString &status,QString&myqq)
                             }
                             bool ok=true;
                             QSqlDatabase db1=QSqlDatabase::addDatabase("QSQLITE",tid+mq);
-                            db1.setDatabaseName(QString("../userData/%1/friendsInfo/chat/_%21.db").arg(mq).arg(myqq));
+                            db1.setDatabaseName(QString("../userData/%1/friendsInfo/chat/_%2.db").arg(mq).arg(myqq));
                             db1.setHostName("MyQQ");
                             db1.setUserName("sa");
                             db1.setPassword("@123456x");
                             if(db1.open())
-                                qDebug()<<QStringLiteral("打开sqliite数据库成功！");
+                                qDebug()<<("打开sqliite数据库成功！");
                             else {
-                                qDebug()<<QStringLiteral("打开sqliite数据库失败！名字:")<<(db1.databaseName());
+                                qDebug()<<("打开sqliite数据库失败！名字:")<<(db1.databaseName());
                                 return;
                             }
                             QSqlQuery query1(db1);
-                            ok=  query1.exec(QString(" SELECT count(*) FROM sqlite_master WHERE type='table' AND name ='_%1status' ").arg(myqq+"1"));
+                            ok=  query1.exec(QString(" SELECT count(*) FROM sqlite_master WHERE type='table' AND name ='_%1status' ").arg(myqq));
                             if(!ok){
                                 qDebug()<<"count of table query is of failure ";
+                                db1.close();//记得关闭 好删除文件
                                 return;
                             }
                             query1.next();
                             if(query1.value(0).toInt()==0){
                                 ok= query1.exec(QString( " create table _%1status (\
                                                          status varchar(2)\
-                                                         )").arg(myqq+"1") );
+                                                         )").arg(myqq) );
                                                 if(!ok){
                                                     qDebug()<<"created a table is is of failure ";
                                                     continue;
                                                 }
                             }
-                            ok= query1.exec(QString(" select count(*) from _%1status ").arg(myqq+"1"));
+                            ok= query1.exec(QString(" select count(*) from _%1status ").arg(myqq));
                             if(!ok){
-                                qDebug()<<" select count(*),status from _%11status: failure";
+                                qDebug()<<" select count(*),status from _%1status: failure";
                                 continue;
                             }
 
                             query1.next();
                             if(query1.value(0).toInt()==0){
-                                query1.prepare(QString(" insert into _%1status values(?) ").arg(myqq+"1"));
+                                query1.prepare(QString(" insert into _%1status values(?) ").arg(myqq));
                                 query1.addBindValue(QVariant(status));
                                 ok= query1.exec();
                                 if(!ok){
@@ -241,13 +243,14 @@ void LoginThread::statusChanged(QString &status,QString&myqq)
                                     continue;
                                 }
                             }else{
-                                ok= query1.exec(QString(" update _%1status  set status='%2' ").arg(myqq+"1",status));
+                                ok= query1.exec(QString(" update _%1status  set status='%2' ").arg(myqq,status));
                                 if(!ok){
                                     qDebug()<<"update _%1status  set status='%2': failure";
                                     continue;
                                 }
                             }
                             //改变好友xml状态记录
+                             db1.close();//记得关闭 好删除文件
                             setXmlStatus(myqq,mq,status);
                         }
                     }
@@ -256,11 +259,11 @@ void LoginThread::statusChanged(QString &status,QString&myqq)
         }
         //保存文件
         if(!file.open(QIODevice::WriteOnly|QIODevice::Truncate)){
-           qDebug()<<"warning:opended  the xml file to alter status  unsuccessfully ";
+            qDebug()<<"warning:opended  the xml file to alter status  unsuccessfully ";
             return ;
         }
         QTextStream stream(&file);
-       infoDoc .save(stream,4);
+        infoDoc.save(stream,4);
         file.close();
     }
 }
@@ -292,6 +295,7 @@ void LoginThread::setXmlStatus(QString &opposite, QString &me, QString &status)
                     if(mq==opposite){
                         ele=ele.firstChildElement("状态");;
                         ele.firstChild().setNodeValue(status);
+                        i=length;
                         break;//跳出循环
                     }
                 }
@@ -300,7 +304,7 @@ void LoginThread::setXmlStatus(QString &opposite, QString &me, QString &status)
     }
     //保存文件
     if(!file.open(QIODevice::WriteOnly|QIODevice::Truncate)){
-       qDebug()<<"warning:opended for second time the opposite xml file to alter the status   unsuccessfully ";
+        qDebug()<<"warning:opended for second time the opposite xml file to alter the status   unsuccessfully ";
         return ;
     }
     QTextStream stream(&file);
@@ -310,6 +314,7 @@ void LoginThread::setXmlStatus(QString &opposite, QString &me, QString &status)
 
 void LoginThread::offlineOtherHost(QString &ip, QString &host, QString &oldIP, quint16 &oldPort, QString &datetime)
 {
+    qDebug()<<"last ip="<<oldIP<<",port="<<oldPort;
     QTcpSocket*offlineSock=new QTcpSocket(this);
     QEventLoop*loop=new QEventLoop(offlineSock);
     //事件圈
@@ -317,20 +322,20 @@ void LoginThread::offlineOtherHost(QString &ip, QString &host, QString &oldIP, q
     //连接
     connect(offlineSock,&QTcpSocket::connected,offlineSock,[=](){
 
-            QJsonDocument tempDoc;
-            QJsonObject tempObj;
-            tempObj.insert("content",QJsonValue("offline"));
-            tempObj.insert("ip",QJsonValue(ip));
-            tempObj.insert("host",QJsonValue(host));
-            tempObj.insert("datetime",QJsonValue(datetime));
-            tempDoc.setObject(tempObj);
-            QByteArray size;
-            QDataStream s(&size,QIODevice::WriteOnly);
-            s.setVersion(QDataStream::Qt_4_0);
-            quint8 l=tempDoc.toJson().size();
-            s<<l;
-            offlineSock->write(size+tempDoc.toJson());
-            loop->exec();
+        QJsonDocument tempDoc;
+        QJsonObject tempObj;
+        tempObj.insert("content",QJsonValue("offline"));
+        tempObj.insert("ip",QJsonValue(ip));
+        tempObj.insert("host",QJsonValue(host));
+        tempObj.insert("datetime",QJsonValue(datetime));
+        tempDoc.setObject(tempObj);
+        QByteArray size;
+        QDataStream s(&size,QIODevice::WriteOnly);
+        s.setVersion(QDataStream::Qt_4_0);
+        quint8 l=tempDoc.toJson().size();
+        s<<l;
+        offlineSock->write(size+tempDoc.toJson());
+        loop->exec();
         offlineSock->close();
         offlineSock->deleteLater();
         loop->deleteLater();
@@ -338,19 +343,19 @@ void LoginThread::offlineOtherHost(QString &ip, QString &host, QString &oldIP, q
     connect(offlineSock,QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),offlineSock,[=](QAbstractSocket::SocketError code){
         switch (code) {
         case QAbstractSocket::ConnectionRefusedError:
-            qDebug()<<QStringLiteral("连接被拒接或超时！")<<endl;
+            qDebug()<<("连接被拒接或超时！")<<endl;
             break;
         case QAbstractSocket::RemoteHostClosedError:
-            qDebug()<<QStringLiteral("远程主机已关闭！")<<endl;
+            qDebug()<<("远程主机已关闭！")<<endl;
             break;
         case QAbstractSocket::HostNotFoundError:
-            qDebug()<<QStringLiteral("主机没有发现！")<<endl;
+            qDebug()<<("主机没有发现！")<<endl;
             break;
         case QAbstractSocket::UnknownSocketError:
-            qDebug()<<QStringLiteral("未知错误！")<<endl;
+            qDebug()<<("未知错误！")<<endl;
             break;
         default:
-            qDebug()<<QStringLiteral("出现了错误！")<<endl;
+            qDebug()<<("出现了错误！")<<endl;
         }
         offlineSock->deleteLater();
         loop->deleteLater();
@@ -385,9 +390,9 @@ void LoginThread::readD()
 {
     qDebug()<<"login executing thread is "<<this->thread()->currentThread();
     //用精确到秒的时间和100个值范围的count计数来控制1秒内可以打开的数据库连接，即100个
-    QSqlDatabase db=QSqlDatabase::addDatabase("QODBC",QDateTime::currentDateTime().toString("yy-M-d h:m:s")+QString("%1").arg(count));
+    QSqlDatabase db=QSqlDatabase::addDatabase("QODBC",QString("%1").arg( QDateTime::currentDateTime().toTime_t())+QString("%1").arg(count));
 
-    QString connectString = QStringLiteral(
+    QString connectString = (
                 "DRIVER={sql server};"
                 "SERVER=127.0.0.1;"
                 "DATABASENAME:qtmanager;"
@@ -397,12 +402,13 @@ void LoginThread::readD()
     db.setDatabaseName(connectString);
     qDebug()<<"curtime"<<QTime::currentTime();
     if(db.open())
-        qDebug()<<QStringLiteral("打开数据库成功！");
+        qDebug()<<("打开数据库成功！");
     else {
-        qDebug()<<QStringLiteral("打开数据库失败！");
+        qDebug()<<("打开数据库失败！")<<db.lastError();
         emit finished();//由于同时打开数据库过多或者其他原因结束
         return;
     }
+
     qDebug()<<"login"<<db.connectionName()<<db.databaseName();
     QSqlQuery query(" use myqq ",db);
 
@@ -410,8 +416,7 @@ void LoginThread::readD()
     QJsonDocument writeJson;//注意每使用一次json文档变量，即使json文档不相同， json文档都会膨胀
     QJsonObject writeObj;
     qint64 byteSize;//写入io设备字节的大小
-    QEventLoop loop;//控制写入是否继续
-    connect(this,&LoginThread::loopStop,&loop,&QEventLoop::quit);//一旦写入完成结束事件循环
+
     if(!readJson.isEmpty()){
         if(readJson.isObject()){
             QJsonObject obj=readJson.object();
@@ -419,26 +424,26 @@ void LoginThread::readD()
                 qDebug()<<"isObject"<<endl;
                 QJsonValue in=obj.value("instruct");
                 if(in.toString()=="1"){//登录检测
-                    qDebug()<<QStringLiteral("登录信息验证")<<endl;
+                    qDebug()<<("登录信息验证")<<endl;
                     QString myqq=obj.value("myqq").toString();
                     QString passwd=obj.value("password").toString();
                     QString hostname=obj.value("hostname").toString();
                     QString ip=obj.value("ip").toString();
                     QString port=obj.value("serverPort").toString();
                     if(!(myqq.isEmpty()|passwd.isEmpty()|hostname.isEmpty()|ip.isEmpty())){
-                        qDebug()<<QStringLiteral("not empty")<<myqq.toLongLong()<<endl;
+                        qDebug()<<("not empty")<<myqq.toLongLong()<<endl;
                         query.prepare(" select myqq,passwd,signLog,isConnected from userInfo where myqq=? ");
                         query.bindValue(0,myqq.toLongLong());
                         if(query.exec()){
-                            qDebug()<<QStringLiteral("execution is successful")<<endl;
+                            qDebug()<<("execution is successful")<<endl;
                             query.next();
                             if(query.isValid()){
-                                qDebug()<<QStringLiteral("isvalid");
+                                qDebug()<<("isvalid");
                                 QString temp=query.value(1).toString();
                                 QString logRec=query.value(2).toString();
                                 bool isCon=query.value(3).toBool();
                                 if(temp!=passwd){//密码错误
-                                    qDebug()<<QStringLiteral("passwd err")<<endl;
+                                    qDebug()<<("passwd err")<<endl;
                                     writeObj.insert("instruct",QJsonValue("10"));
                                     writeObj.insert("result",QJsonValue(2));
                                     writeJson.setObject(writeObj);
@@ -452,11 +457,21 @@ void LoginThread::readD()
                                     return;
                                 }
                                 //已经连接则断开之前的连接
+
                                 if(isCon){
                                     //获取上次登录记录
-                                    QStringList list=logRec.split(";;",QString::SkipEmptyParts);
-
                                     qDebug()<<"other host will be offline ";
+                                    QStringList list=logRec.split(";;",QString::SkipEmptyParts);
+                                    QString oldIP;
+                                    try{
+                                        if(list.size()<1)throw "index out of range";
+                                        oldIP =list.at(0);
+                                    }catch(_exception& e){
+                                        qDebug()<<"error:type="<<e.type<<",name="<<e.name;
+                                    }catch(...){
+                                        qDebug()<<"a unkown fatal error";
+                                    }
+                                    list=oldIP.split(" ",QString::SkipEmptyParts);
                                     try{
                                         if(list.size()<5)throw QString("index out of range");
                                     }catch(QString &code){
@@ -477,12 +492,11 @@ void LoginThread::readD()
                                         return;
                                     }
 
-                                    QString oldIP =list.at(0);
-                                    list=oldIP.split(" ",QString::SkipEmptyParts);
                                     oldIP=list.at(1);//ip
                                     QString temp=list.at(2);//port
                                     quint16 oldPort=(quint16)temp.toUInt();
                                     temp=list.at(3)+" "+list.at(4);//日期加时间
+                                    qDebug()<<"now ip="<<ip<<",port="<<port;
                                     offlineOtherHost(ip,hostname,oldIP,oldPort,temp);
                                 }
                                 logRec= handleLogRec(logRec,hostname,ip,port);
@@ -493,7 +507,7 @@ void LoginThread::readD()
                                 query.bindValue(2,QVariant("1"));
                                 query.bindValue(3,QVariant(myqq.toLongLong()));
                                 if(query.exec()){
-                                    qDebug()<<QStringLiteral("连接更新成功！");
+                                    qDebug()<<("连接更新成功！");
                                 }
 
                                 //获取基本信息，如name,personalizedSignature,activeDays
@@ -503,10 +517,10 @@ void LoginThread::readD()
                                 if(query.exec()){
                                     query.next();
                                     if(query.isValid()){
-                                        qDebug()<<QStringLiteral("读取MyQQ(")+myqq+QStringLiteral(")基本信息成功");
+                                        qDebug()<<("读取MyQQ(")+myqq+(")基本信息成功");
                                         QString name=query.value(0).toString();//昵称
                                         QString sex=query.value(1).toString();//性别
-                                        QString headPath=query.value(2).toString();//头像路径
+                                        QString headPath="../userData/"+myqq+"/historyHeadImg/01.png";//query.value(2).toString();//头像路径
                                         QString signature=query.value(3).toString();//个性签名
                                         qint64 days=query.value(4).toLongLong();//活跃天数
                                         quint8 grade=query.value(5).toInt();//等级
@@ -522,8 +536,7 @@ void LoginThread::readD()
                                         qDebug()<<"files"<<headImg.size();
                                         if(headImg.open(QIODevice::ReadOnly)){
 
-                                            //如果有未读好友信息，发送Client
-                                            // query.prepare(" select savePath from info_t where typeId=1 and id= ?  and Unsend=1 ");
+
                                             QByteArray img;
                                             byteSize=headImg.size();
                                             img.resize(byteSize);
@@ -554,6 +567,9 @@ void LoginThread::readD()
                                                 if(infoFile.open(QIODevice::ReadOnly)){
                                                     qDebug()<<"successfully opened info.xml file ";
                                                     byteSize=infoFile.size();
+                                                    if(byteSize==0){
+                                                        qDebug()<<"warning:bytesize is nulll";
+                                                    }
                                                     QJsonDocument infojson;
                                                     QJsonObject infoobj;
                                                     qDebug()<<"infoFile size:"<<byteSize;
@@ -584,8 +600,8 @@ void LoginThread::readD()
                                                         writeObj.insert("days",QJsonValue(days));
                                                         writeObj.insert("grade",QJsonValue(grade));
                                                         writeObj.insert("status",QJsonValue(status));
-                                                        writeObj.insert(QStringLiteral("所在地"),QJsonValue(where));
-                                                        writeObj.insert(QStringLiteral("故乡"),QJsonValue(hometown));
+                                                        writeObj.insert(("所在地"),QJsonValue(where));
+                                                        writeObj.insert(("故乡"),QJsonValue(hometown));
                                                         writeJson.setObject(writeObj);
                                                         s=writeJson.toJson().size();
                                                         QByteArray size3;//重写一个size头 不能复用size，否则每写入一次都会膨胀
@@ -605,7 +621,7 @@ void LoginThread::readD()
                                     }
                                 }
                             }else{//MyQQ号码错误
-                                qDebug()<<QStringLiteral("account err")<<endl;
+                                qDebug()<<("account err")<<endl;
                                 writeObj.insert("instruct",QJsonValue("10"));
                                 writeObj.insert("result",QJsonValue(1));
                                 writeJson.setObject(writeObj);
@@ -621,7 +637,7 @@ void LoginThread::readD()
                         }
                     }
                     //失败执行
-                    qDebug()<<QStringLiteral("failed exec")<<endl;
+                    qDebug()<<("failed exec")<<endl;
                     writeObj.insert("instruct",QJsonValue("10"));
                     writeObj.insert("result",QJsonValue(3));
                     writeJson.setObject(writeObj);
@@ -633,10 +649,9 @@ void LoginThread::readD()
                     tcpsocket->write(size+writeJson.toJson());
                     loop.exec();
                     return;
-                }else if(in.toString()=="2"){//传头像
+                }else if(in.toString()=="2"){//传头像和消息记录
                     QString myqq=obj.value("myqq").toString();
                     QString content=obj.value("content").toString();
-                    qDebug()<<myqq<<content;
                     if(content=="headImg"){
                         QMap<QString,QString>list;
                         QFile info("../userData/"+myqq+"/info.xml");
@@ -648,7 +663,7 @@ void LoginThread::readD()
                                 reader.readNextStartElement();
                                 if(reader.name().toString()=="friend"){
                                     temp=reader.attributes().value("myqq").toString();
-                                }else if(reader.name().toString()==QStringLiteral("头像路径")){
+                                }else if(reader.name().toString()==("头像路径")){
                                     if(!temp.isEmpty()){
                                         list.insert(temp,reader.readElementText());
                                         temp=QString();
@@ -708,36 +723,43 @@ void LoginThread::readD()
                             tid=QString::fromStdString(sin.str());
                             qDebug()<<"threadID : "<<tid;
                             QDir dir(QString("../userData/%1/friendsInfo/chat").arg(myqq));
-                           if(dir.exists()){
+
+                            if(dir.exists()){
                                 QStringList list=dir.entryList(QStringList("*.db"),QDir::Files);
                                 qint32 length=list.length();
                                 bool ok;
                                 for(qint32 i=0;i<length;++i){
                                     QString name=list.at(i);
+                                    qDebug()<<"finding database name:"<<name;
                                     QSqlDatabase db1=QSqlDatabase::addDatabase("QSQLITE",tid+myqq+QString("%1").arg(i));
                                     db1.setDatabaseName(dir.filePath(name));
                                     db1.setHostName("MyQQ");
                                     db1.setUserName("sa");
                                     db1.setPassword("@123456x");
                                     if(db1.open())
-                                        qDebug()<<QStringLiteral("打开sqliite数据库成功！");
+                                        qDebug()<<("打开sqliite数据库成功！");
                                     else {
-                                        qDebug()<<QStringLiteral("打开sqliite数据库失败！名字:")<<(db1.databaseName());
+                                        qDebug()<<("打开sqliite数据库失败！名字:")<<(db1.databaseName());
                                         continue;
                                     }
                                     QSqlQuery query1(db1);
-                                    ok=  query1.exec(QString(" SELECT count(*) FROM sqlite_master WHERE type='table' AND name ='%1status' ").arg(name.left(name.length()-3)));
+                                    ok=  query1.exec(QString(" SELECT count(*) FROM sqlite_master WHERE type='table' AND name ='_%1status' ").arg(name.left(name.length()-3)));
                                     if(!ok){
                                         qDebug()<<"count of table query is of failure ";
+                                        db1.close();//记得关闭 好删除文件
                                         return;
                                     }
                                     query1.next();
                                     if(query1.value(0).toInt()!=0){
-                                        query1.exec(" delete %1status ");
+                                        ok= query1.exec(QString( " drop table _%1status ").arg(name.left(name.length()-3)));
+                                        if(!ok){
+                                            qDebug()<<"warning:drop  a table about status is of failure";
+                                        }
                                     }
                                     QFile file(dir.filePath(name));
                                     if(!file.open(QIODevice::ReadOnly)){
                                         qDebug()<<"opened file is of failure";
+                                        db1.close();//记得关闭 好删除文件
                                         return;
                                     }
                                     QByteArray data=file.readAll();
@@ -746,7 +768,7 @@ void LoginThread::readD()
                                     dbobj.insert("instruct",QJsonValue("20"));
                                     dbobj.insert("dbName",QJsonValue(name));
                                     dbobj.insert("size",QJsonValue(data.size()));
-                                    dbobj.insert("content",QJsonValue("writeDB"));
+                                    dbobj.insert("result",QJsonValue("writeDB"));
                                     dbdoc.setObject(dbobj);
                                     quint8 l=dbdoc.toJson().size();
                                     QByteArray size;
@@ -757,11 +779,65 @@ void LoginThread::readD()
                                     loop.exec();
                                     tcpsocket->write(data);
                                     loop.exec();
+                                    //
+                                    query1.clear();
+                                    db1.close();//必须关闭数据库文件占用  才能删除
                                     file.close();
-                                    file.remove();//不保存消息记录
+                                   qDebug()<<"delete result"<< file.fileName()<<file.remove();//不保存消息记录
                                 }
                             }
-
+                            //传最新的验证消息
+                            QDir vdir("../userData/"+myqq+"/friendsInfo/verifyFriends");
+                            if(vdir.exists()){
+                                QFileInfoList  list=vdir.entryInfoList(QStringList("*.json"),QDir::Files,QDir::Time);//时间大到小排序
+                                try{
+                                    if(list.length()>0){
+                                        QString filename=list.at(0).absoluteFilePath();
+                                        QFile vfile(filename);
+                                        if(vfile.exists()){
+                                            if(vfile.open(QIODevice::ReadOnly)){
+                                                QJsonDocument tdoc=QJsonDocument::fromJson(vfile.readAll());
+                                                QJsonObject tobj=tdoc.object();
+                                                if(tobj.isEmpty())throw "the friend verify infromation is empty";
+                                                QJsonObject sobj;
+                                                sobj.insert("name",QJsonValue(tobj.value("name").toString()));
+                                                sobj.insert("time",QJsonValue(tobj.value("time").toString()));
+                                                sobj.insert("number",QJsonValue(tobj.value("number").toString()));
+                                                tdoc=QJsonDocument();
+                                                tdoc.setObject(sobj);
+                                                QByteArray sdata=tdoc.toJson();
+                                                if(sdata.isEmpty())throw "sending friend verify data is empty";
+                                                //重置
+                                                writeJson=QJsonDocument();
+                                                writeObj=QJsonObject();
+                                                writeObj.insert("instruct",QJsonValue("20"));
+                                                writeObj.insert("result",QJsonValue("writeVerify"));
+                                                writeObj.insert("size",QJsonValue(sdata.size()));
+                                                writeJson.setObject(writeObj);
+                                                quint8 l=writeJson.toJson().size();
+                                                QByteArray size;
+                                                QDataStream stream(&size,QIODevice::WriteOnly);
+                                                stream.setVersion(QDataStream::Qt_4_0);
+                                                stream<<l;
+                                                tcpsocket->write(size+writeJson.toJson());
+                                                loop.exec();
+                                                tcpsocket->write(sdata);
+                                                loop.exec();
+                                                vfile.close();
+                                               // vfile.remove();//不保存消息记录
+                                            }else{
+                                                qDebug()<<"a friend adding verify file is of failure for opening";
+                                                throw "opened file failure";
+                                            }
+                                        }
+                                        }
+                                }catch(_exception&e){
+                                    qDebug()<<"exception:type "<<e.type<<",name "<<e.name;
+                                }
+                            }
+                            //重置
+                            writeJson=QJsonDocument();
+                            writeObj=QJsonObject();
                             writeObj.insert("instruct",QJsonValue("20"));
                             writeObj.insert("result",QJsonValue("true"));
                             writeJson.setObject(writeObj);
@@ -902,7 +978,7 @@ void LoginThread::readD()
                             QString  location=obj.value("location").toString();
                             QString  hometown=obj.value("hometown").toString();
                             QString sex=obj.value("sex").toString();
-                            if(sex==QStringLiteral("不限"))
+                            if(sex==("不限"))
                                 sex="";
                             int age=obj.value("age").toInt();
                             QDate beginDate,endDate;
@@ -942,11 +1018,11 @@ void LoginThread::readD()
                             query.addBindValue(QVariant(beginDate.toString("yyyy-MM-dd")));
                             query.addBindValue(QVariant(endDate.toString("yyyy-MM-dd")));
                             query.addBindValue(QVariant(online));
-                            query.addBindValue(QVariant(list1.at(0)==QStringLiteral("不限")?"":list1.at(0)));
+                            query.addBindValue(QVariant(list1.at(0)==("不限")?"":list1.at(0)));
                             query.addBindValue(QVariant(list1.size()>1?list1.at(1):""));
                             query.addBindValue(QVariant(list1.size()>2?list1.at(2):""));
                             query.addBindValue(QVariant(list1.size()>3?list1.at(3):""));
-                            query.addBindValue(QVariant(list2.at(0)==QStringLiteral("不限")?"":list2.at(0)));
+                            query.addBindValue(QVariant(list2.at(0)==("不限")?"":list2.at(0)));
                             query.addBindValue(QVariant(list2.size()>1?list2.at(1):""));
                             query.addBindValue(QVariant(list2.size()>2?list2.at(2):""));
                             query.addBindValue(QVariant(list2.size()>3?list2.at(3):""));
@@ -1278,6 +1354,68 @@ label:
                                 muter->unlock();//解锁 如果可能 等另一个更新标记文件线程执行完就 锁集合留给后面删除或者另一个线程删除
                                 emit delayedSigAndNameDeletion(myqq);
                             }
+                            //传好友在线状态变化
+                            dir.setPath(QString("../userData/%1/friendsInfo/chat").arg(myqq));
+                            if(dir.exists()){
+                                QStringList list=dir.entryList(QStringList("*.db"),QDir::Files);
+                                QJsonObject statusObj;//状态数据载体 number:status
+                                for (QString name :list ) {
+                                    QString number=name.mid(1,name.length()-3);//_(.*).db 号码
+                                    QSqlDatabase db1=QSqlDatabase::addDatabase("QSQLITE",number);
+                                    db1.setDatabaseName(QString("../userData/%1/friendsInfo/chat/_%2.db").arg(myqq).arg(number));
+                                    db1.setHostName("MyQQ");
+                                    db1.setUserName("sa");
+                                    db1.setPassword("@123456x");
+                                    if(db1.open())
+                                        qDebug()<<("打开sqliite数据库成功！");
+                                    else {
+                                        qDebug()<<("打开sqliite数据库失败！名字:")<<(db1.databaseName());
+                                        continue;//跳过
+                                    }
+                                    QSqlQuery query1(db1);
+                                    ok=  query1.exec(QString(" SELECT count(*) FROM sqlite_master WHERE type='table' AND name ='_%1status' ").arg(number));
+                                    if(!ok){
+                                        qDebug()<<"count of table query is of failure ";
+                                       continue;
+                                    }
+                                    query1.next();
+                                    if(query1.value(0).toInt()!=0){
+                                       ok= query1.exec(QString(" select status from _%1status ").arg(number));
+                                       if(!ok){
+                                           qDebug()<<"select status from _%1status failure";
+                                           continue;
+                                       }
+                                       query1.next();
+                                       QString status=query1.value("status").toString();
+                                       statusObj.insert(number,status);//保存状态数据
+                                       //删除状态表
+                                       ok=query1.exec(QString(" drop table _%1status ").arg(number));
+                                       if(!ok){
+                                           qDebug()<<"warning: drop table _%1status sentence executing failure";
+                                       }
+                                    }
+                                    db1.close();//记得关闭 好删除文件
+                                }
+                                //发送状态数据
+                                if(!statusObj.isEmpty()){
+                                    QJsonDocument tdoc(statusObj);
+                                    QByteArray sdata=tdoc.toJson();
+                                    writeJson=QJsonDocument();
+                                    writeObj=QJsonObject();
+                                    writeObj.insert("content",QJsonValue("status"));
+                                    writeObj.insert("size",QJsonValue(sdata.size()));
+                                    writeJson.setObject(writeObj);
+                                    QByteArray sizedata;
+                                    quint8 l=writeJson.toJson().size();
+                                    QDataStream sizeStr(&sizedata,QIODevice::WriteOnly);
+                                    sizeStr.setVersion(QDataStream::Qt_4_0);
+                                    sizeStr<<l;
+                                    tcpsocket->write(sizedata+ writeJson.toJson());
+                                    loop.exec();
+                                    tcpsocket->write(sdata);
+                                    loop.exec();
+                                }
+                            }
                         }else ok=false;
                         qDebug()<<"result is "<<ok;
                         if(ok){
@@ -1326,13 +1464,19 @@ label:
                     QString myqq=obj.value("myqq").toString();
                     qDebug()<<"value=="<<value;
                     //传myself个性资料
-                    if(value=="getPersonalData"){
+                    if(value=="getPersonalData"||value=="getFriendInformation"){
                         bool ok=true;
                         if(query.exec("exec myselfInformation "+myqq)){
 
                             qDebug()<<"query is of success for personal information";
                             query.next();
                             if(query.isValid()){
+                                if(value=="getFriendInformation"){
+                                    writeObj.insert("signature",query.value("personalizedSignature").toString());
+                                    writeObj.insert("name",query.value("myqqName").toString());
+                                    writeObj.insert("sex",query.value("sex").toString());
+                                    writeObj.insert("myqqGrade",query.value("grade").toString());
+                                }
                                 writeObj.insert("birthday",query.value("birthday").toString());
                                 writeObj.insert("registerDateTime",query.value("registerDateTime").toString());
                                 writeObj.insert("bloodGroup",query.value("bloodGroup").toString());
@@ -1497,13 +1641,12 @@ label:
                         QString verify=obj.value("verify").toString();
                         obj.remove("instruct");
                         QString time=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm");
-                        qDebug()<<"verify information:"<<number<<","<<tag<<","<<groupName<<","<<verify<<","<<time;
                         obj.insert("time",QJsonValue(time));
                         obj.insert("hasProcessed",QJsonValue(false));
                         //写入记录
                         QDir dir("../userData/"+number+"/friendsInfo/verifyFriends");
                         if(!dir.exists()){
-                            qDebug()<<"dir "<<dir.dirName()<<"is not exists";
+                            qDebug()<<"dir:"<<dir.dirName()<<"is not exists";
                             dir.mkpath("./");
                         }
                         QFile file(dir.filePath(myqq+".json"));
@@ -1585,7 +1728,6 @@ label:
                                     QString bir=query.value("birthday").toString();
                                     QString city=query.value("name").toString();
                                     qint64 age=dateSubstraction(QDate::fromString(bir,Qt::ISODate),QDate::currentDate());
-                                    qDebug()<<number;
                                     QJsonObject cobj;
                                     cobj.insert("name",QJsonValue(name));
                                     cobj.insert("sex",QJsonValue(sex));
@@ -1674,6 +1816,7 @@ label:
                             tcpsocket->disconnectFromHost();
                         }
                     }
+                    //添加好友
                 }else if(in.toString()=="14"){
                     noDis=true;
                     QString myqq=obj.value("myqq").toString();
@@ -1719,7 +1862,7 @@ label:
 
                                         QString ogn=tobj.value("groupName").toString();
                                         QString gn=obj.value("groupName").toString();
-                                        //修改文件
+                                        //修改对方的文件
                                         QFile opFile("../userData/"+number+"/info.xml");
                                         if(opFile.open(QIODevice::ReadWrite)){
                                             qDebug()<<opFile.fileName();
@@ -1730,18 +1873,20 @@ label:
                                             dele=dele.firstChildElement("friendGroup");
                                             QDomNodeList list=  dele.childNodes();
                                             qint32 length=list.length();
+                                            bool isFound=false;
                                             for(qint32 i=0;i<length;++i){
                                                 QDomElement tempEle=list.item(i).toElement();
                                                 if(ogn==tempEle.attribute("name")){
                                                     qDebug()<<"find the friends group:"<<ogn;
+                                                    isFound=true;
                                                     if(tempEle.text()=="none")
                                                         tempEle.removeChild(tempEle.firstChild());
                                                     QDomElement meEle=doc.createElement("friend");
                                                     meEle.setAttribute("myqq",QString("%1").arg(myqq));
-                                                    QDomElement nameEle=doc.createElement(QStringLiteral("昵称"));
+                                                    QDomElement nameEle=doc.createElement(("昵称"));
                                                     QDomText nameT=doc.createTextNode(name2);
                                                     nameEle.appendChild(nameT);
-                                                    QDomElement signatureEle=doc.createElement(QStringLiteral("个性签名"));
+                                                    QDomElement signatureEle=doc.createElement(("个性签名"));
                                                     if(sig2.isEmpty()){
                                                         signatureEle.setAttribute("isNull","true");
                                                         QDomText signatureT=doc.createTextNode("none");
@@ -1751,10 +1896,10 @@ label:
                                                         QDomText signatureT=doc.createTextNode(sig2);
                                                         signatureEle.appendChild(signatureT);
                                                     }
-                                                    QDomElement headPathEle=doc.createElement(QStringLiteral("头像路径"));
+                                                    QDomElement headPathEle=doc.createElement(("头像路径"));
                                                     QDomText headPathT=doc.createTextNode("../userData/"+myqq+"/historyHeadImg/01.png");
                                                     headPathEle.appendChild(headPathT);
-                                                    QDomElement tagEle=doc.createElement(QStringLiteral("备注"));
+                                                    QDomElement tagEle=doc.createElement(("备注"));
                                                     if(tobj.value("tag").toString().isEmpty()){
                                                         tagEle.setAttribute("isNull","true");
                                                         QDomText tagT=doc.createTextNode("none");//默认为none
@@ -1764,13 +1909,13 @@ label:
                                                         QDomText tagT=doc.createTextNode(tobj.value("tag").toString());//默认为none
                                                         tagEle.appendChild(tagT);
                                                     }
-                                                    QDomElement gradeEle=doc.createElement(QStringLiteral("等级"));
+                                                    QDomElement gradeEle=doc.createElement(("等级"));
                                                     QDomText gradeT=doc.createTextNode(grade2);
                                                     gradeEle.appendChild(gradeT);
-                                                    QDomElement statusEle=doc.createElement(QStringLiteral("状态"));
+                                                    QDomElement statusEle=doc.createElement(("状态"));
                                                     QDomText statusT=doc.createTextNode(status2);
                                                     statusEle.appendChild(statusT);
-                                                    QDomElement setEle=doc.createElement(QStringLiteral("set"));
+                                                    QDomElement setEle=doc.createElement(("set"));
                                                     setEle.setAttribute("isNull","true");
                                                     setEle.setAttribute("infoet","0");
                                                     setEle.setAttribute("status","0");
@@ -1788,6 +1933,64 @@ label:
                                                     break;
                                                 }
                                             }
+                                            if(!isFound){
+                                                qDebug()<<"warning:not found the friend groups it may be caused by "
+                                                          "the auxiliary process not updating the friend groups data in time when adding friends "
+                                                          "or rejected the friend request after long time result in friend group deletion";
+                                                QDomElement tempEle=list.item(1).toElement();
+                                                qDebug()<<"the friend will be added to  default group "<<tempEle.attribute("name");
+                                                if(tempEle.text()=="none")
+                                                    tempEle.removeChild(tempEle.firstChild());
+                                                QDomElement meEle=doc.createElement("friend");
+                                                meEle.setAttribute("myqq",QString("%1").arg(myqq));
+                                                QDomElement nameEle=doc.createElement(("昵称"));
+                                                QDomText nameT=doc.createTextNode(name2);
+                                                nameEle.appendChild(nameT);
+                                                QDomElement signatureEle=doc.createElement(("个性签名"));
+                                                if(sig2.isEmpty()){
+                                                    signatureEle.setAttribute("isNull","true");
+                                                    QDomText signatureT=doc.createTextNode("none");
+                                                    signatureEle.appendChild(signatureT);
+                                                }else{
+                                                    signatureEle.setAttribute("isNull","false");
+                                                    QDomText signatureT=doc.createTextNode(sig2);
+                                                    signatureEle.appendChild(signatureT);
+                                                }
+                                                QDomElement headPathEle=doc.createElement(("头像路径"));
+                                                QDomText headPathT=doc.createTextNode("../userData/"+myqq+"/historyHeadImg/01.png");
+                                                headPathEle.appendChild(headPathT);
+                                                QDomElement tagEle=doc.createElement(("备注"));
+                                                if(tobj.value("tag").toString().isEmpty()){
+                                                    tagEle.setAttribute("isNull","true");
+                                                    QDomText tagT=doc.createTextNode("none");//默认为none
+                                                    tagEle.appendChild(tagT);
+                                                }else{
+                                                    tagEle.setAttribute("isNull","false");
+                                                    QDomText tagT=doc.createTextNode(tobj.value("tag").toString());//默认为none
+                                                    tagEle.appendChild(tagT);
+                                                }
+                                                QDomElement gradeEle=doc.createElement(("等级"));
+                                                QDomText gradeT=doc.createTextNode(grade2);
+                                                gradeEle.appendChild(gradeT);
+                                                QDomElement statusEle=doc.createElement(("状态"));
+                                                QDomText statusT=doc.createTextNode(status2);
+                                                statusEle.appendChild(statusT);
+                                                QDomElement setEle=doc.createElement(("set"));
+                                                setEle.setAttribute("isNull","true");
+                                                setEle.setAttribute("infoet","0");
+                                                setEle.setAttribute("status","0");
+                                                QDomText setT=doc.createTextNode("none");
+                                                setEle.appendChild(setT);
+                                                meEle.appendChild(nameEle);
+                                                meEle.appendChild(signatureEle);
+                                                meEle.appendChild(headPathEle);
+                                                meEle.appendChild(tagEle);
+                                                meEle.appendChild(gradeEle);
+                                                meEle.appendChild(statusEle);
+                                                meEle.appendChild(setEle);
+
+                                                tempEle.appendChild(meEle);
+                                            }
                                             if(!opFile.open(QIODevice::WriteOnly)){
                                                 qDebug()<<opFile.fileName()<<" is  opened to save unsuccessfully";
                                             }else{
@@ -1801,7 +2004,7 @@ label:
                                         if(tempFile.open(QIODevice::ReadOnly)){
                                             QByteArray pixData=tempFile.readAll();
                                             if(pixData.isEmpty())qDebug()<<"opposite part image of head is empty";
-                                            //修改文件
+                                            //修改myself文件
                                             QFile meFile("../userData/"+myqq+"/info.xml");
                                             if(meFile.open(QIODevice::ReadWrite)){
                                                 qDebug()<<meFile.fileName();
@@ -1812,18 +2015,20 @@ label:
                                                 dele1=dele1.firstChildElement("friendGroup");
                                                 QDomNodeList list1=  dele1.childNodes();
                                                 qint32 length=list1.length();
+                                                bool isFound=false;
                                                 for(qint32 i=0;i<length;++i){
                                                     QDomElement tempEle=list1.item(i).toElement();
                                                     if(gn==tempEle.attribute("name")){
+                                                        isFound=true;
                                                         if(tempEle.text()=="none")
                                                             tempEle.removeChild(tempEle.firstChild());
                                                         qDebug()<<"find the friends group:"<<gn;
                                                         QDomElement meEle=doc1.createElement("friend");
                                                         meEle.setAttribute("myqq",QString("%1").arg(number));
-                                                        QDomElement nameEle=doc1.createElement(QStringLiteral("昵称"));
+                                                        QDomElement nameEle=doc1.createElement(("昵称"));
                                                         QDomText nameT=doc1.createTextNode(name1);
                                                         nameEle.appendChild(nameT);
-                                                        QDomElement signatureEle=doc1.createElement(QStringLiteral("个性签名"));
+                                                        QDomElement signatureEle=doc1.createElement(("个性签名"));
                                                         if(sig1.isEmpty()){
                                                             signatureEle.setAttribute("isNull","true");
                                                             QDomText signatureT=doc1.createTextNode("none");
@@ -1833,10 +2038,10 @@ label:
                                                             QDomText signatureT=doc1.createTextNode(sig1);
                                                             signatureEle.appendChild(signatureT);
                                                         }
-                                                        QDomElement headPathEle=doc1.createElement(QStringLiteral("头像路径"));
+                                                        QDomElement headPathEle=doc1.createElement(("头像路径"));
                                                         QDomText headPathT=doc1.createTextNode("../userData/"+number+"/historyHeadImg/01.png");
                                                         headPathEle.appendChild(headPathT);
-                                                        QDomElement tagEle=doc1.createElement(QStringLiteral("备注"));
+                                                        QDomElement tagEle=doc1.createElement(("备注"));
                                                         if(obj.value("tag").toString().isEmpty()){
                                                             tagEle.setAttribute("isNull","true");
                                                             QDomText tagT=doc1.createTextNode("none");//默认为none
@@ -1846,13 +2051,13 @@ label:
                                                             QDomText tagT=doc1.createTextNode(obj.value("tag").toString());//默认为none
                                                             tagEle.appendChild(tagT);
                                                         }
-                                                        QDomElement gradeEle=doc1.createElement(QStringLiteral("等级"));
+                                                        QDomElement gradeEle=doc1.createElement(("等级"));
                                                         QDomText gradeT=doc1.createTextNode(grade1);
                                                         gradeEle.appendChild(gradeT);
-                                                        QDomElement statusEle=doc1.createElement(QStringLiteral("状态"));
+                                                        QDomElement statusEle=doc1.createElement(("状态"));
                                                         QDomText statusT=doc1.createTextNode(status1);
                                                         statusEle.appendChild(statusT);
-                                                        QDomElement setEle=doc1.createElement(QStringLiteral("set"));
+                                                        QDomElement setEle=doc1.createElement(("set"));
                                                         setEle.setAttribute("isNull","true");
                                                         setEle.setAttribute("info","0");
                                                         setEle.setAttribute("status","0");
@@ -1868,6 +2073,64 @@ label:
                                                         tempEle.appendChild(meEle);
                                                         break;
                                                     }
+                                                }
+                                                if(!isFound){
+                                                    qDebug()<<"warning:not found the friend groups it may be caused by "
+                                                              "the auxiliary process not updating the friend groups data in time when adding friends "
+                                                              "or rejected the friend request after long time result in friend group deletion";
+                                                    QDomElement tempEle=list1.item(1).toElement();
+                                                    qDebug()<<"the friend will be added to  default group "<<tempEle.attribute("name");
+                                                    if(tempEle.text()=="none")
+                                                        tempEle.removeChild(tempEle.firstChild());
+                                                    qDebug()<<"find the friends group:"<<gn;
+                                                    QDomElement meEle=doc1.createElement("friend");
+                                                    meEle.setAttribute("myqq",QString("%1").arg(number));
+                                                    QDomElement nameEle=doc1.createElement(("昵称"));
+                                                    QDomText nameT=doc1.createTextNode(name1);
+                                                    nameEle.appendChild(nameT);
+                                                    QDomElement signatureEle=doc1.createElement(("个性签名"));
+                                                    if(sig1.isEmpty()){
+                                                        signatureEle.setAttribute("isNull","true");
+                                                        QDomText signatureT=doc1.createTextNode("none");
+                                                        signatureEle.appendChild(signatureT);
+                                                    }else{
+                                                        signatureEle.setAttribute("isNull","false");
+                                                        QDomText signatureT=doc1.createTextNode(sig1);
+                                                        signatureEle.appendChild(signatureT);
+                                                    }
+                                                    QDomElement headPathEle=doc1.createElement(("头像路径"));
+                                                    QDomText headPathT=doc1.createTextNode("../userData/"+number+"/historyHeadImg/01.png");
+                                                    headPathEle.appendChild(headPathT);
+                                                    QDomElement tagEle=doc1.createElement(("备注"));
+                                                    if(obj.value("tag").toString().isEmpty()){
+                                                        tagEle.setAttribute("isNull","true");
+                                                        QDomText tagT=doc1.createTextNode("none");//默认为none
+                                                        tagEle.appendChild(tagT);
+                                                    }else{
+                                                        tagEle.setAttribute("isNull","false");
+                                                        QDomText tagT=doc1.createTextNode(obj.value("tag").toString());//默认为none
+                                                        tagEle.appendChild(tagT);
+                                                    }
+                                                    QDomElement gradeEle=doc1.createElement(("等级"));
+                                                    QDomText gradeT=doc1.createTextNode(grade1);
+                                                    gradeEle.appendChild(gradeT);
+                                                    QDomElement statusEle=doc1.createElement(("状态"));
+                                                    QDomText statusT=doc1.createTextNode(status1);
+                                                    statusEle.appendChild(statusT);
+                                                    QDomElement setEle=doc1.createElement(("set"));
+                                                    setEle.setAttribute("isNull","true");
+                                                    setEle.setAttribute("info","0");
+                                                    setEle.setAttribute("status","0");
+                                                    QDomText setT=doc1.createTextNode("none");
+                                                    setEle.appendChild(setT);
+                                                    meEle.appendChild(nameEle);
+                                                    meEle.appendChild(signatureEle);
+                                                    meEle.appendChild(headPathEle);
+                                                    meEle.appendChild(tagEle);
+                                                    meEle.appendChild(gradeEle);
+                                                    meEle.appendChild(statusEle);
+                                                    meEle.appendChild(setEle);
+                                                    tempEle.appendChild(meEle);
                                                 }
                                                 if(!meFile.open(QIODevice::WriteOnly)){
                                                     qDebug()<<meFile.fileName()<<" is  opened to save unsuccessfully";
@@ -1937,58 +2200,183 @@ label:
                                                     QDir dir1("../userData/"+number+"/friendsInfo/chat");
                                                     if(!dir1.exists())dir1.mkpath("./");
                                                     QSqlDatabase db1=QSqlDatabase::addDatabase("QSQLITE",db.connectionName());
-                                                    db1.setDatabaseName(QString("../userData/%1/friendsInfo/chat/_%21.db").arg(number).arg(myqq));
+                                                    db1.setDatabaseName(QString("../userData/%1/friendsInfo/chat/_%2.db").arg(number).arg(myqq));
                                                     db1.setHostName("MyQQ");
                                                     db1.setUserName("sa");
                                                     db1.setPassword("@123456x");
                                                     if(db1.open())
-                                                        qDebug()<<QStringLiteral("打开sqliite数据库成功！");
+                                                        qDebug()<<("打开sqliite数据库成功！");
                                                     else {
-                                                        qDebug()<<QStringLiteral("打开sqliite数据库失败！");
+                                                        qDebug()<<("打开sqliite数据库失败！");
                                                         return;
                                                     }
                                                     bool ok;
                                                     QSqlQuery query1(db1);
-                                                    ok=  query1.exec(QString(" SELECT count(*) FROM sqlite_master WHERE type='table' AND name ='_%1info' ").arg(myqq+"1"));
+                                                    ok=  query1.exec(QString(" SELECT count(*) FROM sqlite_master WHERE type='table' AND name ='_%1info' ").arg(myqq));
                                                     if(!ok){
                                                         qDebug()<<"count of table query is of failure ";
+                                                        db1.close();//记得关闭 好删除文件
                                                         return;
                                                     }
                                                     query1.next();
                                                     if(query1.value(0).toInt()==0){
                                                         ok= query1.exec(QString( " create table _%1info (\
-                                                                                 id int  not null primary key  autoincrement,\
+                                                                                 id integer  not null primary key  autoincrement,\
                                                                                  data BLOD not null,\
                                                                                  datetime datetime not null,\
                                                                                  type text not null,\
-                                                                                 adhesion bit default 0\
-                                                                                 )").arg(myqq+"1") );
+                                                                                 adhesion bit default 0,\
+                                                                                 number text not null\
+                                                                                 )").arg(myqq) );
                                                                         if(!ok){
                                                                             qDebug()<<"table creation is of failure ,name ";
+                                                                            db1.close();//记得关闭 好删除文件
                                                                             return;
                                                                         }
                                                     }
                                                     QString  cur=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");//时间
                                                     QByteArray idata=QString("我们已经是好友啦，一起来聊天吧！").toUtf8().toHex();//数据
-                                                    query1.prepare(QString(" insert into _%1info(data,datetime,type,adhesion) values(?,?,?,?) ").arg(myqq+"1"));
+                                                    query1.prepare(QString(" insert into _%1info(data,datetime,type,adhesion,number) values(?,?,?,?,?) ").arg(myqq));
                                                     query1.addBindValue(QVariant(idata));
                                                     query1.addBindValue(QVariant(cur));
                                                     query1.addBindValue(QVariant("text"));
                                                     query1.addBindValue(QVariant(false));
+                                                    query1.addBindValue(QVariant(myqq));
                                                     ok=query1.exec();
                                                     if(!ok)qDebug()<<"added information is of failure";
+                                                    db1.close();//记得关闭 好删除文件
                                                 }
 
                                             }
                                         }
                                     }
                                 }
-                                qDebug()<<"file:"<<file.fileName();
                                 file.close();
-                                file.remove();
+                                qDebug()<<"file:"<<file.fileName()<<",remove result:"<< file.remove();
                             }
                         }
                     }
+                    //获取好友ip 端口
+                }else if(in.toString()=="17"){
+                    bool ok;
+                    QString myqq=obj.value("myqq").toString();
+                    QString number=obj.value("number").toString();
+                    QString content=obj.value("content").toString();
+                    if(!number.isEmpty()&&!myqq.isEmpty()){
+
+                        if(content=="getFIP"){
+                            qDebug()<<"getFIP";
+                            ok=  query.exec(QString(" select signLog,isConnected,userState from userInfo where myqq=%1 ").arg(number));
+                            //失败全部goto 到失败处理
+                            if(!ok){
+                                qDebug()<<"it is of failure for execing a sql query";
+                                goto notGetIp;
+                            }else{
+                                query.next();
+                                QString log=query.value("signLog").toString();
+                                bool live=query.value("isConnected").toBool();
+                                QString status=query.value("userState").toString();
+                                QString ip;quint16 port;
+                                QStringList list=log.split(";;",QString::SkipEmptyParts);
+                                try{
+                                    if(list.size()<1)throw "index out of range";
+                                    ip =list.at(0);
+                                }catch(_exception& e){
+                                    qDebug()<<"error:type="<<e.type<<",name="<<e.name;
+                                    goto notGetIp;
+                                }catch(...){
+                                    qDebug()<<"a unkown fatal error";
+                                    goto notGetIp;
+                                }
+                                list=ip.split(" ",QString::SkipEmptyParts);
+                                ip=list.at(1);//ip
+                                QString temp=list.at(2);//port
+                                port=(quint16)temp.toUInt();
+                                writeObj.insert("instruct",QJsonValue("170"));
+                                writeObj.insert("ip",QJsonValue(ip));
+                                writeObj.insert("port",QJsonValue(port));
+                                //在线 获取udp信息 传ip信息
+                                if(live){
+                                    QTcpSocket*testSock=new QTcpSocket(this);
+                                    //连接
+                                    connect(testSock,&QTcpSocket::connected,testSock,[=]()mutable{
+                                        qDebug()<<"connection to opposite";
+                                        writeObj.insert("result",QJsonValue("true"));
+                                        writeObj.insert("online",QJsonValue(true));
+                                        writeObj.insert("status",QJsonValue(status));
+                                        writeJson.setObject(writeObj);
+                                        QByteArray size;
+                                        QDataStream s(&size,QIODevice::WriteOnly);
+                                        s.setVersion(QDataStream::Qt_4_0);
+                                        quint8 l=writeJson.toJson().size();
+                                        s<<l;
+                                        tcpsocket->write(size+writeJson.toJson());
+                                        loop.exec();
+                                        emit finished();
+                                    });
+                                    //连不上更新状态
+                                    connect(testSock,QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),[=]()mutable{
+                                        qDebug()<< "not connection to opposite";
+                                        writeObj.insert("result",QJsonValue("true"));
+                                        writeObj.insert("online",QJsonValue(false));
+                                        writeObj.insert("status",QJsonValue("0"));
+                                        writeJson.setObject(writeObj);
+                                        QByteArray size;
+                                        QDataStream s(&size,QIODevice::WriteOnly);
+                                        s.setVersion(QDataStream::Qt_4_0);
+                                        quint8 l=writeJson.toJson().size();
+                                        s<<l;
+                                        tcpsocket->write(size+writeJson.toJson());
+                                        loop.exec();
+                                        if(status!="0"){
+                                            ok=  query.exec(QString(" update userInfo set isConnected=0,userStatus='0'  where myqq=%1 ").arg(number.toLongLong()));
+                                            if(!ok){
+                                                qDebug()<<"the query is of failure for updating status";
+
+                                            }else{
+                                                statusChanged(QString("0"),number);
+                                            }
+                                        }
+                                        emit finished();
+                                    });
+                                    testSock->connectToHost(ip,port);
+                                    //不在线
+                                }else{
+                                    qDebug()<<" opposite is offline";
+                                    writeObj.insert("result",QJsonValue("true"));
+                                    writeObj.insert("online",QJsonValue(false));
+                                    writeObj.insert("status",QJsonValue(status));
+                                    writeJson.setObject(writeObj);
+                                    QByteArray size;
+                                    QDataStream s(&size,QIODevice::WriteOnly);
+                                    s.setVersion(QDataStream::Qt_4_0);
+                                    quint8 l=writeJson.toJson().size();
+                                    s<<l;
+                                    tcpsocket->write(size+writeJson.toJson());
+                                    loop.exec();
+                                    emit finished();
+                                }
+                            }
+                            return;
+                        }
+                    }
+                    //失败执行 标签
+notGetIp:
+                    qDebug()<<("failed exec")<<endl;
+                    writeObj=QJsonObject();
+                    writeJson=QJsonDocument();
+                    writeObj.insert("instruct",QJsonValue("170"));
+                    writeObj.insert("result",QJsonValue("false"));
+                    writeJson.setObject(writeObj);
+                    quint8 s=writeJson.toJson().size();
+                    QByteArray size;
+                    QDataStream stream(&size,QIODevice::WriteOnly);
+                    stream.setVersion(QDataStream::Qt_4_0);
+                    stream<<s;
+                    tcpsocket->write(size+writeJson.toJson());
+                    loop.exec();
+                    emit finished();
+                    return;
                 }
             }
         }
@@ -2012,7 +2400,7 @@ QString LoginThread::handleLogRec(QString &rec,QString& host,QString&ip,QString&
         }
     }
     QDateTime time=QDateTime::currentDateTime();
-    QString newRec=host+"  "+ip+"  "+port+"  "+time.toString("yyyy/M/d hh:mm:ss PM");
+    QString newRec=host+"  "+ip+"  "+port+"  "+time.toString("yyyy/MM/dd hh:mm:ss PM");
     QString result;
     if(hostRow!=-1){
         for(int i=hostRow;i>0;){
