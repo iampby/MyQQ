@@ -58,8 +58,10 @@ Window {
         onUpdateCover: {
             leftImg.source = ""
             try {
-                leftImg.source = "file:../user/" + mainWin.myqq + "/cover"
-                funcc.updateCover("../user/" + mainWin.myqq + "/cover")
+                leftImg.source = "file:../user/" + mainWin.myqq + "/photoWall/"
+                        + mainWin.myqq + "/cover"
+                funcc.updateCover("file:../user/" + mainWin.myqq + "/photoWall/"
+                                  + mainWin.myqq + "/cover")
             } catch (e) {
                 console.log(e.message)
             }
@@ -237,13 +239,14 @@ Window {
     onEmitPersonalCoverAndPhoto: {
         console.log(" onEmitPersonalCoverAndPhoto")
         if (cover != "")
-            leftImg.source = "file:../user/" + mainWin.myqq + "/" + cover
+            leftImg.source = "file:../user/" + mainWin.myqq + "/photoWall/"
+                    + mainWin.myqq + "/cover"
         var length = walls.length
         var id = 0
         for (var i = 0; i < length; ++i) {
-            if (images.setPixmap3(
-                        id,
-                        "../user/" + mainWin.myqq + "/photoWall/" + walls[i])) {
+            if (images.setPixmap3(id,
+                                  "file:../user/" + mainWin.myqq + "/photoWall/"
+                                  + mainWin.myqq + "/" + walls[i])) {
                 ++id
             } else {
                 console.log("initialization failed to add a photo wall pixmap")

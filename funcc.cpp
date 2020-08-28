@@ -1190,7 +1190,7 @@ void FuncC::removePhotoFromRemoteWall(int pos)
 
 void FuncC::inintCityData(QQuickWindow*w)
 {
-    QSqlDatabase db=QSqlDatabase::addDatabase("QSQLITE","city_data");
+    QSqlDatabase db=QSqlDatabase::addDatabase("QSQLITE", "city_data");
     db.setDatabaseName("../city.db");
     db.setHostName("MyQQ");
     db.setUserName("sa");
