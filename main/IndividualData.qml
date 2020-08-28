@@ -353,12 +353,12 @@ Window {
         var index
         console.log(temp)
         if (temp.length < 8) {
-            console.log("warning:altered  birthday information is not corrected")
+            console.log("warning:altered  birthday information is not correct")
         } else {
             bir[0] = temp.substring(0, 4)
             index = temp.indexOf("月")
             if (index === -1) {
-                console.log("warning:altered  birthday information is not corrected")
+                console.log("warning:altered  birthday information is not correct")
             } else {
                 bir[1] = parseInt(temp.substring(5, index))
                 bir[2] = parseInt(temp.substring(index + 1, temp.length - 1))

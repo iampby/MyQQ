@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "qmlimageprovider.h"
 #include <QRgb>
 #include<qdebug.h>
@@ -14,21 +17,36 @@ QmlImageProvider::~QmlImageProvider()
     qDebug()<<"~QmlImageProvider()";
 }
 
-const QPixmap  QmlImageProvider::valueOf(const QString &id)
+QPixmap  QmlImageProvider::valueOf(const QString &id)
 {
     return  images.value(id);
 }
 
-QPixmap QmlImageProvider::requestPixmap(const QString &id, QSize *size, const QSize &requestedSize)
+void QmlImageProvider::clear()
 {
-    QPixmap pix=images.value(id);
-    if(pix.isNull())qDebug()<<"image is null:"<<id;
-if(!control.isEmpty()){
-    QString status=control.value(id);
-   if(status=="0")
-      convertToGray(pix);
+    images.clear();
+    control.clear();
 }
- return pix;
+
+QPixmap QmlImageProvider::requestPixmap(const QString& id, QSize *size, const QSize &requestedSize)
+{
+QString tid=id;
+    bool ng= tid.contains("NotGray", Qt::CaseInsensitive);
+    if(ng)tid=tid.left(tid.length()-7);
+    QPixmap pix=images.value(tid);
+    if(pix.isNull()){
+        pix=images.value(id);
+        if(pix.isNull()){
+             qDebug()<<"image is null:"<<id;
+        }
+        return pix;
+    }
+    if(!control.isEmpty()&&!ng){
+        QString status=control.value(tid);
+        if(status=="0")
+            convertToGray(pix);
+    }
+    return pix;
 }
 
 void QmlImageProvider::convertToGray(QPixmap &pix)
@@ -40,9 +58,9 @@ void QmlImageProvider::convertToGray(QPixmap &pix)
     for (int i = 0; i <h; ++i) {
         QRgb*line=(QRgb*)img.scanLine(i);
         for (int j = 0; j < w; ++j) {
-             QRgb rgb= line[j];
-gray = (qRed(rgb) * 19595 + qGreen(rgb) * 38469 + qBlue(rgb) * 7472) >> 16;  //灰度计算公式
-        img.setPixelColor(j,i,QColor(gray,gray,gray));
+            QRgb rgb= line[j];
+            gray = (qRed(rgb) * 19595 + qGreen(rgb) * 38469 + qBlue(rgb) * 7472) >> 16;  //灰度计算公式
+            img.setPixelColor(j,i,QColor(gray,gray,gray));
         }
     }
     pix=QPixmap::fromImage(img);

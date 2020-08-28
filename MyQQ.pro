@@ -22,6 +22,7 @@ SOURCES += \
     friendmodel.cpp \
     headimgview.cpp \
     headimgwidget.cpp \
+    imagehelper.cpp \
     images.cpp \
     loginsocket.cpp \
         main.cpp \
@@ -30,7 +31,9 @@ SOURCES += \
     nativesocket.cpp \
     netmonitor.cpp \
     qmlimageprovider.cpp \
-    UpdateTimer.cpp \
+    screenwidget.cpp \
+    sendsocket.cpp \
+    updatetimer.cpp \
     weatherhandle.cpp \
     registersocket.cpp
 
@@ -59,13 +62,16 @@ HEADERS += \
     funcc.h \
     headimgview.h \
     headimgwidget.h \
+    imagehelper.h \
     images.h \
     loginsocket.h \
     nativeserver.h \
     nativesocket.h \
     netmonitor.h \
     qmlimageprovider.h \
-    UpdateTimer.h \
+    screenwidget.h \
+    sendsocket.h \
+    updatetimer.h \
     weatherhandle.h \
     registersocket.h
 

@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "registersocket.h"
 
 RegisterSocket::RegisterSocket(const QString&name,const QString&passwd,QObject *parent)
@@ -34,19 +37,19 @@ void RegisterSocket::err(QAbstractSocket::SocketError code)
     emit errOccured();
     switch (code) {
     case QAbstractSocket::ConnectionRefusedError:
-        qDebug()<<QStringLiteral("连接被拒接或超时！")<<endl;
+        qDebug()<<("连接被拒接或超时！")<<endl;
         break;
     case QAbstractSocket::RemoteHostClosedError:
-        qDebug()<<QStringLiteral("远程主机已关闭！")<<endl;
+        qDebug()<<("远程主机已关闭！")<<endl;
         break;
     case QAbstractSocket::HostNotFoundError:
-        qDebug()<<QStringLiteral("主机没有发现！")<<endl;
+        qDebug()<<("主机没有发现！")<<endl;
         break;
     case QAbstractSocket::UnknownSocketError:
-        qDebug()<<QStringLiteral("未知错误！")<<endl;
+        qDebug()<<("未知错误！")<<endl;
         break;
     default:
-        qDebug()<<QStringLiteral("出现了错误！")<<endl;
+        qDebug()<<("出现了错误！")<<endl;
     }
 }
 

@@ -4,6 +4,7 @@ import QtQuick.Controls 2.5
 import QtQuick.Layouts 1.12
 import QtGraphicalEffects 1.12
 import "qrc:/"
+
 //强制离线提示框
 ApplicationWindow {
     property string ip: ""

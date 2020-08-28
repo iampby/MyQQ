@@ -41,13 +41,13 @@ ApplicationWindow {
     onClosing: {
         console.log("main close")
         //释放资源
-         if (mainWin.inf == Math.pow(2, 2)) {
-             try{
-                 inCenterLoader.item.close()//释放qqMainWin
-             }catch(err){
-             console.log(err.message)//打印编译器错误提示
-         }
-         }
+        if (mainWin.inf == Math.pow(2, 2)) {
+            try {
+                inCenterLoader.item.close() //释放qqMainWin
+            } catch (err) {
+                console.log(err.message) //打印编译器错误提示
+            }
+        }
 
         // funcc.closeWidget()
     }
@@ -88,6 +88,7 @@ ApplicationWindow {
             if (hasInfo) {
                 reset()
                 trayClicked()
+                return
             }
             if (mainWin.inf != Math.pow(2, 2)) {
                 mainWin.show()
@@ -141,7 +142,38 @@ ApplicationWindow {
                 tray.iconSource = tray.midSource
         }
     }
+Component.onCompleted: {
+    //声明时间格式化函数
+     //原型方法
+     Date.prototype.format = function (fmt) {
 
+         var o = {
+             "M+": this.getMonth() + 1,
+             "d+"//月份
+             : this.getDate(),
+             "h+"//日
+             : this.getHours(),
+             "m+"//小时
+             : this.getMinutes(),
+             "s+"//分
+             : this.getSeconds(),
+             "q+"//秒
+             : Math.floor((this.getMonth() + 3) / 3),
+             "S"//季度
+             : this.getMilliseconds() //毫秒
+         }
+         if (/(y+)/.test(fmt))
+             fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(
+                                   4 - RegExp.$1.length))
+         for (var k in o)
+             if (new RegExp("(" + k + ")").test(fmt))
+                 fmt = fmt.replace(
+                             RegExp.$1,
+                             (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(
+                                                                     ("" + o[k]).length)))
+         return fmt
+     }
+}
     //不能在窗口里创建函数，对导致其x,y等属性只读
 
 

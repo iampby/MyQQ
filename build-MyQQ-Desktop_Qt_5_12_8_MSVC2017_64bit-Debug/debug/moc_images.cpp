@@ -22,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_Images_t {
-    QByteArrayData data[25];
-    char stringdata0[229];
+    QByteArrayData data[27];
+    char stringdata0[255];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -47,23 +47,26 @@ QT_MOC_LITERAL(11, 90, 9), // "setPixmap"
 QT_MOC_LITERAL(12, 100, 3), // "pix"
 QT_MOC_LITERAL(13, 104, 11), // "readHistory"
 QT_MOC_LITERAL(14, 116, 13), // "removeHistory"
-QT_MOC_LITERAL(15, 130, 10), // "setPixmap2"
-QT_MOC_LITERAL(16, 141, 6), // "status"
-QT_MOC_LITERAL(17, 148, 13), // "insertPixmap3"
-QT_MOC_LITERAL(18, 162, 5), // "count"
-QT_MOC_LITERAL(19, 168, 16), // "QVector<QString>"
-QT_MOC_LITERAL(20, 185, 5), // "files"
-QT_MOC_LITERAL(21, 191, 10), // "setPixmap3"
-QT_MOC_LITERAL(22, 202, 8), // "filename"
-QT_MOC_LITERAL(23, 211, 13), // "removePixmap3"
-QT_MOC_LITERAL(24, 225, 3) // "pos"
+QT_MOC_LITERAL(15, 130, 12), // "clearAllData"
+QT_MOC_LITERAL(16, 143, 10), // "setPixmap2"
+QT_MOC_LITERAL(17, 154, 6), // "status"
+QT_MOC_LITERAL(18, 161, 12), // "flushPixmap2"
+QT_MOC_LITERAL(19, 174, 13), // "insertPixmap3"
+QT_MOC_LITERAL(20, 188, 5), // "count"
+QT_MOC_LITERAL(21, 194, 16), // "QVector<QString>"
+QT_MOC_LITERAL(22, 211, 5), // "files"
+QT_MOC_LITERAL(23, 217, 10), // "setPixmap3"
+QT_MOC_LITERAL(24, 228, 8), // "filename"
+QT_MOC_LITERAL(25, 237, 13), // "removePixmap3"
+QT_MOC_LITERAL(26, 251, 3) // "pos"
 
     },
     "Images\0historyImageAdded\0\0url\0index\0"
     "readHistoryHeadImg\0fileList\0setMyQQ\0"
     "arg\0findPixmap\0id\0setPixmap\0pix\0"
-    "readHistory\0removeHistory\0setPixmap2\0"
-    "status\0insertPixmap3\0count\0QVector<QString>\0"
+    "readHistory\0removeHistory\0clearAllData\0"
+    "setPixmap2\0status\0flushPixmap2\0"
+    "insertPixmap3\0count\0QVector<QString>\0"
     "files\0setPixmap3\0filename\0removePixmap3\0"
     "pos"
 };
@@ -75,7 +78,7 @@ static const uint qt_meta_data_Images[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-      11,   14, // methods
+      13,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -83,19 +86,21 @@ static const uint qt_meta_data_Images[] = {
        2,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    2,   69,    2, 0x06 /* Public */,
-       5,    1,   74,    2, 0x06 /* Public */,
+       1,    2,   79,    2, 0x06 /* Public */,
+       5,    1,   84,    2, 0x06 /* Public */,
 
  // methods: name, argc, parameters, tag, flags
-       7,    1,   77,    2, 0x02 /* Public */,
-       9,    1,   80,    2, 0x02 /* Public */,
-      11,    2,   83,    2, 0x02 /* Public */,
-      13,    0,   88,    2, 0x02 /* Public */,
-      14,    0,   89,    2, 0x02 /* Public */,
-      15,    3,   90,    2, 0x02 /* Public */,
-      17,    2,   97,    2, 0x02 /* Public */,
-      21,    2,  102,    2, 0x02 /* Public */,
-      23,    1,  107,    2, 0x02 /* Public */,
+       7,    1,   87,    2, 0x02 /* Public */,
+       9,    1,   90,    2, 0x02 /* Public */,
+      11,    2,   93,    2, 0x02 /* Public */,
+      13,    0,   98,    2, 0x02 /* Public */,
+      14,    0,   99,    2, 0x02 /* Public */,
+      15,    0,  100,    2, 0x02 /* Public */,
+      16,    3,  101,    2, 0x02 /* Public */,
+      18,    2,  108,    2, 0x02 /* Public */,
+      19,    2,  113,    2, 0x02 /* Public */,
+      23,    2,  118,    2, 0x02 /* Public */,
+      25,    1,  123,    2, 0x02 /* Public */,
 
  // signals: parameters
     QMetaType::Void, QMetaType::QString, QMetaType::Int,    3,    4,
@@ -107,10 +112,12 @@ static const uint qt_meta_data_Images[] = {
     QMetaType::Void, QMetaType::QString, QMetaType::QString,   10,   12,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::QString, QMetaType::QString, QMetaType::QString,   10,   12,   16,
-    QMetaType::Int, QMetaType::Int, 0x80000000 | 19,   18,   20,
-    QMetaType::Bool, QMetaType::QString, QMetaType::QString,   10,   22,
-    QMetaType::Bool, QMetaType::Int,   24,
+    QMetaType::Void,
+    QMetaType::Void, QMetaType::QString, QMetaType::QString, QMetaType::QString,   10,   12,   17,
+    QMetaType::Void, QMetaType::QString, QMetaType::QString,   10,   17,
+    QMetaType::Int, QMetaType::Int, 0x80000000 | 21,   20,   22,
+    QMetaType::Bool, QMetaType::QString, QMetaType::QString,   10,   24,
+    QMetaType::Bool, QMetaType::Int,   26,
 
        0        // eod
 };
@@ -129,19 +136,21 @@ void Images::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void
         case 4: _t->setPixmap((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
         case 5: _t->readHistory(); break;
         case 6: _t->removeHistory(); break;
-        case 7: _t->setPixmap2((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])),(*reinterpret_cast< const QString(*)>(_a[3]))); break;
-        case 8: { qint32 _r = _t->insertPixmap3((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< QVector<QString>(*)>(_a[2])));
+        case 7: _t->clearAllData(); break;
+        case 8: _t->setPixmap2((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])),(*reinterpret_cast< const QString(*)>(_a[3]))); break;
+        case 9: _t->flushPixmap2((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
+        case 10: { qint32 _r = _t->insertPixmap3((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< QVector<QString>(*)>(_a[2])));
             if (_a[0]) *reinterpret_cast< qint32*>(_a[0]) = std::move(_r); }  break;
-        case 9: { bool _r = _t->setPixmap3((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])));
+        case 11: { bool _r = _t->setPixmap3((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])));
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
-        case 10: { bool _r = _t->removePixmap3((*reinterpret_cast< int(*)>(_a[1])));
+        case 12: { bool _r = _t->removePixmap3((*reinterpret_cast< int(*)>(_a[1])));
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
         default: ;
         }
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
         switch (_id) {
         default: *reinterpret_cast<int*>(_a[0]) = -1; break;
-        case 8:
+        case 10:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<int*>(_a[0]) = -1; break;
             case 1:
@@ -197,13 +206,13 @@ int Images::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 11)
+        if (_id < 13)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 11;
+        _id -= 13;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 11)
+        if (_id < 13)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 11;
+        _id -= 13;
     }
     return _id;
 }

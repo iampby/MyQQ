@@ -95,7 +95,6 @@
         <file alias="images/mainInterface/addEduTipback.png">../images/mainInterface/addEduTipback.png</file>
         <file alias="images/bellinfo.png">../images/bellinfo.png</file>
         <file alias="images/mainInterface/verifyCross.png">../images/mainInterface/verifyCross.png</file>
-        <file alias="MyQQ.pro">../MyQQ.pro</file>
         <file alias="images/mainInterface/verifyNewHeader.png">../images/mainInterface/verifyNewHeader.png</file>
         <file alias="images/mainInterface/addFriendClosePressed.png">../images/mainInterface/addFriendClosePressed.png</file>
         <file alias="images/mainInterface/addFriendMinHovered.png">../images/mainInterface/addFriendMinHovered.png</file>

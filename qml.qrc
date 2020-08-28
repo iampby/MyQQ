@@ -125,7 +125,6 @@
         <file>images/bellinfo.png</file>
         <file>main/VerifyWin.qml</file>
         <file>images/mainInterface/verifyCross.png</file>
-        <file>MyQQ.pro</file>
         <file>images/mainInterface/verifyNewHeader.png</file>
         <file>images/mainInterface/addFriendClosePressed.png</file>
         <file>images/mainInterface/addFriendMinHovered.png</file>
@@ -147,5 +146,6 @@
         <file>images/mainInterface/scissor.png</file>
         <file>images/mainInterface/sendPix.png</file>
         <file>images/mainInterface/chatMax1.png</file>
+        <file>CScroll.qml</file>
     </qresource>
 </RCC>

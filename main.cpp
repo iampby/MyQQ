@@ -1,3 +1,8 @@
+#include"funcc.h"
+#include"friendgroupmodel.h"
+#include"friendmodel.h"
+#include"images.h"
+#include"imagehelper.h"
 #include <QApplication>
 #include <QQmlApplicationEngine>
 #include<QTranslator>
@@ -7,10 +12,6 @@
 #include<qprocess.h>
 #include <qsqlquery.h>
 #include<qqmlcontext.h>
-#include"funcc.h"
-#include"friendgroupmodel.h"
-#include"friendmodel.h"
-#include"images.h"
 #include <QTextCodec>
 #include<qmessagebox.h>
 
@@ -21,10 +22,12 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     //qputenv("QT_IM_MODULE", QByteArray("qtvirtualkeyboard"));//调用虚拟键盘,声明app之前
     qmlRegisterType<FuncC>("FuncC",1,0,"FuncC");
+    //模型导入
     qmlRegisterType<FriendGroupModel>("Model",1,0,"FriendGroupModel");
     qmlRegisterType<FriendModel>("Model",1,0,"FriendModel");
     qmlRegisterType<FriendData>("Model",1,0,"FriendData");
-
+    //  富文本编辑辅助类导入
+    qmlRegisterType<ImageHelper>("ImageHelper",1,0,"ImageHelper");
 
 
     QQmlApplicationEngine engine;
@@ -36,8 +39,8 @@ int main(int argc, char *argv[])
     QTranslator tran;
     tran.load("./qt_zh_CN.qm");
     app.installTranslator(&tran);
-    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
-    //  engine.load(QUrl(QStringLiteral("qrc:/main/AboutMyQQ")));
+    engine.load(QUrl(("qrc:/main.qml")));
+    //  engine.load(QUrl(("qrc:/main/AboutMyQQ")));
     if (engine.rootObjects().isEmpty())
         return -1;
     return app.exec();

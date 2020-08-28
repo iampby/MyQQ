@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "images.h"
 #include<qdebug.h>
 #include<qapplication.h>
@@ -69,6 +72,13 @@ void Images::removeHistory()
     }
 }
 
+void Images::clearAllData()
+{
+    provider1->clear();
+    provider2->clear();
+    provider3->clear();
+}
+
 
 
 void Images::insert(QPixmap& pix)
@@ -115,6 +125,14 @@ void Images::setPixmap2(const QString &id, const QString &pix,const QString &sta
     }
     provider2->images.insert(id,pixmap);
     provider2->control.insert(id,status);
+}
+
+void Images::flushPixmap2(QString id, QString status)
+{
+    provider2->control.remove(id);
+    provider2->control.insert(id,status);
+   QPixmap pix=  provider2->images.take(id);
+    provider2->images.insert(id,pix);
 }
 
 bool Images::setPixmap3(const QString& id, const QString&filename)

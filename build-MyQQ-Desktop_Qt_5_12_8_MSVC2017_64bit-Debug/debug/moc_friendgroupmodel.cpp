@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_FriendGroupModel_t {
-    QByteArrayData data[23];
-    char stringdata0[153];
+    QByteArrayData data[24];
+    char stringdata0[155];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -49,17 +49,18 @@ QT_MOC_LITERAL(14, 92, 5), // "group"
 QT_MOC_LITERAL(15, 98, 6), // "online"
 QT_MOC_LITERAL(16, 105, 5), // "count"
 QT_MOC_LITERAL(17, 111, 3), // "set"
-QT_MOC_LITERAL(18, 115, 6), // "remove"
-QT_MOC_LITERAL(19, 122, 7), // "setData"
-QT_MOC_LITERAL(20, 130, 5), // "value"
-QT_MOC_LITERAL(21, 136, 6), // "append"
-QT_MOC_LITERAL(22, 143, 9) // "getGroups"
+QT_MOC_LITERAL(18, 115, 1), // "b"
+QT_MOC_LITERAL(19, 117, 6), // "remove"
+QT_MOC_LITERAL(20, 124, 7), // "setData"
+QT_MOC_LITERAL(21, 132, 5), // "value"
+QT_MOC_LITERAL(22, 138, 6), // "append"
+QT_MOC_LITERAL(23, 145, 9) // "getGroups"
 
     },
     "FriendGroupModel\0groupListChanged\0\0"
     "data\0i\0role\0update\0index\0index1\0index2\0"
     "swap\0i1\0i2\0insert\0group\0online\0count\0"
-    "set\0remove\0setData\0value\0append\0"
+    "set\0b\0remove\0setData\0value\0append\0"
     "getGroups"
 };
 #undef QT_MOC_LITERAL
@@ -70,7 +71,7 @@ static const uint qt_meta_data_FriendGroupModel[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-      13,   14, // methods
+      15,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -78,21 +79,23 @@ static const uint qt_meta_data_FriendGroupModel[] = {
        1,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    0,   79,    2, 0x06 /* Public */,
+       1,    0,   89,    2, 0x06 /* Public */,
 
  // methods: name, argc, parameters, tag, flags
-       3,    2,   80,    2, 0x02 /* Public */,
-       3,    1,   85,    2, 0x22 /* Public | MethodCloned */,
-       6,    1,   88,    2, 0x02 /* Public */,
-       6,    2,   91,    2, 0x02 /* Public */,
-      10,    2,   96,    2, 0x02 /* Public */,
-      13,    5,  101,    2, 0x02 /* Public */,
-      18,    1,  112,    2, 0x02 /* Public */,
-      19,    3,  115,    2, 0x02 /* Public */,
-      19,    2,  122,    2, 0x22 /* Public | MethodCloned */,
-      21,    4,  127,    2, 0x02 /* Public */,
-      16,    0,  136,    2, 0x02 /* Public */,
-      22,    0,  137,    2, 0x02 /* Public */,
+       3,    2,   90,    2, 0x02 /* Public */,
+       3,    1,   95,    2, 0x22 /* Public | MethodCloned */,
+       6,    1,   98,    2, 0x02 /* Public */,
+       6,    2,  101,    2, 0x02 /* Public */,
+      10,    2,  106,    2, 0x02 /* Public */,
+      13,    6,  111,    2, 0x02 /* Public */,
+      13,    5,  124,    2, 0x22 /* Public | MethodCloned */,
+      19,    1,  135,    2, 0x02 /* Public */,
+      20,    3,  138,    2, 0x02 /* Public */,
+      20,    2,  145,    2, 0x22 /* Public | MethodCloned */,
+      22,    5,  150,    2, 0x02 /* Public */,
+      22,    4,  161,    2, 0x22 /* Public | MethodCloned */,
+      16,    0,  170,    2, 0x02 /* Public */,
+      23,    0,  171,    2, 0x02 /* Public */,
 
  // signals: parameters
     QMetaType::Void,
@@ -103,10 +106,12 @@ static const uint qt_meta_data_FriendGroupModel[] = {
     QMetaType::Void, QMetaType::Int,    7,
     QMetaType::Void, QMetaType::Int, QMetaType::Int,    8,    9,
     QMetaType::Void, QMetaType::Int, QMetaType::Int,   11,   12,
+    QMetaType::Void, QMetaType::Int, QMetaType::QString, QMetaType::QString, QMetaType::QString, QMetaType::QString, QMetaType::Bool,    7,   14,   15,   16,   17,   18,
     QMetaType::Void, QMetaType::Int, QMetaType::QString, QMetaType::QString, QMetaType::QString, QMetaType::QString,    7,   14,   15,   16,   17,
     QMetaType::Void, QMetaType::Int,    7,
-    QMetaType::Void, QMetaType::Int, QMetaType::QString, QMetaType::Int,    4,   20,    5,
-    QMetaType::Void, QMetaType::Int, QMetaType::QString,    4,   20,
+    QMetaType::Void, QMetaType::Int, QMetaType::QVariant, QMetaType::Int,    4,   21,    5,
+    QMetaType::Void, QMetaType::Int, QMetaType::QVariant,    4,   21,
+    QMetaType::Bool, QMetaType::QString, QMetaType::QString, QMetaType::QString, QMetaType::QString, QMetaType::Bool,   14,   15,   16,   17,   18,
     QMetaType::Bool, QMetaType::QString, QMetaType::QString, QMetaType::QString, QMetaType::QString,   14,   15,   16,   17,
     QMetaType::Int,
     QMetaType::QVariantList,
@@ -128,15 +133,18 @@ void FriendGroupModel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int
         case 3: _t->update((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 4: _t->update((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2]))); break;
         case 5: _t->swap((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const int(*)>(_a[2]))); break;
-        case 6: _t->insert((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])),(*reinterpret_cast< const QString(*)>(_a[3])),(*reinterpret_cast< const QString(*)>(_a[4])),(*reinterpret_cast< const QString(*)>(_a[5]))); break;
-        case 7: _t->remove((*reinterpret_cast< const int(*)>(_a[1]))); break;
-        case 8: _t->setData((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])),(*reinterpret_cast< int(*)>(_a[3]))); break;
-        case 9: _t->setData((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
-        case 10: { bool _r = _t->append((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])),(*reinterpret_cast< const QString(*)>(_a[3])),(*reinterpret_cast< const QString(*)>(_a[4])));
+        case 6: _t->insert((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])),(*reinterpret_cast< const QString(*)>(_a[3])),(*reinterpret_cast< const QString(*)>(_a[4])),(*reinterpret_cast< const QString(*)>(_a[5])),(*reinterpret_cast< const bool(*)>(_a[6]))); break;
+        case 7: _t->insert((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])),(*reinterpret_cast< const QString(*)>(_a[3])),(*reinterpret_cast< const QString(*)>(_a[4])),(*reinterpret_cast< const QString(*)>(_a[5]))); break;
+        case 8: _t->remove((*reinterpret_cast< const int(*)>(_a[1]))); break;
+        case 9: _t->setData((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const QVariant(*)>(_a[2])),(*reinterpret_cast< int(*)>(_a[3]))); break;
+        case 10: _t->setData((*reinterpret_cast< const int(*)>(_a[1])),(*reinterpret_cast< const QVariant(*)>(_a[2]))); break;
+        case 11: { bool _r = _t->append((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])),(*reinterpret_cast< const QString(*)>(_a[3])),(*reinterpret_cast< const QString(*)>(_a[4])),(*reinterpret_cast< const bool(*)>(_a[5])));
             if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
-        case 11: { int _r = _t->count();
+        case 12: { bool _r = _t->append((*reinterpret_cast< const QString(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])),(*reinterpret_cast< const QString(*)>(_a[3])),(*reinterpret_cast< const QString(*)>(_a[4])));
+            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = std::move(_r); }  break;
+        case 13: { int _r = _t->count();
             if (_a[0]) *reinterpret_cast< int*>(_a[0]) = std::move(_r); }  break;
-        case 12: { QVariantList _r = _t->getGroups();
+        case 14: { QVariantList _r = _t->getGroups();
             if (_a[0]) *reinterpret_cast< QVariantList*>(_a[0]) = std::move(_r); }  break;
         default: ;
         }
@@ -181,13 +189,13 @@ int FriendGroupModel::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 13)
+        if (_id < 15)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 13;
+        _id -= 15;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 13)
+        if (_id < 15)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 13;
+        _id -= 15;
     }
     return _id;
 }

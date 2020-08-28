@@ -53,6 +53,7 @@ SOURCES       = ..\addfriendgroupwidget.cpp \
 		..\friendmodel.cpp \
 		..\headimgview.cpp \
 		..\headimgwidget.cpp \
+		..\imagehelper.cpp \
 		..\images.cpp \
 		..\loginsocket.cpp \
 		..\main.cpp \
@@ -61,9 +62,12 @@ SOURCES       = ..\addfriendgroupwidget.cpp \
 		..\nativesocket.cpp \
 		..\netmonitor.cpp \
 		..\qmlimageprovider.cpp \
-		..\UpdateTimer.cpp \
+		..\screenwidget.cpp \
+		..\sendsocket.cpp \
+		..\updatetimer.cpp \
 		..\weatherhandle.cpp \
-		..\registersocket.cpp debug\Func_qml.cpp \
+		..\registersocket.cpp debug\CScroll_qml.cpp \
+		debug\Func_qml.cpp \
 		debug\MouseForShape_qml.cpp \
 		debug\chinese-lunar_js.cpp \
 		debug\MouseMoveCustomForInner_qml.cpp \
@@ -106,12 +110,15 @@ SOURCES       = ..\addfriendgroupwidget.cpp \
 		debug\moc_funcc.cpp \
 		debug\moc_headimgview.cpp \
 		debug\moc_headimgwidget.cpp \
+		debug\moc_imagehelper.cpp \
 		debug\moc_images.cpp \
 		debug\moc_loginsocket.cpp \
 		debug\moc_nativeserver.cpp \
 		debug\moc_nativesocket.cpp \
 		debug\moc_netmonitor.cpp \
-		debug\moc_UpdateTimer.cpp \
+		debug\moc_screenwidget.cpp \
+		debug\moc_sendsocket.cpp \
+		debug\moc_updatetimer.cpp \
 		debug\moc_weatherhandle.cpp \
 		debug\moc_registersocket.cpp
 OBJECTS       = debug\qrc_qml_qmlcache.obj \
@@ -122,6 +129,7 @@ OBJECTS       = debug\qrc_qml_qmlcache.obj \
 		debug\friendmodel.obj \
 		debug\headimgview.obj \
 		debug\headimgwidget.obj \
+		debug\imagehelper.obj \
 		debug\images.obj \
 		debug\loginsocket.obj \
 		debug\main.obj \
@@ -130,9 +138,12 @@ OBJECTS       = debug\qrc_qml_qmlcache.obj \
 		debug\nativesocket.obj \
 		debug\netmonitor.obj \
 		debug\qmlimageprovider.obj \
-		debug\UpdateTimer.obj \
+		debug\screenwidget.obj \
+		debug\sendsocket.obj \
+		debug\updatetimer.obj \
 		debug\weatherhandle.obj \
 		debug\registersocket.obj \
+		debug\CScroll_qml.obj \
 		debug\Func_qml.obj \
 		debug\MouseForShape_qml.obj \
 		debug\chinese-lunar_js.obj \
@@ -176,12 +187,15 @@ OBJECTS       = debug\qrc_qml_qmlcache.obj \
 		debug\moc_funcc.obj \
 		debug\moc_headimgview.obj \
 		debug\moc_headimgwidget.obj \
+		debug\moc_imagehelper.obj \
 		debug\moc_images.obj \
 		debug\moc_loginsocket.obj \
 		debug\moc_nativeserver.obj \
 		debug\moc_nativesocket.obj \
 		debug\moc_netmonitor.obj \
-		debug\moc_UpdateTimer.obj \
+		debug\moc_screenwidget.obj \
+		debug\moc_sendsocket.obj \
+		debug\moc_updatetimer.obj \
 		debug\moc_weatherhandle.obj \
 		debug\moc_registersocket.obj
 
@@ -221,13 +235,16 @@ DIST          = images/QQTray.png \
 		..\funcc.h \
 		..\headimgview.h \
 		..\headimgwidget.h \
+		..\imagehelper.h \
 		..\images.h \
 		..\loginsocket.h \
 		..\nativeserver.h \
 		..\nativesocket.h \
 		..\netmonitor.h \
 		..\qmlimageprovider.h \
-		..\UpdateTimer.h \
+		..\screenwidget.h \
+		..\sendsocket.h \
+		..\updatetimer.h \
 		..\weatherhandle.h \
 		..\registersocket.h ..\addfriendgroupwidget.cpp \
 		..\bigfilesocket.cpp \
@@ -235,6 +252,7 @@ DIST          = images/QQTray.png \
 		..\friendmodel.cpp \
 		..\headimgview.cpp \
 		..\headimgwidget.cpp \
+		..\imagehelper.cpp \
 		..\images.cpp \
 		..\loginsocket.cpp \
 		..\main.cpp \
@@ -243,7 +261,9 @@ DIST          = images/QQTray.png \
 		..\nativesocket.cpp \
 		..\netmonitor.cpp \
 		..\qmlimageprovider.cpp \
-		..\UpdateTimer.cpp \
+		..\screenwidget.cpp \
+		..\sendsocket.cpp \
+		..\updatetimer.cpp \
 		..\weatherhandle.cpp \
 		..\registersocket.cpp
 QMAKE_TARGET  = MyQQ
@@ -322,8 +342,9 @@ all: Makefile.Debug  debug\MyQQ.exe
 
 debug\MyQQ.exe: D:\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Quickd.lib D:\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5WinExtrasd.lib D:\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Widgetsd.lib D:\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Guid.lib D:\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Qmld.lib D:\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Networkd.lib D:\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Xmld.lib D:\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Sqld.lib D:\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Cored.lib D:\Qt5.12.8\5.12.8\msvc2017_64\lib\qtmaind.lib $(OBJECTS) debug\MyQQ.res
 	$(LINKER) $(LFLAGS) /MANIFEST:embed /OUT:$(DESTDIR_TARGET) @<<
-debug\qrc_qml_qmlcache.obj debug\qrc_images_widget.obj debug\addfriendgroupwidget.obj debug\bigfilesocket.obj debug\friendgroupmodel.obj debug\friendmodel.obj debug\headimgview.obj debug\headimgwidget.obj debug\images.obj debug\loginsocket.obj debug\main.obj debug\funcc.obj debug\nativeserver.obj debug\nativesocket.obj debug\netmonitor.obj debug\qmlimageprovider.obj debug\UpdateTimer.obj debug\weatherhandle.obj debug\registersocket.obj debug\Func_qml.obj debug\MouseForShape_qml.obj debug\chinese-lunar_js.obj debug\MouseMoveCustomForInner_qml.obj debug\Actions_qml.obj debug\main_qml.obj debug\MouseCustomForWindow_qml.obj debug\register_RegisterInterface_qml.obj debug\register_RegisterInfLangMinClose_qml.obj debug\login_LoginTotalInterface_qml.obj debug\login_LoginInterface_qml.obj debug\login_LoginEdit_qml.obj debug\login_LoginSetInterface_qml.obj debug\main_IndividualData_qml.obj debug\main_AlterCover_qml.obj debug\main_WeatherWin_qml.obj debug\main_List_qml.obj
-debug\main_EditInfo_qml.obj debug\main_HelpWin_qml.obj debug\main_MessageDialogForSwitch_qml.obj debug\main_ButtonForMenu_qml.obj debug\main_AboutMyQQ_qml.obj debug\main_WeatherCityRec_qml.obj debug\main_Friend_qml.obj debug\main_VerifyWin_qml.obj debug\main_EduInfo_qml.obj debug\main_AlterSmallWin_qml.obj debug\main_OfflineTip_qml.obj debug\main_FriendWin_qml.obj debug\main_HeadInf_qml.obj debug\main_AlterHImg_qml.obj debug\main_InfoSmallLabel_qml.obj debug\main_mainInterface_qml.obj debug\main_ChatWin_qml.obj debug\main_TemperatureBtn_qml.obj debug\qmlcache_loader.obj debug\moc_addfriendgroupwidget.obj debug\moc_bigfilesocket.obj debug\moc_friendgroupmodel.obj debug\moc_friendmodel.obj debug\moc_funcc.obj debug\moc_headimgview.obj debug\moc_headimgwidget.obj debug\moc_images.obj debug\moc_loginsocket.obj debug\moc_nativeserver.obj debug\moc_nativesocket.obj debug\moc_netmonitor.obj debug\moc_UpdateTimer.obj debug\moc_weatherhandle.obj debug\moc_registersocket.obj
+debug\qrc_qml_qmlcache.obj debug\qrc_images_widget.obj debug\addfriendgroupwidget.obj debug\bigfilesocket.obj debug\friendgroupmodel.obj debug\friendmodel.obj debug\headimgview.obj debug\headimgwidget.obj debug\imagehelper.obj debug\images.obj debug\loginsocket.obj debug\main.obj debug\funcc.obj debug\nativeserver.obj debug\nativesocket.obj debug\netmonitor.obj debug\qmlimageprovider.obj debug\screenwidget.obj debug\sendsocket.obj debug\updatetimer.obj debug\weatherhandle.obj debug\registersocket.obj debug\CScroll_qml.obj debug\Func_qml.obj debug\MouseForShape_qml.obj debug\chinese-lunar_js.obj debug\MouseMoveCustomForInner_qml.obj debug\Actions_qml.obj debug\main_qml.obj debug\MouseCustomForWindow_qml.obj debug\register_RegisterInterface_qml.obj debug\register_RegisterInfLangMinClose_qml.obj debug\login_LoginTotalInterface_qml.obj debug\login_LoginInterface_qml.obj debug\login_LoginEdit_qml.obj debug\login_LoginSetInterface_qml.obj debug\main_IndividualData_qml.obj
+debug\main_AlterCover_qml.obj debug\main_WeatherWin_qml.obj debug\main_List_qml.obj debug\main_EditInfo_qml.obj debug\main_HelpWin_qml.obj debug\main_MessageDialogForSwitch_qml.obj debug\main_ButtonForMenu_qml.obj debug\main_AboutMyQQ_qml.obj debug\main_WeatherCityRec_qml.obj debug\main_Friend_qml.obj debug\main_VerifyWin_qml.obj debug\main_EduInfo_qml.obj debug\main_AlterSmallWin_qml.obj debug\main_OfflineTip_qml.obj debug\main_FriendWin_qml.obj debug\main_HeadInf_qml.obj debug\main_AlterHImg_qml.obj debug\main_InfoSmallLabel_qml.obj debug\main_mainInterface_qml.obj debug\main_ChatWin_qml.obj debug\main_TemperatureBtn_qml.obj debug\qmlcache_loader.obj debug\moc_addfriendgroupwidget.obj debug\moc_bigfilesocket.obj debug\moc_friendgroupmodel.obj debug\moc_friendmodel.obj debug\moc_funcc.obj debug\moc_headimgview.obj debug\moc_headimgwidget.obj debug\moc_imagehelper.obj debug\moc_images.obj debug\moc_loginsocket.obj debug\moc_nativeserver.obj debug\moc_nativesocket.obj
+debug\moc_netmonitor.obj debug\moc_screenwidget.obj debug\moc_sendsocket.obj debug\moc_updatetimer.obj debug\moc_weatherhandle.obj debug\moc_registersocket.obj
 $(LIBS)
 <<
 
@@ -336,10 +357,11 @@ qmake: FORCE
 qmake_all: FORCE
 
 dist:
-	$(ZIP) MyQQ.zip $(SOURCES) $(DIST) ..\MyQQ.pro ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\spec_pre.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\common\angle.conf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\win32\windows_vulkan_sdk.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\common\windows-vulkan.conf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\common\msvc-desktop.conf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\qconfig.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3danimation.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3danimation_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dcore.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dcore_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dextras.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dextras_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dinput.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dinput_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dlogic.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dlogic_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquick.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquick_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickanimation.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickanimation_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickextras.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickextras_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickinput.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickinput_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickrender.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickrender_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickscene2d.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickscene2d_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3drender.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3drender_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_accessibility_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_axbase.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_axbase_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_axcontainer.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_axcontainer_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_axserver.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_axserver_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_bluetooth.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_bluetooth_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_bootstrap_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_charts.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_charts_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_concurrent.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_concurrent_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_core.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_core_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_datavisualization.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_datavisualization_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_dbus.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_dbus_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_designer.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_designer_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_designercomponents_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_devicediscovery_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_edid_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_egl_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_eventdispatcher_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_fb_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_fontdatabase_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_gamepad.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_gamepad_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_gui.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_gui_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_help.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_help_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_location.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_location_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_multimedia.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_multimedia_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_multimediawidgets.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_multimediawidgets_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_network.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_network_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_networkauth.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_networkauth_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_nfc.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_nfc_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_opengl.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_opengl_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_openglextensions.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_openglextensions_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_packetprotocol_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_platformcompositor_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_positioning.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_positioning_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_positioningquick.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_positioningquick_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_printsupport.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_printsupport_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_purchasing.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_purchasing_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_qml.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_qml_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_qmldebug_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_qmldevtools_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_qmltest.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_qmltest_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_qtmultimediaquicktools_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quick.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quick_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quickcontrols2.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quickcontrols2_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quickparticles_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quickshapes_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quicktemplates2.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quicktemplates2_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quickwidgets.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quickwidgets_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_remoteobjects.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_remoteobjects_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_repparser.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_repparser_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_script.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_script_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_scripttools.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_scripttools_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_scxml.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_scxml_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_sensors.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_sensors_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_serialbus.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_serialbus_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_serialport.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_serialport_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_sql.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_sql_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_svg.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_svg_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_testlib.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_testlib_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_texttospeech.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_texttospeech_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_theme_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_uiplugin.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_uitools.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_uitools_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_virtualkeyboard.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_virtualkeyboard_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_vulkan_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webchannel.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webchannel_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webengine.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webengine_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webenginecore.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webenginecore_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webenginecoreheaders_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webenginewidgets.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webenginewidgets_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_websockets.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_websockets_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webview.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webview_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_widgets.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_widgets_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_windowsuiautomation_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_winextras.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_winextras_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_xml.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_xml_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_xmlpatterns.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_xmlpatterns_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_zlib_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\qt_functions.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\qt_config.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\win32-msvc\qmake.conf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\spec_post.prf .qmake.stash ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\exclusive_builds.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\common\msvc-version.conf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\toolchain.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\default_pre.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\win32\default_pre.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\resolve_config.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\exclusive_builds_post.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\default_post.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\build_pass.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\resources.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\qtquickcompiler.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\qml_debug.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\precompile_header.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\warn_on.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\qt.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\moc.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\win32\opengl.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\uic.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\qmake_use.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\file_copies.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\win32\windows.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\testcase_targets.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\exceptions.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\yacc.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\lex.prf ..\MyQQ.pro qml_qmlcache.qrc ..\images_widget.qrc ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Quickd.prl ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5WinExtrasd.prl ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Widgetsd.prl ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Guid.prl ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Qmld.prl ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Networkd.prl ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Xmld.prl ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Sqld.prl ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Cored.prl ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\qtmaind.prl  qml_qmlcache.qrc ..\images_widget.qrc ..\Func.qml ..\MouseForShape.qml ..\chinese-lunar.js ..\MouseMoveCustomForInner.qml ..\Actions.qml ..\main.qml ..\MouseCustomForWindow.qml ..\register\RegisterInterface.qml ..\register\RegisterInfLangMinClose.qml ..\login\LoginTotalInterface.qml ..\login\LoginInterface.qml ..\login\LoginEdit.qml ..\login\LoginSetInterface.qml ..\main\IndividualData.qml ..\main\AlterCover.qml ..\main\WeatherWin.qml ..\main\List.qml ..\main\EditInfo.qml ..\main\HelpWin.qml ..\main\MessageDialogForSwitch.qml ..\main\ButtonForMenu.qml ..\main\AboutMyQQ.qml ..\main\WeatherCityRec.qml ..\main\Friend.qml ..\main\VerifyWin.qml ..\main\EduInfo.qml ..\main\AlterSmallWin.qml ..\main\OfflineTip.qml ..\main\FriendWin.qml ..\main\HeadInf.qml ..\main\AlterHImg.qml ..\main\InfoSmallLabel.qml ..\main\mainInterface.qml ..\main\ChatWin.qml ..\main\TemperatureBtn.qml ..\qml.qrc  ..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\data\dummy.cpp ..\addfriendgroupwidget.h ..\bigfilesocket.h ..\friendgroupmodel.h ..\friendmodel.h ..\funcc.h ..\headimgview.h ..\headimgwidget.h ..\images.h ..\loginsocket.h ..\nativeserver.h ..\nativesocket.h ..\netmonitor.h ..\qmlimageprovider.h ..\UpdateTimer.h ..\weatherhandle.h ..\registersocket.h  ..\addfriendgroupwidget.cpp ..\bigfilesocket.cpp ..\friendgroupmodel.cpp ..\friendmodel.cpp ..\headimgview.cpp ..\headimgwidget.cpp ..\images.cpp ..\loginsocket.cpp ..\main.cpp ..\funcc.cpp ..\nativeserver.cpp ..\nativesocket.cpp ..\netmonitor.cpp ..\qmlimageprovider.cpp ..\UpdateTimer.cpp ..\weatherhandle.cpp ..\registersocket.cpp     
+	$(ZIP) MyQQ.zip $(SOURCES) $(DIST) ..\..\MyQQ.pro ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\spec_pre.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\common\angle.conf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\win32\windows_vulkan_sdk.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\common\windows-vulkan.conf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\common\msvc-desktop.conf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\qconfig.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3danimation.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3danimation_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dcore.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dcore_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dextras.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dextras_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dinput.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dinput_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dlogic.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dlogic_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquick.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquick_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickanimation.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickanimation_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickextras.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickextras_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickinput.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickinput_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickrender.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickrender_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickscene2d.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3dquickscene2d_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3drender.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_3drender_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_accessibility_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_axbase.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_axbase_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_axcontainer.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_axcontainer_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_axserver.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_axserver_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_bluetooth.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_bluetooth_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_bootstrap_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_charts.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_charts_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_concurrent.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_concurrent_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_core.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_core_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_datavisualization.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_datavisualization_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_dbus.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_dbus_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_designer.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_designer_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_designercomponents_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_devicediscovery_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_edid_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_egl_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_eventdispatcher_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_fb_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_fontdatabase_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_gamepad.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_gamepad_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_gui.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_gui_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_help.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_help_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_location.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_location_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_multimedia.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_multimedia_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_multimediawidgets.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_multimediawidgets_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_network.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_network_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_networkauth.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_networkauth_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_nfc.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_nfc_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_opengl.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_opengl_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_openglextensions.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_openglextensions_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_packetprotocol_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_platformcompositor_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_positioning.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_positioning_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_positioningquick.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_positioningquick_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_printsupport.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_printsupport_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_purchasing.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_purchasing_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_qml.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_qml_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_qmldebug_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_qmldevtools_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_qmltest.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_qmltest_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_qtmultimediaquicktools_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quick.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quick_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quickcontrols2.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quickcontrols2_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quickparticles_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quickshapes_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quicktemplates2.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quicktemplates2_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quickwidgets.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_quickwidgets_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_remoteobjects.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_remoteobjects_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_repparser.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_repparser_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_script.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_script_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_scripttools.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_scripttools_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_scxml.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_scxml_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_sensors.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_sensors_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_serialbus.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_serialbus_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_serialport.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_serialport_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_sql.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_sql_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_svg.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_svg_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_testlib.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_testlib_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_texttospeech.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_texttospeech_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_theme_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_uiplugin.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_uitools.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_uitools_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_virtualkeyboard.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_virtualkeyboard_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_vulkan_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webchannel.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webchannel_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webengine.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webengine_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webenginecore.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webenginecore_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webenginecoreheaders_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webenginewidgets.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webenginewidgets_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_websockets.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_websockets_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webview.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_webview_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_widgets.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_widgets_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_windowsuiautomation_support_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_winextras.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_winextras_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_xml.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_xml_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_xmlpatterns.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_xmlpatterns_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\modules\qt_lib_zlib_private.pri ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\qt_functions.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\qt_config.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\win32-msvc\qmake.conf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\spec_post.prf .qmake.stash ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\exclusive_builds.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\common\msvc-version.conf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\toolchain.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\default_pre.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\win32\default_pre.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\resolve_config.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\exclusive_builds_post.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\default_post.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\build_pass.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\resources.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\qtquickcompiler.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\qml_debug.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\precompile_header.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\warn_on.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\qt.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\moc.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\win32\opengl.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\uic.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\qmake_use.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\file_copies.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\win32\windows.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\testcase_targets.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\exceptions.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\yacc.prf ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\lex.prf ..\MyQQ.pro qml_qmlcache.qrc ..\images_widget.qrc ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Quickd.prl ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5WinExtrasd.prl ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Widgetsd.prl ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Guid.prl ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Qmld.prl ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Networkd.prl ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Xmld.prl ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Sqld.prl ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\Qt5Cored.prl ..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\lib\qtmaind.prl  qml_qmlcache.qrc ..\images_widget.qrc ..\CScroll.qml ..\Func.qml ..\MouseForShape.qml ..\chinese-lunar.js ..\MouseMoveCustomForInner.qml ..\Actions.qml ..\main.qml ..\MouseCustomForWindow.qml ..\register\RegisterInterface.qml ..\register\RegisterInfLangMinClose.qml ..\login\LoginTotalInterface.qml ..\login\LoginInterface.qml ..\login\LoginEdit.qml ..\login\LoginSetInterface.qml ..\main\IndividualData.qml ..\main\AlterCover.qml ..\main\WeatherWin.qml ..\main\List.qml ..\main\EditInfo.qml ..\main\HelpWin.qml ..\main\MessageDialogForSwitch.qml ..\main\ButtonForMenu.qml ..\main\AboutMyQQ.qml ..\main\WeatherCityRec.qml ..\main\Friend.qml ..\main\VerifyWin.qml ..\main\EduInfo.qml ..\main\AlterSmallWin.qml ..\main\OfflineTip.qml ..\main\FriendWin.qml ..\main\HeadInf.qml ..\main\AlterHImg.qml ..\main\InfoSmallLabel.qml ..\main\mainInterface.qml ..\main\ChatWin.qml ..\main\TemperatureBtn.qml ..\qml.qrc  ..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\data\dummy.cpp ..\addfriendgroupwidget.h ..\bigfilesocket.h ..\friendgroupmodel.h ..\friendmodel.h ..\funcc.h ..\headimgview.h ..\headimgwidget.h ..\imagehelper.h ..\images.h ..\loginsocket.h ..\nativeserver.h ..\nativesocket.h ..\netmonitor.h ..\qmlimageprovider.h ..\screenwidget.h ..\sendsocket.h ..\updatetimer.h ..\weatherhandle.h ..\registersocket.h  ..\addfriendgroupwidget.cpp ..\bigfilesocket.cpp ..\friendgroupmodel.cpp ..\friendmodel.cpp ..\headimgview.cpp ..\headimgwidget.cpp ..\imagehelper.cpp ..\images.cpp ..\loginsocket.cpp ..\main.cpp ..\funcc.cpp ..\nativeserver.cpp ..\nativesocket.cpp ..\netmonitor.cpp ..\qmlimageprovider.cpp ..\screenwidget.cpp ..\sendsocket.cpp ..\updatetimer.cpp ..\weatherhandle.cpp ..\registersocket.cpp     
 
 clean: compiler_clean 
-	-$(DEL_FILE) debug\qrc_qml_qmlcache.obj debug\qrc_images_widget.obj debug\addfriendgroupwidget.obj debug\bigfilesocket.obj debug\friendgroupmodel.obj debug\friendmodel.obj debug\headimgview.obj debug\headimgwidget.obj debug\images.obj debug\loginsocket.obj debug\main.obj debug\funcc.obj debug\nativeserver.obj debug\nativesocket.obj debug\netmonitor.obj debug\qmlimageprovider.obj debug\UpdateTimer.obj debug\weatherhandle.obj debug\registersocket.obj debug\Func_qml.obj debug\MouseForShape_qml.obj debug\chinese-lunar_js.obj debug\MouseMoveCustomForInner_qml.obj debug\Actions_qml.obj debug\main_qml.obj debug\MouseCustomForWindow_qml.obj debug\register_RegisterInterface_qml.obj debug\register_RegisterInfLangMinClose_qml.obj debug\login_LoginTotalInterface_qml.obj debug\login_LoginInterface_qml.obj debug\login_LoginEdit_qml.obj debug\login_LoginSetInterface_qml.obj debug\main_IndividualData_qml.obj debug\main_AlterCover_qml.obj debug\main_WeatherWin_qml.obj debug\main_List_qml.obj debug\main_EditInfo_qml.obj debug\main_HelpWin_qml.obj debug\main_MessageDialogForSwitch_qml.obj debug\main_ButtonForMenu_qml.obj debug\main_AboutMyQQ_qml.obj debug\main_WeatherCityRec_qml.obj debug\main_Friend_qml.obj debug\main_VerifyWin_qml.obj debug\main_EduInfo_qml.obj debug\main_AlterSmallWin_qml.obj debug\main_OfflineTip_qml.obj debug\main_FriendWin_qml.obj debug\main_HeadInf_qml.obj debug\main_AlterHImg_qml.obj debug\main_InfoSmallLabel_qml.obj debug\main_mainInterface_qml.obj debug\main_ChatWin_qml.obj debug\main_TemperatureBtn_qml.obj debug\qmlcache_loader.obj debug\moc_addfriendgroupwidget.obj debug\moc_bigfilesocket.obj debug\moc_friendgroupmodel.obj debug\moc_friendmodel.obj debug\moc_funcc.obj debug\moc_headimgview.obj debug\moc_headimgwidget.obj debug\moc_images.obj debug\moc_loginsocket.obj debug\moc_nativeserver.obj debug\moc_nativesocket.obj debug\moc_netmonitor.obj debug\moc_UpdateTimer.obj debug\moc_weatherhandle.obj debug\moc_registersocket.obj
+	-$(DEL_FILE) debug\qrc_qml_qmlcache.obj debug\qrc_images_widget.obj debug\addfriendgroupwidget.obj debug\bigfilesocket.obj debug\friendgroupmodel.obj debug\friendmodel.obj debug\headimgview.obj debug\headimgwidget.obj debug\imagehelper.obj debug\images.obj debug\loginsocket.obj debug\main.obj debug\funcc.obj debug\nativeserver.obj debug\nativesocket.obj debug\netmonitor.obj debug\qmlimageprovider.obj debug\screenwidget.obj debug\sendsocket.obj debug\updatetimer.obj debug\weatherhandle.obj debug\registersocket.obj debug\CScroll_qml.obj debug\Func_qml.obj debug\MouseForShape_qml.obj debug\chinese-lunar_js.obj debug\MouseMoveCustomForInner_qml.obj debug\Actions_qml.obj debug\main_qml.obj debug\MouseCustomForWindow_qml.obj debug\register_RegisterInterface_qml.obj debug\register_RegisterInfLangMinClose_qml.obj debug\login_LoginTotalInterface_qml.obj debug\login_LoginInterface_qml.obj debug\login_LoginEdit_qml.obj debug\login_LoginSetInterface_qml.obj debug\main_IndividualData_qml.obj debug\main_AlterCover_qml.obj debug\main_WeatherWin_qml.obj debug\main_List_qml.obj debug\main_EditInfo_qml.obj debug\main_HelpWin_qml.obj debug\main_MessageDialogForSwitch_qml.obj debug\main_ButtonForMenu_qml.obj debug\main_AboutMyQQ_qml.obj debug\main_WeatherCityRec_qml.obj debug\main_Friend_qml.obj debug\main_VerifyWin_qml.obj debug\main_EduInfo_qml.obj debug\main_AlterSmallWin_qml.obj debug\main_OfflineTip_qml.obj debug\main_FriendWin_qml.obj debug\main_HeadInf_qml.obj debug\main_AlterHImg_qml.obj debug\main_InfoSmallLabel_qml.obj debug\main_mainInterface_qml.obj debug\main_ChatWin_qml.obj debug\main_TemperatureBtn_qml.obj debug\qmlcache_loader.obj debug\moc_addfriendgroupwidget.obj debug\moc_bigfilesocket.obj debug\moc_friendgroupmodel.obj debug\moc_friendmodel.obj debug\moc_funcc.obj debug\moc_headimgview.obj debug\moc_headimgwidget.obj debug\moc_imagehelper.obj debug\moc_images.obj debug\moc_loginsocket.obj debug\moc_nativeserver.obj debug\moc_nativesocket.obj debug\moc_netmonitor.obj debug\moc_screenwidget.obj
+	-$(DEL_FILE) debug\moc_sendsocket.obj debug\moc_updatetimer.obj debug\moc_weatherhandle.obj debug\moc_registersocket.obj
 	-$(DEL_FILE) debug\MyQQ.vc.pdb debug\MyQQ.ilk debug\MyQQ.idb
 	-$(DEL_FILE) debug\MyQQ.res
 
@@ -361,7 +383,6 @@ compiler_rcc_clean:
 	-$(DEL_FILE) debug\qrc_qml_qmlcache.cpp debug\qrc_qml_qmlcache.tmp.obj debug\qrc_images_widget.cpp debug\qrc_images_widget.tmp.obj
 debug\qrc_qml_qmlcache.obj: qml_qmlcache.qrc \
 		..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\bin\rcc.exe \
-		..\MyQQ.pro \
 		..\images\codeB.png \
 		..\images\bottom.png \
 		..\images\qqLogin.png \
@@ -487,9 +508,12 @@ debug\qrc_images_widget.obj: ..\images_widget.qrc \
 	 cl $(CXXFLAGS) -c debug/qrc_images_widget.cpp -Fodebug/qrc_images_widget.tmp.obj 
 	 D:\Qt5.12.8\5.12.8\msvc2017_64\bin\rcc.exe -name images_widget ..\images_widget.qrc -pass 2 -temp debug/qrc_images_widget.tmp.obj -o debug\qrc_images_widget.obj
 
-compiler_qmlcache_make_all: debug\Func_qml.cpp debug\MouseForShape_qml.cpp debug\chinese-lunar_js.cpp debug\MouseMoveCustomForInner_qml.cpp debug\Actions_qml.cpp debug\main_qml.cpp debug\MouseCustomForWindow_qml.cpp debug\register_RegisterInterface_qml.cpp debug\register_RegisterInfLangMinClose_qml.cpp debug\login_LoginTotalInterface_qml.cpp debug\login_LoginInterface_qml.cpp debug\login_LoginEdit_qml.cpp debug\login_LoginSetInterface_qml.cpp debug\main_IndividualData_qml.cpp debug\main_AlterCover_qml.cpp debug\main_WeatherWin_qml.cpp debug\main_List_qml.cpp debug\main_EditInfo_qml.cpp debug\main_HelpWin_qml.cpp debug\main_MessageDialogForSwitch_qml.cpp debug\main_ButtonForMenu_qml.cpp debug\main_AboutMyQQ_qml.cpp debug\main_WeatherCityRec_qml.cpp debug\main_Friend_qml.cpp debug\main_VerifyWin_qml.cpp debug\main_EduInfo_qml.cpp debug\main_AlterSmallWin_qml.cpp debug\main_OfflineTip_qml.cpp debug\main_FriendWin_qml.cpp debug\main_HeadInf_qml.cpp debug\main_AlterHImg_qml.cpp debug\main_InfoSmallLabel_qml.cpp debug\main_mainInterface_qml.cpp debug\main_ChatWin_qml.cpp debug\main_TemperatureBtn_qml.cpp
+compiler_qmlcache_make_all: debug\CScroll_qml.cpp debug\Func_qml.cpp debug\MouseForShape_qml.cpp debug\chinese-lunar_js.cpp debug\MouseMoveCustomForInner_qml.cpp debug\Actions_qml.cpp debug\main_qml.cpp debug\MouseCustomForWindow_qml.cpp debug\register_RegisterInterface_qml.cpp debug\register_RegisterInfLangMinClose_qml.cpp debug\login_LoginTotalInterface_qml.cpp debug\login_LoginInterface_qml.cpp debug\login_LoginEdit_qml.cpp debug\login_LoginSetInterface_qml.cpp debug\main_IndividualData_qml.cpp debug\main_AlterCover_qml.cpp debug\main_WeatherWin_qml.cpp debug\main_List_qml.cpp debug\main_EditInfo_qml.cpp debug\main_HelpWin_qml.cpp debug\main_MessageDialogForSwitch_qml.cpp debug\main_ButtonForMenu_qml.cpp debug\main_AboutMyQQ_qml.cpp debug\main_WeatherCityRec_qml.cpp debug\main_Friend_qml.cpp debug\main_VerifyWin_qml.cpp debug\main_EduInfo_qml.cpp debug\main_AlterSmallWin_qml.cpp debug\main_OfflineTip_qml.cpp debug\main_FriendWin_qml.cpp debug\main_HeadInf_qml.cpp debug\main_AlterHImg_qml.cpp debug\main_InfoSmallLabel_qml.cpp debug\main_mainInterface_qml.cpp debug\main_ChatWin_qml.cpp debug\main_TemperatureBtn_qml.cpp
 compiler_qmlcache_clean:
-	-$(DEL_FILE) debug\Func_qml.cpp debug\MouseForShape_qml.cpp debug\chinese-lunar_js.cpp debug\MouseMoveCustomForInner_qml.cpp debug\Actions_qml.cpp debug\main_qml.cpp debug\MouseCustomForWindow_qml.cpp debug\register_RegisterInterface_qml.cpp debug\register_RegisterInfLangMinClose_qml.cpp debug\login_LoginTotalInterface_qml.cpp debug\login_LoginInterface_qml.cpp debug\login_LoginEdit_qml.cpp debug\login_LoginSetInterface_qml.cpp debug\main_IndividualData_qml.cpp debug\main_AlterCover_qml.cpp debug\main_WeatherWin_qml.cpp debug\main_List_qml.cpp debug\main_EditInfo_qml.cpp debug\main_HelpWin_qml.cpp debug\main_MessageDialogForSwitch_qml.cpp debug\main_ButtonForMenu_qml.cpp debug\main_AboutMyQQ_qml.cpp debug\main_WeatherCityRec_qml.cpp debug\main_Friend_qml.cpp debug\main_VerifyWin_qml.cpp debug\main_EduInfo_qml.cpp debug\main_AlterSmallWin_qml.cpp debug\main_OfflineTip_qml.cpp debug\main_FriendWin_qml.cpp debug\main_HeadInf_qml.cpp debug\main_AlterHImg_qml.cpp debug\main_InfoSmallLabel_qml.cpp debug\main_mainInterface_qml.cpp debug\main_ChatWin_qml.cpp debug\main_TemperatureBtn_qml.cpp
+	-$(DEL_FILE) debug\CScroll_qml.cpp debug\Func_qml.cpp debug\MouseForShape_qml.cpp debug\chinese-lunar_js.cpp debug\MouseMoveCustomForInner_qml.cpp debug\Actions_qml.cpp debug\main_qml.cpp debug\MouseCustomForWindow_qml.cpp debug\register_RegisterInterface_qml.cpp debug\register_RegisterInfLangMinClose_qml.cpp debug\login_LoginTotalInterface_qml.cpp debug\login_LoginInterface_qml.cpp debug\login_LoginEdit_qml.cpp debug\login_LoginSetInterface_qml.cpp debug\main_IndividualData_qml.cpp debug\main_AlterCover_qml.cpp debug\main_WeatherWin_qml.cpp debug\main_List_qml.cpp debug\main_EditInfo_qml.cpp debug\main_HelpWin_qml.cpp debug\main_MessageDialogForSwitch_qml.cpp debug\main_ButtonForMenu_qml.cpp debug\main_AboutMyQQ_qml.cpp debug\main_WeatherCityRec_qml.cpp debug\main_Friend_qml.cpp debug\main_VerifyWin_qml.cpp debug\main_EduInfo_qml.cpp debug\main_AlterSmallWin_qml.cpp debug\main_OfflineTip_qml.cpp debug\main_FriendWin_qml.cpp debug\main_HeadInf_qml.cpp debug\main_AlterHImg_qml.cpp debug\main_InfoSmallLabel_qml.cpp debug\main_mainInterface_qml.cpp debug\main_ChatWin_qml.cpp debug\main_TemperatureBtn_qml.cpp
+debug\CScroll_qml.cpp: ..\CScroll.qml
+	D:\Qt5.12.8\5.12.8\msvc2017_64\bin\qmlcachegen.exe --resource=D:/QTpractice/MyQQ/MyQQ/qml.qrc -o debug\CScroll_qml.cpp ..\CScroll.qml
+
 debug\Func_qml.cpp: ..\Func.qml
 	D:\Qt5.12.8\5.12.8\msvc2017_64\bin\qmlcachegen.exe --resource=D:/QTpractice/MyQQ/MyQQ/qml.qrc -o debug\Func_qml.cpp ..\Func.qml
 
@@ -609,9 +633,9 @@ compiler_moc_predefs_clean:
 debug\moc_predefs.h: ..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\data\dummy.cpp
 	cl -BxD:\Qt5.12.8\5.12.8\msvc2017_64\bin\qmake.exe -nologo -Zc:wchar_t -FS -Zc:rvalueCast -Zc:inline -Zc:strictStrings -Zc:throwingNew -Zc:referenceBinding -Zc:__cplusplus -Zi -MDd -W3 -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 -wd4577 -wd4467 -E ..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\mkspecs\features\data\dummy.cpp 2>NUL >debug\moc_predefs.h
 
-compiler_moc_header_make_all: debug\moc_addfriendgroupwidget.cpp debug\moc_bigfilesocket.cpp debug\moc_friendgroupmodel.cpp debug\moc_friendmodel.cpp debug\moc_funcc.cpp debug\moc_headimgview.cpp debug\moc_headimgwidget.cpp debug\moc_images.cpp debug\moc_loginsocket.cpp debug\moc_nativeserver.cpp debug\moc_nativesocket.cpp debug\moc_netmonitor.cpp debug\moc_UpdateTimer.cpp debug\moc_weatherhandle.cpp debug\moc_registersocket.cpp
+compiler_moc_header_make_all: debug\moc_addfriendgroupwidget.cpp debug\moc_bigfilesocket.cpp debug\moc_friendgroupmodel.cpp debug\moc_friendmodel.cpp debug\moc_funcc.cpp debug\moc_headimgview.cpp debug\moc_headimgwidget.cpp debug\moc_imagehelper.cpp debug\moc_images.cpp debug\moc_loginsocket.cpp debug\moc_nativeserver.cpp debug\moc_nativesocket.cpp debug\moc_netmonitor.cpp debug\moc_screenwidget.cpp debug\moc_sendsocket.cpp debug\moc_updatetimer.cpp debug\moc_weatherhandle.cpp debug\moc_registersocket.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) debug\moc_addfriendgroupwidget.cpp debug\moc_bigfilesocket.cpp debug\moc_friendgroupmodel.cpp debug\moc_friendmodel.cpp debug\moc_funcc.cpp debug\moc_headimgview.cpp debug\moc_headimgwidget.cpp debug\moc_images.cpp debug\moc_loginsocket.cpp debug\moc_nativeserver.cpp debug\moc_nativesocket.cpp debug\moc_netmonitor.cpp debug\moc_UpdateTimer.cpp debug\moc_weatherhandle.cpp debug\moc_registersocket.cpp
+	-$(DEL_FILE) debug\moc_addfriendgroupwidget.cpp debug\moc_bigfilesocket.cpp debug\moc_friendgroupmodel.cpp debug\moc_friendmodel.cpp debug\moc_funcc.cpp debug\moc_headimgview.cpp debug\moc_headimgwidget.cpp debug\moc_imagehelper.cpp debug\moc_images.cpp debug\moc_loginsocket.cpp debug\moc_nativeserver.cpp debug\moc_nativesocket.cpp debug\moc_netmonitor.cpp debug\moc_screenwidget.cpp debug\moc_sendsocket.cpp debug\moc_updatetimer.cpp debug\moc_weatherhandle.cpp debug\moc_registersocket.cpp
 debug\moc_addfriendgroupwidget.cpp: ..\addfriendgroupwidget.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QObject \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobject.h \
@@ -1197,9 +1221,11 @@ debug\moc_funcc.cpp: ..\funcc.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtcpserver.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qabstractsocket.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qhostaddress.h \
+		..\sendsocket.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtcpsocket.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qeventloop.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qapplication.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcoreapplication.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qeventloop.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qdesktopwidget.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qguiapplication.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qinputmethod.h \
@@ -1218,7 +1244,6 @@ debug\moc_funcc.cpp: ..\funcc.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\QSslConfiguration \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qsslconfiguration.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qsslsocket.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtcpsocket.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qsslerror.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qsslcertificate.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcryptographichash.h \
@@ -1474,6 +1499,171 @@ debug\moc_headimgwidget.cpp: ..\headimgwidget.h \
 		debug\moc_predefs.h \
 		..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe
 	D:\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include D:/QTpractice/MyQQ/MyQQ/build-MyQQ-Desktop_Qt_5_12_8_MSVC2017_64bit-Debug/debug/moc_predefs.h -ID:/Qt5.12.8/5.12.8/msvc2017_64/mkspecs/win32-msvc -ID:/QTpractice/MyQQ/MyQQ -ID:/Qt5.12.8/5.12.8/msvc2017_64/include -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQuick -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWinExtras -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWidgets -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtGui -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtANGLE -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtNetwork -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtXml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtSql -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtCore -I. -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\ATLMFC\include" -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\cppwinrt" ..\headimgwidget.h -o debug\moc_headimgwidget.cpp
+
+debug\moc_imagehelper.cpp: ..\imagehelper.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\QMovie \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qmovie.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtguiglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qconfig-bootstrapped.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qconfig.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtcore-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsystemdetection.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qprocessordetection.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcompilerdetection.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtypeinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsysinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlogging.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qflags.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbasicatomic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic_bootstrap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qgenericatomic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic_cxx11.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic_msvc.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qglobalstatic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmutex.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qnumeric.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qversiontagging.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtgui-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobject.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobjectdefs.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qnamespace.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobjectdefs_impl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstring.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qchar.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbytearray.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qrefcount.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qarraydata.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringliteral.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringalgorithms.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringview.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringbuilder.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qalgorithms.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qiterator.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qhashfunctions.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qpair.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbytearraylist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringlist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qregexp.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringmatcher.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcoreevent.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qscopedpointer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmetatype.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvarlengtharray.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcontainerfwd.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobject_impl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qimagereader.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcoreapplication.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qeventloop.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qimage.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qcolor.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgb.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgba64.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpaintdevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs_win.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qrect.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmargins.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsize.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qpoint.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixelformat.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtransform.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qmatrix.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpolygon.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvector.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qregion.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdatastream.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qiodevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qline.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpainterpath.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qimageiohandler.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qplugin.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qpointer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qshareddata.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qhash.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer_impl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonobject.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonvalue.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfactoryinterface.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\QTextCursor \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtextcursor.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtextformat.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qfont.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvariant.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdebug.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtextstream.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlocale.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qset.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcontiguouscache.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpen.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qbrush.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixmap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtextoption.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\QQuickWindow \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qquickwindow.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qtquickglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qtqmlglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qtqml-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtnetworkglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtnetwork-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qtquick-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qsgrendererinterface.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qsgnode.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qsggeometry.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qopengl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qt_windows.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtANGLE\GLES3\gl3.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtANGLE\GLES3\gl3platform.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtANGLE\KHR\khrplatform.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtANGLE\GLES2\gl2.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtANGLE\GLES2\gl2platform.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qopengles2ext.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qopenglext.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QRectF \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\QMatrix4x4 \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qmatrix4x4.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qvector3d.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qvector4d.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qquaternion.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qgenericmatrix.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindow.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QObject \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QEvent \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QMargins \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QRect \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qsurface.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qsurfaceformat.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qicon.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qcursor.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qevent.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qkeysequence.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qurl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qurlquery.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfile.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfiledevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qvector2d.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtouchdevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqml.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlprivate.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlparserstatus.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlpropertyvaluesource.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmllist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmetaobject.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmldebug.h \
+		..\images.h \
+		..\qmlimageprovider.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qquickimageprovider.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlengine.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qjsengine.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qjsvalue.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlerror.h \
+		debug\moc_predefs.h \
+		..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe
+	D:\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include D:/QTpractice/MyQQ/MyQQ/build-MyQQ-Desktop_Qt_5_12_8_MSVC2017_64bit-Debug/debug/moc_predefs.h -ID:/Qt5.12.8/5.12.8/msvc2017_64/mkspecs/win32-msvc -ID:/QTpractice/MyQQ/MyQQ -ID:/Qt5.12.8/5.12.8/msvc2017_64/include -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQuick -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWinExtras -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWidgets -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtGui -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtANGLE -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtNetwork -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtXml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtSql -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtCore -I. -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\ATLMFC\include" -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\cppwinrt" ..\imagehelper.h -o debug\moc_imagehelper.cpp
 
 debug\moc_images.cpp: ..\images.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QObject \
@@ -1853,6 +2043,7 @@ debug\moc_nativesocket.cpp: ..\nativesocket.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdatastream.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qline.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpainterpath.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qeventloop.h \
 		debug\moc_predefs.h \
 		..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe
 	D:\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include D:/QTpractice/MyQQ/MyQQ/build-MyQQ-Desktop_Qt_5_12_8_MSVC2017_64bit-Debug/debug/moc_predefs.h -ID:/Qt5.12.8/5.12.8/msvc2017_64/mkspecs/win32-msvc -ID:/QTpractice/MyQQ/MyQQ -ID:/Qt5.12.8/5.12.8/msvc2017_64/include -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQuick -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWinExtras -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWidgets -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtGui -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtANGLE -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtNetwork -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtXml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtSql -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtCore -I. -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\ATLMFC\include" -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\cppwinrt" ..\nativesocket.h -o debug\moc_nativesocket.cpp
@@ -1917,7 +2108,200 @@ debug\moc_netmonitor.cpp: ..\netmonitor.h \
 		..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe
 	D:\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include D:/QTpractice/MyQQ/MyQQ/build-MyQQ-Desktop_Qt_5_12_8_MSVC2017_64bit-Debug/debug/moc_predefs.h -ID:/Qt5.12.8/5.12.8/msvc2017_64/mkspecs/win32-msvc -ID:/QTpractice/MyQQ/MyQQ -ID:/Qt5.12.8/5.12.8/msvc2017_64/include -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQuick -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWinExtras -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWidgets -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtGui -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtANGLE -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtNetwork -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtXml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtSql -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtCore -I. -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\ATLMFC\include" -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\cppwinrt" ..\netmonitor.h -o debug\moc_netmonitor.cpp
 
-debug\moc_UpdateTimer.cpp: ..\UpdateTimer.h \
+debug\moc_screenwidget.cpp: ..\screenwidget.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QWidget \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qwidget.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qtwidgetsglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtguiglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qconfig-bootstrapped.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qconfig.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtcore-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsystemdetection.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qprocessordetection.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcompilerdetection.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtypeinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsysinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlogging.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qflags.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbasicatomic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic_bootstrap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qgenericatomic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic_cxx11.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic_msvc.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qglobalstatic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmutex.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qnumeric.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qversiontagging.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtgui-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qtwidgets-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobjectdefs.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qnamespace.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobjectdefs_impl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs_win.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobject.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstring.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qchar.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbytearray.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qrefcount.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qarraydata.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringliteral.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringalgorithms.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringview.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringbuilder.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qalgorithms.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qiterator.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qhashfunctions.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qpair.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbytearraylist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringlist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qregexp.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringmatcher.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcoreevent.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qscopedpointer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmetatype.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvarlengtharray.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcontainerfwd.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobject_impl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmargins.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpaintdevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qrect.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsize.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qpoint.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpalette.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qcolor.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgb.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgba64.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qbrush.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvector.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qmatrix.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpolygon.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qregion.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdatastream.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qiodevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qline.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtransform.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpainterpath.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qimage.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixelformat.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixmap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qshareddata.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qhash.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer_impl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qfont.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qfontmetrics.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qfontinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qsizepolicy.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qcursor.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qkeysequence.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qevent.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvariant.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdebug.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtextstream.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlocale.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qset.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcontiguouscache.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qurl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qurlquery.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfile.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfiledevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qvector2d.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtouchdevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QMenu \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qmenu.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qicon.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qaction.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qactiongroup.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QPoint \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QSize \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtDesigner\QDesignerExportWidget \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtUiPlugin\QDesignerExportWidget \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtUiPlugin\qdesignerexportwidget.h \
+		debug\moc_predefs.h \
+		..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe
+	D:\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include D:/QTpractice/MyQQ/MyQQ/build-MyQQ-Desktop_Qt_5_12_8_MSVC2017_64bit-Debug/debug/moc_predefs.h -ID:/Qt5.12.8/5.12.8/msvc2017_64/mkspecs/win32-msvc -ID:/QTpractice/MyQQ/MyQQ -ID:/Qt5.12.8/5.12.8/msvc2017_64/include -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQuick -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWinExtras -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWidgets -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtGui -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtANGLE -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtNetwork -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtXml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtSql -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtCore -I. -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\ATLMFC\include" -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\cppwinrt" ..\screenwidget.h -o debug\moc_screenwidget.cpp
+
+debug\moc_sendsocket.cpp: ..\sendsocket.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QObject \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobject.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobjectdefs.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qnamespace.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qconfig-bootstrapped.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qconfig.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtcore-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsystemdetection.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qprocessordetection.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcompilerdetection.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtypeinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsysinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlogging.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qflags.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbasicatomic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic_bootstrap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qgenericatomic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic_cxx11.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic_msvc.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qglobalstatic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmutex.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qnumeric.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qversiontagging.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobjectdefs_impl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstring.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qchar.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbytearray.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qrefcount.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qarraydata.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringliteral.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringalgorithms.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringview.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringbuilder.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qalgorithms.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qiterator.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qhashfunctions.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qpair.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbytearraylist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringlist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qregexp.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringmatcher.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcoreevent.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qscopedpointer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmetatype.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvarlengtharray.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcontainerfwd.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobject_impl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtcpsocket.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtnetworkglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtnetwork-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qabstractsocket.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qiodevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdebug.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qhash.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtextstream.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlocale.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvariant.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qshareddata.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvector.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qpoint.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qset.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcontiguouscache.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer_impl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qthread.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qeventloop.h \
+		debug\moc_predefs.h \
+		..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe
+	D:\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include D:/QTpractice/MyQQ/MyQQ/build-MyQQ-Desktop_Qt_5_12_8_MSVC2017_64bit-Debug/debug/moc_predefs.h -ID:/Qt5.12.8/5.12.8/msvc2017_64/mkspecs/win32-msvc -ID:/QTpractice/MyQQ/MyQQ -ID:/Qt5.12.8/5.12.8/msvc2017_64/include -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQuick -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWinExtras -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWidgets -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtGui -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtANGLE -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtNetwork -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtXml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtSql -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtCore -I. -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\ATLMFC\include" -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\cppwinrt" ..\sendsocket.h -o debug\moc_sendsocket.cpp
+
+debug\moc_updatetimer.cpp: ..\updatetimer.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QObject \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobject.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobjectdefs.h \
@@ -1984,7 +2368,7 @@ debug\moc_UpdateTimer.cpp: ..\UpdateTimer.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer_impl.h \
 		debug\moc_predefs.h \
 		..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe
-	D:\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include D:/QTpractice/MyQQ/MyQQ/build-MyQQ-Desktop_Qt_5_12_8_MSVC2017_64bit-Debug/debug/moc_predefs.h -ID:/Qt5.12.8/5.12.8/msvc2017_64/mkspecs/win32-msvc -ID:/QTpractice/MyQQ/MyQQ -ID:/Qt5.12.8/5.12.8/msvc2017_64/include -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQuick -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWinExtras -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWidgets -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtGui -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtANGLE -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtNetwork -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtXml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtSql -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtCore -I. -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\ATLMFC\include" -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\cppwinrt" ..\UpdateTimer.h -o debug\moc_UpdateTimer.cpp
+	D:\Qt5.12.8\5.12.8\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include D:/QTpractice/MyQQ/MyQQ/build-MyQQ-Desktop_Qt_5_12_8_MSVC2017_64bit-Debug/debug/moc_predefs.h -ID:/Qt5.12.8/5.12.8/msvc2017_64/mkspecs/win32-msvc -ID:/QTpractice/MyQQ/MyQQ -ID:/Qt5.12.8/5.12.8/msvc2017_64/include -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQuick -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWinExtras -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtWidgets -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtGui -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtANGLE -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtQml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtNetwork -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtXml -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtSql -ID:/Qt5.12.8/5.12.8/msvc2017_64/include/QtCore -I. -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\ATLMFC\include" -I"D:\Microsoft Visual Studio 2017 Professional\VC\Tools\MSVC\14.16.27023\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\cppwinrt" ..\updatetimer.h -o debug\moc_updatetimer.cpp
 
 debug\moc_weatherhandle.cpp: ..\weatherhandle.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QObject \
@@ -2354,7 +2738,11 @@ debug\bigfilesocket.obj: ..\bigfilesocket.cpp ..\bigfilesocket.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfiledevice.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtimer.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbasictimer.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdatetime.h
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdatetime.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\qsqldatabase.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\qtsqlglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\qtsql-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\qsqlquery.h
 
 debug\friendgroupmodel.obj: ..\friendgroupmodel.cpp ..\friendgroupmodel.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QObject \
@@ -2844,6 +3232,201 @@ debug\headimgwidget.obj: ..\headimgwidget.cpp ..\headimgwidget.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdir.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfileinfo.h
 
+debug\imagehelper.obj: ..\imagehelper.cpp ..\imagehelper.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\QMovie \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qmovie.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtguiglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qconfig-bootstrapped.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qconfig.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtcore-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsystemdetection.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qprocessordetection.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcompilerdetection.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtypeinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsysinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlogging.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qflags.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbasicatomic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic_bootstrap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qgenericatomic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic_cxx11.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic_msvc.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qglobalstatic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmutex.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qnumeric.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qversiontagging.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtgui-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobject.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobjectdefs.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qnamespace.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobjectdefs_impl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstring.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qchar.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbytearray.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qrefcount.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qarraydata.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringliteral.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringalgorithms.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringview.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringbuilder.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qalgorithms.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qiterator.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qhashfunctions.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qpair.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbytearraylist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringlist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qregexp.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringmatcher.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcoreevent.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qscopedpointer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmetatype.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvarlengtharray.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcontainerfwd.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobject_impl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qimagereader.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcoreapplication.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qeventloop.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qimage.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qcolor.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgb.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgba64.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpaintdevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs_win.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qrect.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmargins.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsize.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qpoint.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixelformat.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtransform.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qmatrix.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpolygon.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvector.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qregion.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdatastream.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qiodevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qline.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpainterpath.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qimageiohandler.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qplugin.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qpointer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qshareddata.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qhash.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer_impl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonobject.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonvalue.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfactoryinterface.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\QTextCursor \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtextcursor.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtextformat.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qfont.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvariant.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdebug.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtextstream.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlocale.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qset.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcontiguouscache.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpen.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qbrush.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixmap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtextoption.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\QQuickWindow \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qquickwindow.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qtquickglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qtqmlglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qtqml-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtnetworkglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtnetwork-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qtquick-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qsgrendererinterface.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qsgnode.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qsggeometry.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qopengl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qt_windows.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtANGLE\GLES3\gl3.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtANGLE\GLES3\gl3platform.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtANGLE\KHR\khrplatform.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtANGLE\GLES2\gl2.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtANGLE\GLES2\gl2platform.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qopengles2ext.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qopenglext.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QRectF \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\QMatrix4x4 \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qmatrix4x4.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qvector3d.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qvector4d.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qquaternion.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qgenericmatrix.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindow.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QObject \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QEvent \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QMargins \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QRect \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qsurface.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qsurfaceformat.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qicon.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qcursor.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qevent.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qkeysequence.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qurl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qurlquery.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfile.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfiledevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qvector2d.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtouchdevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqml.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlprivate.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlparserstatus.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlpropertyvaluesource.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmllist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmetaobject.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmldebug.h \
+		..\images.h \
+		..\qmlimageprovider.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qquickimageprovider.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlengine.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qjsengine.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qjsvalue.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlerror.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QFile \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QFileInfo \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfileinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\QQmlFile \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlfile.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\QQuickTextDocument \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qquicktextdocument.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\QTextDocument \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtextdocument.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\QQuickItem \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qquickitem.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlcomponent.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QList \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qaccessible.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QDebug \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QDir \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdir.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qapplication.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qtwidgetsglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qtwidgets-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qdesktopwidget.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qwidget.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpalette.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qfontmetrics.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qfontinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qsizepolicy.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qguiapplication.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qinputmethod.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\QClipboard \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qclipboard.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmimedata.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbuffer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qregularexpression.h
+
 debug\images.obj: ..\images.cpp ..\images.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QObject \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobject.h \
@@ -3058,10 +3641,12 @@ debug\loginsocket.obj: ..\loginsocket.cpp ..\loginsocket.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtimer.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbasictimer.h
 
-debug\main.obj: ..\main.cpp ..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QApplication \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qapplication.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qtwidgetsglobal.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtguiglobal.h \
+debug\main.obj: ..\main.cpp ..\funcc.h \
+		..\weatherhandle.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QObject \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobject.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobjectdefs.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qnamespace.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qglobal.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qconfig-bootstrapped.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qconfig.h \
@@ -3083,22 +3668,16 @@ debug\main.obj: ..\main.cpp ..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\Q
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmutex.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qnumeric.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qversiontagging.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtgui-config.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qtwidgets-config.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcoreapplication.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobjectdefs_impl.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstring.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qchar.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbytearray.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qrefcount.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qnamespace.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qarraydata.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringliteral.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringalgorithms.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringview.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringbuilder.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobject.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobjectdefs.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobjectdefs_impl.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlist.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qalgorithms.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qiterator.h \
@@ -3114,94 +3693,16 @@ debug\main.obj: ..\main.cpp ..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\Q
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvarlengtharray.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcontainerfwd.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobject_impl.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qeventloop.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs_win.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qpoint.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsize.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qcursor.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qdesktopwidget.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qwidget.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmargins.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpaintdevice.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qrect.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpalette.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qcolor.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgb.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgba64.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qbrush.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvector.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qmatrix.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpolygon.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qregion.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdatastream.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qiodevice.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qline.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtransform.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpainterpath.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qimage.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixelformat.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixmap.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qshareddata.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qhash.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer_impl.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qfont.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qfontmetrics.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qfontinfo.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qsizepolicy.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qkeysequence.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qevent.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvariant.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmap.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdebug.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtextstream.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlocale.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qset.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcontiguouscache.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qurl.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qurlquery.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfile.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfiledevice.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qvector2d.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtouchdevice.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qguiapplication.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qinputmethod.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\QQmlApplicationEngine \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlapplicationengine.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlengine.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qjsengine.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qjsvalue.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qtqmlglobal.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qtqml-config.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtnetworkglobal.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtnetwork-config.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmldebug.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqml.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlprivate.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlparserstatus.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlpropertyvaluesource.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmllist.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmetaobject.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlerror.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QTranslator \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtranslator.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\QIcon \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qicon.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QDebug \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\qsqldatabase.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\qtsqlglobal.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\qtsql-config.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qprocess.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\qsqlquery.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlcontext.h \
-		..\funcc.h \
-		..\weatherhandle.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QObject \
 		..\friendgroupmodel.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\QQuickWindow \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qquickwindow.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qtquickglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qtqmlglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qtqml-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtnetworkglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtnetwork-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtguiglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtgui-config.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qtquick-config.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qsgrendererinterface.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qsgnode.h \
@@ -3216,25 +3717,88 @@ debug\main.obj: ..\main.cpp ..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\Q
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qopengles2ext.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qopenglext.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QRectF \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qrect.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmargins.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsize.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qpoint.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\QMatrix4x4 \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qmatrix4x4.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qvector3d.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qvector4d.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qquaternion.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qgenericmatrix.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdebug.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qhash.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtextstream.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qiodevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlocale.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvariant.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qshareddata.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvector.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qset.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcontiguouscache.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer_impl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdatastream.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindow.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QEvent \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QMargins \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QRect \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qsurface.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qsurfaceformat.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs_win.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qicon.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixmap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpaintdevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qcolor.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgb.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgba64.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qimage.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixelformat.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtransform.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qmatrix.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpolygon.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qregion.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qline.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpainterpath.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qcursor.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qevent.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qkeysequence.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qurl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qurlquery.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfile.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfiledevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qvector2d.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtouchdevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqml.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlprivate.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlparserstatus.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlpropertyvaluesource.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmllist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmetaobject.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmldebug.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QAbstractListModel \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qabstractitemmodel.h \
 		..\images.h \
 		..\qmlimageprovider.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qquickimageprovider.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlengine.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qjsengine.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qjsvalue.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlerror.h \
 		..\headimgwidget.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QWidget \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qwidget.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qtwidgetsglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qtwidgets-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpalette.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qbrush.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qfont.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qfontmetrics.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qfontinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qsizepolicy.h \
 		..\headimgview.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QGraphicsView \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qgraphicsview.h \
@@ -3259,6 +3823,14 @@ debug\main.obj: ..\main.cpp ..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\Q
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtcpserver.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qabstractsocket.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qhostaddress.h \
+		..\sendsocket.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtcpsocket.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qeventloop.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qapplication.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcoreapplication.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qdesktopwidget.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qguiapplication.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qinputmethod.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\QNetworkReply \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qnetworkreply.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QIODevice \
@@ -3274,7 +3846,6 @@ debug\main.obj: ..\main.cpp ..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\Q
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\QSslConfiguration \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qsslconfiguration.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qsslsocket.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtcpsocket.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qsslerror.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qsslcertificate.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcryptographichash.h \
@@ -3288,6 +3859,32 @@ debug\main.obj: ..\main.cpp ..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\Q
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\QTcpSocket \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedmemory.h \
 		..\friendmodel.h \
+		..\imagehelper.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\QMovie \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qmovie.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qimagereader.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qimageiohandler.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qplugin.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qpointer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonobject.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonvalue.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfactoryinterface.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\QTextCursor \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtextcursor.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtextformat.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QApplication \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\QQmlApplicationEngine \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlapplicationengine.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QTranslator \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtranslator.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\QIcon \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QDebug \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\qsqldatabase.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\qtsqlglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\qtsql-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qprocess.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\qsqlquery.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlcontext.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QTextCodec \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtextcodec.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qmessagebox.h \
@@ -3475,9 +4072,11 @@ debug\funcc.obj: ..\funcc.cpp ..\funcc.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtcpserver.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qabstractsocket.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qhostaddress.h \
+		..\sendsocket.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtcpsocket.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qeventloop.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qapplication.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcoreapplication.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qeventloop.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qdesktopwidget.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qguiapplication.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qinputmethod.h \
@@ -3496,7 +4095,6 @@ debug\funcc.obj: ..\funcc.cpp ..\funcc.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\QSslConfiguration \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qsslconfiguration.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qsslsocket.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtcpsocket.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qsslerror.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qsslcertificate.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcryptographichash.h \
@@ -3521,6 +4119,16 @@ debug\funcc.obj: ..\funcc.cpp ..\funcc.h \
 		..\friendmodel.h \
 		..\addfriendgroupwidget.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\QMouseEvent \
+		..\screenwidget.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QMenu \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qmenu.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qaction.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qactiongroup.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QPoint \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QSize \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtDesigner\QDesignerExportWidget \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtUiPlugin\QDesignerExportWidget \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtUiPlugin\qdesignerexportwidget.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QDebug \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qprocess.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\qsqlquery.h \
@@ -3535,6 +4143,8 @@ debug\funcc.obj: ..\funcc.cpp ..\funcc.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qdialog.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QXmlStreamReader \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qxmlstream.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QXmlStreamWriter \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtextcodec.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\QQuickItem \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQuick\qquickitem.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlcomponent.h \
@@ -3544,7 +4154,9 @@ debug\funcc.obj: ..\funcc.cpp ..\funcc.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QBuffer \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbuffer.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qmessagebox.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonarray.h
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonarray.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmath.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\qsqlerror.h
 
 debug\nativeserver.obj: ..\nativeserver.cpp ..\nativeserver.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QObject \
@@ -3643,7 +4255,10 @@ debug\nativeserver.obj: ..\nativeserver.cpp ..\nativeserver.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QJsonDocument \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsondocument.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonvalue.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qthread.h
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qeventloop.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qthread.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtimer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbasictimer.h
 
 debug\nativesocket.obj: ..\nativesocket.cpp ..\nativesocket.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QObject \
@@ -3738,7 +4353,21 @@ debug\nativesocket.obj: ..\nativesocket.cpp ..\nativesocket.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdatastream.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qline.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpainterpath.h \
-		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonobject.h
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qeventloop.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonobject.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QXmlStreamReader \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qxmlstream.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\qsqldatabase.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\qtsqlglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\qtsql-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\qsqlquery.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdir.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfileinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfile.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfiledevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qthread.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\QSqlError \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtSql\qsqlerror.h
 
 debug\netmonitor.obj: ..\netmonitor.cpp ..\netmonitor.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QObject \
@@ -3920,7 +4549,220 @@ debug\qmlimageprovider.obj: ..\qmlimageprovider.cpp ..\qmlimageprovider.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtQml\qqmlerror.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\QRgb
 
-debug\UpdateTimer.obj: ..\UpdateTimer.cpp ..\UpdateTimer.h \
+debug\screenwidget.obj: ..\screenwidget.cpp ..\screenwidget.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QWidget \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qwidget.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qtwidgetsglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtguiglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qconfig-bootstrapped.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qconfig.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtcore-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsystemdetection.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qprocessordetection.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcompilerdetection.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtypeinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsysinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlogging.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qflags.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbasicatomic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic_bootstrap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qgenericatomic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic_cxx11.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic_msvc.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qglobalstatic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmutex.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qnumeric.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qversiontagging.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtgui-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qtwidgets-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobjectdefs.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qnamespace.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobjectdefs_impl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qwindowdefs_win.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobject.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstring.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qchar.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbytearray.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qrefcount.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qarraydata.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringliteral.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringalgorithms.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringview.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringbuilder.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qalgorithms.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qiterator.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qhashfunctions.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qpair.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbytearraylist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringlist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qregexp.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringmatcher.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcoreevent.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qscopedpointer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmetatype.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvarlengtharray.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcontainerfwd.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobject_impl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmargins.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpaintdevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qrect.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsize.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qpoint.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpalette.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qcolor.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgb.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qrgba64.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qbrush.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvector.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qmatrix.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpolygon.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qregion.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdatastream.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qiodevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qline.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtransform.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpainterpath.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qimage.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixelformat.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpixmap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qshareddata.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qhash.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer_impl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qfont.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qfontmetrics.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qfontinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qsizepolicy.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qcursor.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qkeysequence.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qevent.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvariant.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdebug.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtextstream.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlocale.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qset.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcontiguouscache.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qurl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qurlquery.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfile.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfiledevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qvector2d.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtouchdevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\QMenu \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qmenu.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qicon.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qaction.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qactiongroup.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QPoint \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QSize \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtDesigner\QDesignerExportWidget \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtUiPlugin\QDesignerExportWidget \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtUiPlugin\qdesignerexportwidget.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qapplication.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcoreapplication.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qeventloop.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qdesktopwidget.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qguiapplication.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qinputmethod.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpainter.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qtextoption.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qpen.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qfiledialog.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdir.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qfileinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtWidgets\qdialog.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdatetime.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\qscreen.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QList \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QObject \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QRect \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QSizeF \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtGui\QTransform
+
+debug\sendsocket.obj: ..\sendsocket.cpp ..\sendsocket.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QObject \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobject.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobjectdefs.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qnamespace.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qconfig-bootstrapped.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qconfig.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtcore-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsystemdetection.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qprocessordetection.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcompilerdetection.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtypeinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsysinfo.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlogging.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qflags.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbasicatomic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic_bootstrap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qgenericatomic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic_cxx11.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qatomic_msvc.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qglobalstatic.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmutex.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qnumeric.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qversiontagging.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobjectdefs_impl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstring.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qchar.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbytearray.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qrefcount.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qarraydata.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringliteral.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringalgorithms.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringview.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringbuilder.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qalgorithms.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qiterator.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qhashfunctions.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qpair.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbytearraylist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringlist.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qregexp.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qstringmatcher.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcoreevent.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qscopedpointer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmetatype.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvarlengtharray.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcontainerfwd.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobject_impl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtcpsocket.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtnetworkglobal.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qtnetwork-config.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtNetwork\qabstractsocket.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qiodevice.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdebug.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qhash.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qmap.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtextstream.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qlocale.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvariant.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qshareddata.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qvector.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qpoint.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qset.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qcontiguouscache.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer_impl.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qthread.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qeventloop.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qdatastream.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qtimer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qbasictimer.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonobject.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsonvalue.h \
+		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qjsondocument.h
+
+debug\updatetimer.obj: ..\updatetimer.cpp ..\UpdateTimer.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\QObject \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobject.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qobjectdefs.h \
@@ -4192,6 +5034,8 @@ debug\registersocket.obj: ..\registersocket.cpp ..\registersocket.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer.h \
 		..\..\..\..\..\Qt5.12.8\5.12.8\msvc2017_64\include\QtCore\qsharedpointer_impl.h
 
+debug\CScroll_qml.obj: debug\CScroll_qml.cpp 
+
 debug\Func_qml.obj: debug\Func_qml.cpp 
 
 debug\MouseForShape_qml.obj: debug\MouseForShape_qml.cpp 
@@ -4278,6 +5122,8 @@ debug\moc_headimgview.obj: debug\moc_headimgview.cpp
 
 debug\moc_headimgwidget.obj: debug\moc_headimgwidget.cpp 
 
+debug\moc_imagehelper.obj: debug\moc_imagehelper.cpp 
+
 debug\moc_images.obj: debug\moc_images.cpp 
 
 debug\moc_loginsocket.obj: debug\moc_loginsocket.cpp 
@@ -4288,7 +5134,11 @@ debug\moc_nativesocket.obj: debug\moc_nativesocket.cpp
 
 debug\moc_netmonitor.obj: debug\moc_netmonitor.cpp 
 
-debug\moc_UpdateTimer.obj: debug\moc_UpdateTimer.cpp 
+debug\moc_screenwidget.obj: debug\moc_screenwidget.cpp 
+
+debug\moc_sendsocket.obj: debug\moc_sendsocket.cpp 
+
+debug\moc_updatetimer.obj: debug\moc_updatetimer.cpp 
 
 debug\moc_weatherhandle.obj: debug\moc_weatherhandle.cpp 
 

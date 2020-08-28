@@ -11,7 +11,7 @@ Window {
     id: win
     width: 386
     height: 618
-    flags: Qt.FramelessWindowHint | Qt.Window //显示任务栏
+    flags: Qt.FramelessWindowHint | Qt.Window | Qt.WindowStaysOnTopHint //显示任务栏
     color: "lightgray" //边界颜色
     visible: true
     title: "更换头像"
@@ -368,7 +368,7 @@ Window {
             }
         }
     }
-    //文件打开框，因为Qtc++的静态调用文件对话框不会自动释放资源，应该是里面有指针实现部分，我用这个可是异常延迟一天爆发
+    //文件打开框，因为Qtc++的静态调用文件对话框不会自动释放资源,用qml更方便
     FileDialog {
         id: fDlog
         title: "打开"

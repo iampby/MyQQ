@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "netmonitor.h"
 #include <QLibrary>
 #include <windows.h>
@@ -89,7 +92,12 @@ void NetMonitor::start()
 void NetMonitor::stop()
 {
     timer->stop();
-    if(t->isRunning())t->quit();
+    if(t->isRunning()){
+        t->requestInterruption();
+        t->exit(0);
+        t->quit();
+        t->wait();
+    }
       qDebug()<<"net monitor timer is stoped";
 }
 

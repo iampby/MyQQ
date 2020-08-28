@@ -15,6 +15,7 @@ Button {
     property string label: "" //备注
     property string status: "" //状态
     property string backColor: "transparent"
+    clip: true //剪贴
     onIsCheckedChanged: {
         if (isChecked)
             backColor = "#f2f2f2"
@@ -24,6 +25,7 @@ Button {
     background: Rectangle {
         implicitHeight: h
         implicitWidth: w
+        clip: true
         color: backColor
         RowLayout {
             x: 12
@@ -64,6 +66,11 @@ Button {
                     text: label == ""
                           || label == name ? name : name + "<font style='color:gray;'>("
                                              + label + ")</font>"
+                    background: Rectangle {
+                        width: parent.width
+                        height: parent.height
+                        color: "transparent"
+                    }
                 }
                 Label {
                     id: bottomLab
@@ -71,7 +78,13 @@ Button {
                     clip: topLab.clip
                     width: topLab.width
                     height: 15
+                    //truncated: true
                     color: "gray"
+                    background: Rectangle {
+                        width: parent.width
+                        height: parent.height
+                        color: "transparent"
+                    }
                 }
             }
         }

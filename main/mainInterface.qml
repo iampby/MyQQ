@@ -34,6 +34,9 @@ ApplicationWindow {
     property var mapInfo: new Map() //好友资料列表 map
     property var mapChat: new Map() //聊天界面列表 map 不模仿为统合界面
 
+    property var initVerifyInfo: null //初始化时一个临时验证消息载体
+    property var initInfoList: null //初始化时一个临时聊天信息map载体
+
     property var friendsModel: [] //保存好友模型，用来过渡且便于使用
     //好友代理数，由于代理动态加载，在friendGroupModel添加数据过程中一直处于线程忙碌，无法直接构造，所以标记是否构造完用来加载好友模型
     property int friendDelegateCount: 0 //好友组实例化数，用于有效添加好友数据
@@ -88,8 +91,7 @@ ApplicationWindow {
     signal aboutToQuit
     //打开信息对话框
     signal clickedInfo(var id)
-    //打开好友对话框
-    signal clickedFriend(var obj)
+
     //更新好友备注
     signal updateTag(var obj)
     id: qqMainWin
@@ -229,12 +231,28 @@ ApplicationWindow {
         //强制下线不推送远程
         if (!isOffline)
             funcc.exitMyQQ(qqMainWin) //发送退出到远程
+        else {
+            aboutToQuit()
+        }
     }
     //程序退出处理
     onAboutToQuit: {
         //退出
+        console.log("exit app")
         Qt.quit()
     }
+    //窗口激活变化隐藏 2个拖拽便条
+    onActiveChanged: {
+        if (!active) {
+            if (loaderForFG.status == Loader.Ready) {
+                loaderForFG.item.close()
+            }
+            if (loaderForFriend.status == Loader.Ready) {
+                loaderForFriend.item.close()
+            }
+        }
+    }
+
     //2个拖拽便条随窗口位置变化而不可视
     onXChanged: {
         if (loaderForFG.status != Loader.Null) {
@@ -322,31 +340,27 @@ ApplicationWindow {
     }
     //点击信息
     onClickedInfo: {
-        console.log("onClickedInfo:id=", id)
         tray.reset()
         //打开验证信息界面
         if (id === "-1") {
             actions.openVerifyAct.trigger(qqMainWin)
-        }
-    }
-    //点击好友
-    onClickedFriend: {
-        console.log("发送即时消息")
-        try {
-            var cw = mapChat.get(obj.number + "1") //号码加1 表示好友
-            if (cw == undefined) {
-                cw = chatComp.createObject(null)
-                if (!cw) {
-                    console.log("created a object is of failure")
-                    return
+            //打开好友聊天界面
+        } else {
+            let number = id.substring(0, id.length - 1)
+            let end = id.substring(id.length - 1, id.length)
+            try {
+                if (end == "1") {
+                    //打开好友窗口
+                    //console.log("发送即时消息")
+                    sentFriendInfo(number)
                 }
+            } catch (err) {
+                console.log(err.message)
+                return
             }
-            cw.obj = obj
-        } catch (e) {
-            console.log("warning:", e.message)
         }
-        actions.openChatWinAct.trigger(cw) //打开好友资料 传要创建的部件
     }
+
     //更新好友备注
     onUpdateTag: {
         funcc.alterFTag(obj) //远程更新
@@ -424,7 +438,6 @@ ApplicationWindow {
         }
         //好友界面信息更改处理
         onUpdateFriendsModel: {
-            console.log("value=", value, " number=", number)
             var length = friendsModel.length
             for (var i = 0; i < length; ++i) {
                 console.log("onUpdateFriendsModel:i=", i)
@@ -432,18 +445,114 @@ ApplicationWindow {
                 var row = m.rowOf(number)
                 if (row !== -1) {
                     console.log("start update:MyQQ is", number)
-                    if (role === 3)
-                        m.setData(row, "", role) //图片刷新
+                    // if (role === 3)
+                    //  m.setData(row, "", role) //图片刷新
+                    //不刷新 让后面状态处理整个模型换掉刷新才能正常显示灰度图
                     m.setData(row, value, role)
+                    if (role == 6) {
+                        images.flushPixmap2(number + "1", value)
+                    }
                     console.log("end update")
                 }
             }
         }
+        //更新全部好友模型
+        onUpdateTotalFModel: {
+            console.log("update total friend models")
+            var length = friendsModel.length
+            for (var i = 0; i < length; ++i) {
+                let m = friendsModel[i]
+                //有内容换掉模型
+                if (m.rowCount() > 0) {
+                    m.sort() //排序
+                    flushFImage(i) //换掉整个模型
+                }
+            }
+        }
+
+        //初始化好友消息列表
+        onGetReceiveFMessage: {
+            console.log("init the information list and verify message object ")
+            //先保存对象信息，等界面初始化完成就处理对象
+            initInfoList = iobj
+            initVerifyInfo = vobj
+        }
+        //处理消息列表和验证消息
+        onEmitHandleVerifyAndInfoList: {
+            console.log("handling the verify message and friend message list")
+            let hasInfo = false
+            //不为空添加
+            if (!objIsEmpty(initVerifyInfo)) {
+                console.log("verify information not empty")
+                hasInfo = true
+                let time = initVerifyInfo["time"]
+                let tip = initVerifyInfo["name"] + "添加你为好友"
+                infoModel.insert(0, {
+                                     "r_imgPath": "qrc:/images/bellinfo.png",
+                                     "r_title": "验证消息",
+                                     "r_tip": tip,
+                                     "r_time": time,
+                                     "r_number": "-1"
+                                 })
+            }
+            // number,info
+            if (!objIsEmpty(initInfoList)) {
+                console.log("information list not empty")
+                try {
+                    for (let i in initInfoList) {
+                        let t = initInfoList[i]
+                        console.log("???", t)
+                        let time = t.substring(t.lastIndexOf(";;") + 2,
+                                               t.length)
+                        t = t.substring(0, t.lastIndexOf(";;"))
+                        let name
+                        for (let index in friendsModel) {
+                            let m = friendsModel[index]
+                            index = m.rowOf(i)
+                            if (index != -1) {
+                                name = m.data(index, 1)
+                                let tag = m.data(index, 4)
+                                if (tag != "") {
+                                    name = tag
+                                }
+                                break
+                            }
+                        }
+                        if (name == undefined)
+                            name = ""
+                        infoModel.insert(0, {
+                                             "r_imgPath"//id=好友id+1
+                                             : "image://friends/" + i + "1",
+                                             "r_title": name,
+                                             "r_tip": t,
+                                             "r_time": time,
+                                             "r_number": i + "1" //+1代表好友号码
+                                         })
+                        hasInfo = true
+                    }
+                } catch (e) {
+                    console.log("warning:", e.message)
+                }
+            }
+            infoModel.sort() //时间大到小排序
+            if (hasInfo) {
+                tray.iconSource = "qrc:/images/bellinfo.png"
+                tray.midSource = "qrc:/images/bellinfo.png"
+                tray.tooltip = "有新消息到来"
+                timer1s.start()
+                tray.hasInfo = true //有信息标记
+                //funcc.emitFVeify()//信号提醒托盘有新消息到来
+            }
+            //对所有好友排序
+            funcc.updateTotalFModel()
+        }
+
         //添加好友验证消息
         onEmitFVeify: {
             var length = infoModel.count
             var existis = false
             for (var i = 0; i < length; ++i) {
+                //如果为验证信息则 number标记为-1
                 if (infoModel.get(i).r_number == -1) {
                     existis = true
                     infoModel.set(i, {
@@ -454,6 +563,7 @@ ApplicationWindow {
                                       "r_number": "-1"
                                   })
                     infoModel.move(i, 0, 1)
+                    //如果打开验证窗口 则刷新
                     if (loaderForVerify.item.visible) {
                         var item = infoView.contentItem.children[0]
                         item.clicked()
@@ -461,7 +571,6 @@ ApplicationWindow {
                 }
             }
             if (!existis) {
-
                 infoModel.insert(0, {
                                      "r_imgPath": "qrc:/images/bellinfo.png",
                                      "r_title": "验证消息",
@@ -513,6 +622,44 @@ ApplicationWindow {
             qqMainWin.isOffline = true
             actions.openOfflineAct.trigger() //打开下线框
         }
+        //好友消息接收
+        onFriendMessage: {
+            console.log("friend mesage receiving,number is ", number)
+            try {
+                time = time.split(";;") //0为时间 1为提示
+                if (time.length < 2)
+                    throw "message is lacked"
+                var name
+                for (let i in friendsModel) {
+                    let m = friendsModel[i]
+                    i = m.rowOf(number)
+                    if (i != -1) {
+                        name = m.data(i, 4) //备注
+                        if (name != "") {
+                            break
+                        }
+                        name = m.data(i, 1) //昵称
+                    }
+                }
+
+                infoModel.insert(0, {
+                                     "r_imgPath": "image://friends/" + number + "1notgray",
+                                     "r_title"//彩色标记
+                                     : name,
+                                     "r_tip": time[1],
+                                     "r_time": time[0],
+                                     "r_number": number + "1"
+                                 })
+                var fw = mapChat.get(number + "1")
+                if (fw == undefined)
+                    throw "friend win is close"
+                fw.addMessage(html, time[0])
+            } catch (e) {
+                if (typeof e == "string")
+                    console.log("warning:", e)
+                console.log("receiveing message occured a error:", e.message)
+            }
+        }
     }
     //mainWin
     //托盘点击
@@ -520,8 +667,11 @@ ApplicationWindow {
         target: mainWin
         onTrayClicked: {
             console.log(" onTrayClicked")
-            var item = infoView.contentItem.children[0]
-            item.clicked()
+            var items = infoView.contentItem.children
+            if (items.length > 0) {
+                var item = infoView.contentItem.children[0]
+                item.clicked()
+            }
         }
     }
 
@@ -547,6 +697,10 @@ ApplicationWindow {
     //qqmainwin释放时释放资源
     function realse() {
         console.log("qqMainWin realse resource")
+        mainWin.hide() //先关闭上一级成为最后一个窗口
+        //先释放server等长时操作
+        funcc.realseServer()
+        funcc.deleteNetAndUpdateTimer() //删除网络监测器
         funcc.emitCloseMyProcess() //关闭辅助进程
         for (var i = 0; i < 3; i++) {
             funcc.setCityData("", i, 0)
@@ -559,7 +713,10 @@ ApplicationWindow {
         }
         funcc.mkDir(("../user/" + mainWin.myqq + "/weather"))
         funcc.writeWeatherFile("../user/" + mainWin.myqq + "/weather/city")
+        //删除历史头像文件
         images.removeHistory()
+        //删除 friends里头聊天记录文件
+        funcc.removeDir("../user/" + myqq + "/friends") //移除所有聊天记录
         //释放更改头像资源
         if (loaderForAlterHImg.status == Loader.Ready) {
             loaderForAlterHImg.item.close()
@@ -599,18 +756,19 @@ ApplicationWindow {
             loaderForVerify.item = ""
         }
         //释放资料列表
-        for (let value in mapInfo.values()) {
-            value.close()
-        }
-        mapInfo = null
         //释放聊天界面
-        for (let value in mapChat.values()) {
-            value.close()
+        try {
+            mapChat.forEach(function (ele, i) {
+                ele.close()
+            })
+            mapInfo.forEach(function (ele, i) {
+                ele.close()
+            })
+        } catch (e) {
+            console.log("warning:", e)
         }
         mapChat = null
-        //释放server
-        funcc.realseServer()
-        funcc.deleteNetAndUpdateTimer() //删除网络监测器
+        mapInfo = null
     }
     //移动位于index的好友from 分组 before to after
     function moveFriend(before, after, index) {
@@ -644,8 +802,88 @@ ApplicationWindow {
         qqMainWin.fgIndex = after
         return number
     }
-    //打开资料页面 参数：号码 头像url 备注或昵称
-    function sentFriendInfo(number, url, title) {}
+    //打开好友聊天界面 参数：号码
+    function sentFriendInfo(number) {
+        console.log("发送即时消息，号码：", number)
+        var obj = {}
+        obj.number = number + "1"
+        try {
+            var cw = mapChat.get(obj.number) //号码加1 表示好友
+            if (cw == undefined) {
+                console.log("chat win is undefined")
+                cw = chatComp.createObject(null)
+                if (!cw) {
+                    console.log("created a object is of failure")
+                    return
+                }
+                mapChat.set(obj.number, cw)
+                funcc.getFIP(obj.number)
+                let find = false
+                let length = friendsModel.length
+                for (var i = 0; i < length; ++i) {
+                    let m = friendsModel[i]
+                    let index = m.rowOf(number)
+                    if (index != -1) {
+                        find = true
+                        // obj.number = number
+                        obj.name = m.data(index, 1)
+                        obj.headImg = m.data(index, 3)
+                        obj.tag = m.data(index, 4)
+                        obj.status = m.data(index, 6)
+                        break
+                    }
+                }
+                if (!find) {
+                    throw "not find the number"
+                }
+                cw.obj = obj
+                funcc.loadFChatLog(cw, number) //加载聊天记录
+            }
+        } catch (e) {
+            if (typeof e == "string") {
+                console.log("warning:", e)
+            }
+            console.log("warning:", e.message)
+            return
+        }
+        actions.openChatWinAct.trigger(cw) //打开好友资料 传要创建的部件
+    }
+    //打开资料页面 参数：基本信息对象
+    function openFriendDataWin(obj) {
+        var number = obj.number
+        if (number == myqq) {
+            actions.openAlterUserInfoAct.trigger()
+        } else {
+            try {
+                var map = qqMainWin.mapInfo
+                var win = map.get(number + "1")
+                if (win == undefined) {
+                    win = friendInfoComp.createObject(null)
+                    if (!win)
+                        throw "created a object is null"
+                    map.set(number + "1", win)
+                    win.isFirst = true
+                }
+            } catch (e) {
+                switch (typeof e) {
+                case "string":
+                    console.log("message:", e)
+                    break
+                default:
+                    console.log("message:", e.message)
+                }
+                return
+            }
+            win.number = number
+            win.name = obj.name
+            win.signature = obj.signature
+            win.headImg = obj.headImg
+            win.tag = obj.tag
+            win.fgIndex = obj.fgIndex
+            win.last = obj.fgIndex
+            actions.openFriendInfoAct.trigger(win) //打开好友资料 传要创建的部件
+        }
+    }
     //拖拽调整大小 回调函数
     function sizeChanged(w, h, delta, directX, directY) {
         if (w < qqMainWin.minimumWidth) {
@@ -676,6 +914,28 @@ ApplicationWindow {
                 qqMainWin.y += delta.y
         }
     }
+    //刷新好友图片状态 由于灰度图不能正常更新 所以换掉整个模型 即视图模型置零再赋值
+    function flushFImage(i) {
+        try {
+            var view = viewFriend.contentItem.children[i].friend
+            //刷新
+            view.model = null
+            view.model = friendsModel[i]
+            view.forceLayout()
+        } catch (e) {
+            console.log(e)
+        }
+    }
+    //检测一个对象是否为空 空true
+    function objIsEmpty(obj) {
+        if (obj == null || obj == undefined)
+            return true
+        for (let i in obj) {
+            return false
+        }
+        return true
+    }
+
     //实体
     Rectangle {
         id: bodyRec
@@ -1143,7 +1403,7 @@ ApplicationWindow {
                         if (containsMouse) {
                             gradeTip.visible = true
                         } else {
-                            tipTimer1sForGrd.restart()
+                            tipTimer500msForGrd.restart()
                         }
                     }
                     onPressed: {
@@ -1661,6 +1921,7 @@ ApplicationWindow {
                     //好友部分信号
                     signal closeAllFChecked
                     signal clickF(int fgIndex, int fIndex, var mouse)
+                    signal doubleClickF(int fgIndex, int fIndex, var mouse)
                     signal checkedF(int fgIndex, int fIndex)
                     signal closeFChecked(int fgIndex, int fIndex)
                     id: scrFriend
@@ -1679,7 +1940,7 @@ ApplicationWindow {
                         for (var i = 0; i < length; ++i) {
                             var item = items[i]
                             item.listGroup.rotat = 0
-                            item.friend.visible = false
+                            friendGroupModel.setData(i, false, 4)
                             item.isChecked = false
                         }
                     }
@@ -1736,16 +1997,14 @@ ApplicationWindow {
                         padding: 0
                         parent: scrFriend //必须设置父对象才能启动hovered and pressed以及鼠标事件
                         anchors.right: parent.right //绑定右边
-                        // height: size*scrFriend.height
+                        width: 6
+                        height: scrFriend.height //必须指定高度滑块才能自由设置
                         orientation: Qt.Vertical
-                        policy: ScrollBar.AlwaysOn // (contentHeight > container.height
-                        //- 40) ? (hovered ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff) : ScrollBar.AlwaysOff
-                        size: scrFriend.contentHeight
-                              > scrFriend.height ? 1.0 - (scrFriend.contentHeight
-                                                          - scrFriend.height)
-                                                   / scrFriend.height : 1.0
+                        policy: (scrFriend.contentHeight > scrFriend.height) ? (hovered ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff) : ScrollBar.AlwaysOff
+                        size: scrFriend.height / scrFriend.contentHeight
+
                         hoverEnabled: true
-                        active: true
+                        active: hovered || pressed
                         z: 1
                         onHoveredChanged: {
                             if (!hovered) {
@@ -1809,16 +2068,23 @@ ApplicationWindow {
                                 activeLine: r_online
                                 onClicked: {
                                     isChecked = false
+                                    var index = viewFriend.indexAt(fgitem.x,
+                                                                   fgitem.y)
+                                    if (index == -1) {
+                                        console.log("index can't is negative")
+                                        return
+                                    }
                                     if (rotat == 0) {
                                         rotat = 90
-                                        friend.visible = true
+                                        friendGroupModel.setData(index, true, 4)
                                         if (loaderForFG.status != Loader.Null) {
                                             loaderForFG.item.btn.rotat = 90
                                             loaderForFG.item.btn.backColor = fgitem.color
                                         }
                                     } else {
                                         rotat = 0
-                                        friend.visible = false
+                                        friendGroupModel.setData(index, false,
+                                                                 4)
                                         if (loaderForFG.status != Loader.Null) {
                                             loaderForFG.item.btn.rotat = 0
                                             loaderForFG.item.btn.backColor = fgitem.color
@@ -1968,7 +2234,7 @@ ApplicationWindow {
                             ListView {
                                 id: listFriend
                                 anchors.top: listGroup.bottom
-                                visible: false
+                                visible: r_visible
 
                                 onVisibleChanged: {
                                     console.log("visible changed:", visible)
@@ -1989,11 +2255,12 @@ ApplicationWindow {
 
                                 delegate: Friend {
                                     property alias fmouse: fmouse
+                                    property string img: r_imgPath //用于刷新图片，保持角色一致绑定
                                     id: fitem
                                     w: headerRec.width
                                     h: 60
                                     hoverEnabled: true
-                                    headImg: r_imgPath
+                                    headImg: img
                                     name: r_name
                                     label: r_tag
                                     status: r_status
@@ -2006,12 +2273,24 @@ ApplicationWindow {
                                             fitem.isChecked = false
                                         }
                                         onClickF: {
+                                            if (mouse.button == Qt.RightButton) {
+                                                var i1 = viewFriend.indexAt(
+                                                            fgitem.x, fgitem.y)
+                                                var i2 = listFriend.indexAt(
+                                                            fitem.x, fitem.y)
+                                                if (i1 == fgIndex
+                                                        && i2 == fIndex) {
+                                                    fmouse.clicked(mouse)
+                                                }
+                                            }
+                                        }
+                                        onDoubleClickF: {
                                             var i1 = viewFriend.indexAt(
                                                         fgitem.x, fgitem.y)
                                             var i2 = listFriend.indexAt(
                                                         fitem.x, fitem.y)
                                             if (i1 == fgIndex && i2 == fIndex) {
-                                                fmouse.clicked(mouse)
+                                                fmouse.doubleClicked(mouse)
                                             }
                                         }
                                         onCheckedF: {
@@ -2047,20 +2326,20 @@ ApplicationWindow {
                                         anchors.fill: parent
                                         hoverEnabled: true
                                         acceptedButtons: Qt.LeftButton | Qt.RightButton
-                                        onClicked: {
+                                        onDoubleClicked: {
                                             if (mouse.button == Qt.LeftButton) {
                                                 try {
-                                                    var obj = {}
-                                                    obj.number = r_myqq
-                                                    obj.name = r_name
-                                                    obj.headImg = r_imgPath
-                                                    obj.tag = r_tag
+                                                    sentFriendInfo(
+                                                                r_myqq) //打开聊天界面
                                                 } catch (e) {
                                                     console.log("warning:",
                                                                 e.message)
                                                 }
-                                                clickedFriend(obj) //发送号码
-                                            } else {
+                                            }
+                                        }
+
+                                        onClicked: {
+                                            if (mouse.button == Qt.RightButton) {
                                                 var fgindex = viewFriend.indexAt(
                                                             fgitem.x, fgitem.y)
                                                 if (fgindex == -1) {
@@ -2171,8 +2450,8 @@ ApplicationWindow {
                     width: headerRec.width
                     height: container.height - 40
                     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                    ScrollBar.vertical.policy: (contentHeight > container.height
-                                                - 40) ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
+                    ScrollBar.vertical.policy: (contentHeight
+                                                > height) ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
                     ListView {
                         id: viewGroupChat
                         delegate: List {
@@ -2197,13 +2476,15 @@ ApplicationWindow {
                 //滚动栏
                 ScrollBar.vertical: ScrollBar {
                     parent: scrInformation //必须设置父对象才能启动hovered and pressed以及鼠标事件
+
                     anchors.right: parent.right //绑定右边
                     orientation: Qt.Vertical
-                    policy: (scrInformation.contentHeight
-                             > scrInformation.height) ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
+                    width: 6
+                    height: scrInformation.height
+                    policy: (scrInformation.contentHeight > scrInformation.height) ? (hovered ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff) : ScrollBar.AlwaysOff
                     size: scrInformation.height / scrInformation.contentHeight
                     hoverEnabled: true
-                    active: true
+                    active: hovered || pressed
                     contentItem: Rectangle {
                         implicitWidth: 6
                         implicitHeight: parent.size * scrInformation.height
@@ -2231,6 +2512,19 @@ ApplicationWindow {
                         onCountChanged: {
                             if (count === 0) {
                                 infoTip.visible = true
+                            } else {
+                                infoTip.visible = false
+                            }
+                        }
+                        //函数
+                        //对infomodel按r_time 大到小排序
+                        function sort() {
+                            let length = infoModel.count
+                            for (var i = 1; i <= length - 1; ++i) {
+                                if (infoModel.get(i).r_time > infoModel.get(
+                                            i - 1).r_time) {
+                                    infoModel.move(i, i - 1, 1)
+                                }
                             }
                         }
                     }
@@ -2238,7 +2532,6 @@ ApplicationWindow {
                         id: infoItem
                         w: headerRec.width
                         h: 60
-
                         headImg: r_imgPath
                         name: r_title
                         bottomText: r_tip
@@ -2246,14 +2539,15 @@ ApplicationWindow {
                             clickedInfo(r_number)
                         }
                         topLab.width: w - timeItem.width - 3
-
+                        bottomLab.width: w - 10
                         Rectangle {
                             id: timeItem
-                            height: 60
+                            height: 30
                             x: parent.width - width - 3
-                            y: 0
-                            width: 75
+                            y: 3
+                            width: 85
                             clip: true
+
                             color: "transparent"
                             Text {
                                 property int length: r_time.length
@@ -2990,7 +3284,10 @@ ApplicationWindow {
                         } else
                             isLeft = false
                     }
-
+                    onDoubleClicked: {
+                        fwin.firstAllClose = false //重置下状态
+                        scrFriend.doubleClickF(fwin.fgIndex, fwin.fIndex, mouse)
+                    }
                     onReleased: {
                         if (mouse.button == Qt.LeftButton) {
                             var ix = s.x - scrFriend.ix
@@ -3028,8 +3325,8 @@ ApplicationWindow {
                         fwin.firstAllClose = false
                         fwin.opacity = 1.0
                         btn.w = scrFriend.width - fgScroll.width
-                        scrFriend.clickF(fwin.fgIndex, fwin.fIndex, mouse)
                         if (mouse.button == Qt.RightButton) {
+                            scrFriend.clickF(fwin.fgIndex, fwin.fIndex, mouse)
                             close()
                         }
                     }
@@ -3148,6 +3445,13 @@ ApplicationWindow {
             text: qsTr("刷新好友联系人")
             onTriggered: {
                 console.log("刷新好友联系人")
+                if (loaderForFG.status != Loader.Null) {
+                    loaderForFG.item.close()
+                }
+                if (loaderForFriend.status != Loader.Null) {
+                    loaderForFriend.item.close()
+                }
+                funcc.update()
             }
             background: Rectangle {
                 implicitHeight: 30
@@ -3396,39 +3700,14 @@ ApplicationWindow {
             leftPadding: 12
             text: qsTr("发送即时消息")
             onTriggered: {
-                console.log("发送即时消息")
                 try {
-                    var obj = {}
                     var number = friendsModel[fMenu.fgIndex].data(
                                 fMenu.fIndex) //获取号码
-                    var name = friendsModel[fMenu.fgIndex].data(fMenu.fIndex,
-                                                                1) //获取昵称
-                    var img = friendsModel[fMenu.fgIndex].data(fMenu.fIndex,
-                                                               3) //获取头像
-                    var tag = friendsModel[fMenu.fgIndex].data(fMenu.fIndex,
-                                                               4) //获取头像
-                    obj.number = number + "1" //号码加1表示好友
-                    obj.name = name
-                    obj.headImg = img
-                    obj.tag = tag
+                    sentFriendInfo(number)
                 } catch (err) {
                     console.log(err.message)
                     return
                 }
-                try {
-                    var cw = mapChat.get(number)
-                    if (cw == undefined) {
-                        cw = chatComp.createObject(null)
-                        if (!cw) {
-                            console.log("created a object is of failure")
-                            return
-                        }
-                    }
-                    cw.obj = obj
-                } catch (e) {
-                    console.log("warning:", e.message)
-                }
-                actions.openChatWinAct.trigger(cw) //打开好友资料 传要创建的部件
             }
         }
         //分割条
@@ -3470,39 +3749,15 @@ ApplicationWindow {
                     console.log(err.message)
                     return
                 }
-                if (number == myqq) {
-                    actions.openAlterUserInfoAct.trigger()
-                } else {
-                    try {
-                        var map = qqMainWin.mapInfo
-                        var obj = map.get(number)
-                        console.log(obj == undefined, number)
-                        if (obj == undefined) {
-                            obj = friendInfoComp.createObject(null)
-                            if (!obj)
-                                throw "created a object is null"
-                            map.set(number, obj)
-                            obj.isFirst = true
-                        }
-                    } catch (e) {
-                        switch (typeof e) {
-                        case "string":
-                            console.log("message:", e)
-                            break
-                        default:
-                            console.log("message:", e.message)
-                        }
-                        return
-                    }
-                    obj.number = number
-                    obj.name = name
-                    obj.signature = sig
-                    obj.headImg = img
-                    obj.tag = tag
-                    obj.fgIndex = fMenu.fgIndex
-                    obj.last = fMenu.fgIndex
-                    actions.openFriendInfoAct.trigger(obj) //打开好友资料 传要创建的部件
-                }
+                var obj = {}
+                obj.number = number
+                obj.name = name
+                obj.signature = sig
+                obj.headImg = img
+                obj.tag = tag
+                obj.fgIndex = fMenu.fgIndex
+                obj.last = fMenu.fgIndex
+                openFriendDataWin(obj)
             }
         }
         //分割条
@@ -3733,8 +3988,8 @@ ApplicationWindow {
     }
     //等级
     Timer {
-        id: tipTimer1sForGrd
-        interval: 1000
+        id: tipTimer500msForGrd
+        interval: 500
         onTriggered: {
             gradeTip.close()
         }

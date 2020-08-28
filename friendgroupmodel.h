@@ -14,15 +14,18 @@ public:
     QString online() const;
     QString count() const;
     QString set() const;
+    bool visible() const;
     void setGroupName(const QString&) ;
     bool setOnline(const QString&) ;
     bool setCount(const QString&) ;
     void setSet(const QString&);
+    void setVisible(const bool&);
 private:
     QString m_groupName;
     QString m_online;
     QString m_count;
     QString m_set;
+    bool m_visible;
 };
 class FriendGroupModel:public QAbstractListModel
 {
@@ -32,7 +35,8 @@ public:
         GroupRole = Qt::DisplayRole,
         OnlineRole,
         CountRole,
-        SetRole
+        SetRole,
+        Visible//代理项可视性控制 4
     };
     FriendGroupModel(QObject*parent=nullptr);
 ~FriendGroupModel();
@@ -48,13 +52,13 @@ public:
     // Add data:
 
    void insert(const int& index,const Data &data) ;
-   Q_INVOKABLE  void insert(int index, const QString &group, const QString &online, const QString &count,  const QString &set) ;
+   Q_INVOKABLE  void insert(int index, const QString &group, const QString &online, const QString &count,  const QString &set,const bool&b=false) ;
     // Remove data:
     Q_INVOKABLE void remove(const int &index);
 
 
-    Q_INVOKABLE  void setData(const int&i,const QString&value, int role = Qt::DisplayRole);
-    Q_INVOKABLE bool append(const QString &group, const QString &online, const QString &count,  const QString &set);
+    Q_INVOKABLE  void setData(const int&i, const QVariant &value, int role = Qt::DisplayRole);
+    Q_INVOKABLE bool append(const QString &group, const QString &online, const QString &count,  const QString &set,const bool&b=false);
     Q_INVOKABLE int count() const;
     Q_INVOKABLE QVariantList getGroups();
 signals:

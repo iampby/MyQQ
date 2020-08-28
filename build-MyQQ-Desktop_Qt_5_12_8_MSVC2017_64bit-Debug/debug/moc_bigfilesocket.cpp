@@ -63,28 +63,29 @@ static const uint qt_meta_data_BigFileSocket[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-      12,   14, // methods
+      13,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       7,       // signalCount
+       8,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    3,   74,    2, 0x06 /* Public */,
-       1,    2,   81,    2, 0x26 /* Public | MethodCloned */,
-       1,    1,   86,    2, 0x26 /* Public | MethodCloned */,
-       6,    0,   89,    2, 0x06 /* Public */,
-       7,    1,   90,    2, 0x06 /* Public */,
-       8,    0,   93,    2, 0x06 /* Public */,
-       9,    0,   94,    2, 0x06 /* Public */,
+       1,    3,   79,    2, 0x06 /* Public */,
+       1,    2,   86,    2, 0x26 /* Public | MethodCloned */,
+       1,    1,   91,    2, 0x26 /* Public | MethodCloned */,
+       6,    0,   94,    2, 0x06 /* Public */,
+       7,    1,   95,    2, 0x06 /* Public */,
+       7,    0,   98,    2, 0x26 /* Public | MethodCloned */,
+       8,    0,   99,    2, 0x06 /* Public */,
+       9,    0,  100,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-      10,    0,   95,    2, 0x0a /* Public */,
-      11,    0,   96,    2, 0x0a /* Public */,
-      12,    1,   97,    2, 0x0a /* Public */,
-      14,    0,  100,    2, 0x0a /* Public */,
-      15,    3,  101,    2, 0x0a /* Public */,
+      10,    0,  101,    2, 0x0a /* Public */,
+      11,    0,  102,    2, 0x0a /* Public */,
+      12,    1,  103,    2, 0x0a /* Public */,
+      14,    0,  106,    2, 0x0a /* Public */,
+      15,    3,  107,    2, 0x0a /* Public */,
 
  // signals: parameters
     QMetaType::Void, QMetaType::Int, QMetaType::QString, QMetaType::QString,    3,    4,    5,
@@ -92,6 +93,7 @@ static const uint qt_meta_data_BigFileSocket[] = {
     QMetaType::Void, QMetaType::Int,    3,
     QMetaType::Void,
     QMetaType::Void, QMetaType::Int,    3,
+    QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
 
@@ -116,19 +118,20 @@ void BigFileSocket::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _i
         case 2: _t->result((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 3: _t->start(); break;
         case 4: _t->finished((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 5: _t->loopStop(); break;
-        case 6: _t->writtenInstruction(); break;
-        case 7: _t->readD(); break;
-        case 8: _t->writeD(); break;
-        case 9: _t->err((*reinterpret_cast< QAbstractSocket::SocketError(*)>(_a[1]))); break;
-        case 10: _t->post(); break;
-        case 11: _t->resultSlot((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])),(*reinterpret_cast< const QString(*)>(_a[3]))); break;
+        case 5: _t->finished(); break;
+        case 6: _t->loopStop(); break;
+        case 7: _t->writtenInstruction(); break;
+        case 8: _t->readD(); break;
+        case 9: _t->writeD(); break;
+        case 10: _t->err((*reinterpret_cast< QAbstractSocket::SocketError(*)>(_a[1]))); break;
+        case 11: _t->post(); break;
+        case 12: _t->resultSlot((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2])),(*reinterpret_cast< const QString(*)>(_a[3]))); break;
         default: ;
         }
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
         switch (_id) {
         default: *reinterpret_cast<int*>(_a[0]) = -1; break;
-        case 9:
+        case 10:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<int*>(_a[0]) = -1; break;
             case 0:
@@ -162,14 +165,14 @@ void BigFileSocket::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _i
         {
             using _t = void (BigFileSocket::*)();
             if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&BigFileSocket::loopStop)) {
-                *result = 5;
+                *result = 6;
                 return;
             }
         }
         {
             using _t = void (BigFileSocket::*)();
             if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&BigFileSocket::writtenInstruction)) {
-                *result = 6;
+                *result = 7;
                 return;
             }
         }
@@ -205,13 +208,13 @@ int BigFileSocket::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 12)
+        if (_id < 13)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 12;
+        _id -= 13;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 12)
+        if (_id < 13)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 12;
+        _id -= 13;
     }
     return _id;
 }
@@ -236,16 +239,16 @@ void BigFileSocket::finished(int _t1)
     QMetaObject::activate(this, &staticMetaObject, 4, _a);
 }
 
-// SIGNAL 5
+// SIGNAL 6
 void BigFileSocket::loopStop()
 {
-    QMetaObject::activate(this, &staticMetaObject, 5, nullptr);
+    QMetaObject::activate(this, &staticMetaObject, 6, nullptr);
 }
 
-// SIGNAL 6
+// SIGNAL 7
 void BigFileSocket::writtenInstruction()
 {
-    QMetaObject::activate(this, &staticMetaObject, 6, nullptr);
+    QMetaObject::activate(this, &staticMetaObject, 7, nullptr);
 }
 QT_WARNING_POP
 QT_END_MOC_NAMESPACE

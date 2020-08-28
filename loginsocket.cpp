@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "loginsocket.h"
 #include<qbytearray.h>
 #include<qdatastream.h>
@@ -14,7 +17,7 @@ LoginSocket::LoginSocket(const QString &myqq, const QString &passwd, QObject *pa
 
     connect(this,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(err(QAbstractSocket::SocketError)));
     QTimer::singleShot(5000,this,[=](){
-        qDebug()<<"conection timeout 10s ,login exit";
+        qDebug()<<"conection timeout 5s ,login exit";
         if(this->state()==QAbstractSocket::UnconnectedState)
         emit finished(3);
     });
@@ -22,7 +25,9 @@ LoginSocket::LoginSocket(const QString &myqq, const QString &passwd, QObject *pa
 
 LoginSocket::~LoginSocket()
 {
-    if(this->isOpen())this->close();
+    if(this->isOpen()){
+        this->close();
+    }
     qDebug()<<"~LoginSocket()";
 }
 
@@ -117,19 +122,19 @@ void LoginSocket::err(QAbstractSocket::SocketError code)
 {
     switch (code) {
     case QAbstractSocket::ConnectionRefusedError:
-        qDebug()<<QStringLiteral("连接被拒接或超时！")<<endl;
+        qDebug()<<("连接被拒接或超时！")<<endl;
         break;
     case QAbstractSocket::RemoteHostClosedError:
-        qDebug()<<QStringLiteral("远程主机已关闭！")<<endl;
+        qDebug()<<("远程主机已关闭！")<<endl;
         break;
     case QAbstractSocket::HostNotFoundError:
-        qDebug()<<QStringLiteral("主机没有发现！")<<endl;
+        qDebug()<<("主机没有发现！")<<endl;
         break;
     case QAbstractSocket::UnknownSocketError:
-        qDebug()<<QStringLiteral("未知错误！")<<endl;
+        qDebug()<<("未知错误！")<<endl;
         break;
     default:
-        qDebug()<<QStringLiteral("出现了错误！")<<endl;
+        qDebug()<<("出现了错误！")<<endl;
     }
     emit finished(result);
 }

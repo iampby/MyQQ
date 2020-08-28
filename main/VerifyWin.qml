@@ -1011,8 +1011,8 @@ Window {
                             height: 22
                             //打开添加好友组对话框
                             onClicked: {
-                                if(qqMainWin.friendGroupModel.count()>15){
-                                  console.log("the number of friend group is not more than fifteen")
+                                if (qqMainWin.friendGroupModel.count() > 15) {
+                                    console.log("the number of friend group is not more than fifteen")
                                     return
                                 }
                                 funcc.openAddFGroupWidget(cwin, qqMainWin)
@@ -1109,9 +1109,9 @@ Window {
             initGroup()
         }
     }
-   //函数
+    //函数
     //更新好友组模型
-    function initGroup(){
+    function initGroup() {
         groupModel.clear()
         var qm = qqMainWin.friendGroupModel
         var length = qm.count()

@@ -28,7 +28,6 @@ Rectangle {
     property alias headImgAct: headImgAction //头像悬浮时弹出界面
     property alias openAlterHImgAct: openAlterHImgAction //更改头像
     property alias openAlterUserInfoAct: openAlterUserInfoAction //用户资料修改
-    property alias openUserInfoAct: openUserInfoAction //查看好友资料
     property alias openVerifyAct: openVerifyAction //打开验证页面
     property alias openOfflineAct: openOfflineAction //打开下线框
     property alias openAlterTagAct: openAlterTagAction //打开修改好友备注框
@@ -456,44 +455,7 @@ Rectangle {
             }
         }
     }
-    //查看好友资料
-    Action {
-        id: openUserInfoAction
-        onTriggered: {
-            console.log("openAlterUserInfoAction")
-            if (inCenterLoader.item.loaderForAlterInfo === undefined)
-                return
-            var loader = inCenterLoader.item.loaderForAlterInfo
-            if (!(Loader.Ready === loader.status)) {
-                console.log("loaded")
-                loader.source = "qrc:/main/IndividualData.qml"
-                while (true) {
-                    if (loader.status === Loader.Ready) {
-                        funcc.getIndividualData() //远程获取数据，初始化界面
-                        console.log("start show")
-                        console.log("opened the IndividualData.qml")
-                        loader.item.x = (mainWin.desktopAvailableWidth - loader.item.width) / 2
-                        loader.item.y = (mainWin.desktopAvailableHeight - loader.item.height) / 2
-                        loader.item.showNormal()
-                        loader.item.raise()
-                        loader.item.requestActivate()
-                        break
-                    } else if (loader.status === Loader.Error) {
-                        console.log("loaderForAlterInfo  occured a error")
-                        break
-                    }
-                }
-            } else {
-                //显示窗口
-                loader.item.x = (mainWin.desktopAvailableWidth - loader.item.width) / 2
-                loader.item.y = (mainWin.desktopAvailableHeight - loader.item.height) / 2
-                loader.item.opacity = 1.0
-                loader.item.flags = Qt.FramelessWindowHint | Qt.Window //显示任务栏
-                loader.item.raise() //弹出来
-                loader.item.requestActivate()
-            }
-        }
-    }
+
     //打开验证页面
     Action {
         id: openVerifyAction
@@ -610,6 +572,7 @@ Rectangle {
             if (obj.isFirst) {
                 funcc.getIndividualData("getFriendInformation", obj.number,
                                         obj) //第一次打开就爬取数据
+                obj.headImg = obj.headImg + "notgray" //第一次则加上notgray标记为多彩图片
             }
             obj.isFirst = false
             obj.showNormal()
@@ -650,6 +613,7 @@ Rectangle {
             mainWin.raise()
             mainWin.requestActivate()
             funcc.exitMyQQ() //退出推送
+            images.clearAllData() //清除图片数据
         }
     }
     Action {
@@ -727,7 +691,7 @@ Rectangle {
                 var obj = item.loaderForAlterTag.obj
                 item.loaderForAlterTag.obj = null
                 obj.tag = source.value
-                iitem.updateTag(obj)
+                item.updateTag(obj)
                 var fw = item.mapInfo.get(obj.number)
                 if (fw != undefined) {
                     fw.tag = obj.tag

@@ -254,7 +254,7 @@ Window {
     //防止打开界面时离开头像范围马上关闭
     Timer {
         id: timer1sForStart
-        interval: 1000
+        interval: 500
         onTriggered: {
             if (!win.inside && !headImgHovered)
                 win.hide()

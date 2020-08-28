@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "addfriendgroupwidget.h"
 #include <qgraphicseffect.h>
 #include<QFrame>
@@ -51,7 +54,7 @@ QPushButton:hover:!pressed {\
 QLabel*label=new QLabel(this);
 label->resize(60,20);
 label->move(30,50);
-label->setText(QStringLiteral("添加分组："));
+label->setText(("添加分组："));
 QLineEdit*addLEdit=new QLineEdit(this);
 addLEdit->resize(278,23);
 addLEdit->move(30,70);
@@ -103,8 +106,8 @@ QPushButton:pressed{\
 ");
 childBottomBtn1->move(frameFooter->width()-154,frameFooter->height()-28);
 childBottomBtn2->move(frameFooter->width()-77,frameFooter->height()-28);
-childBottomBtn1->setText(QStringLiteral("确定"));
-childBottomBtn2->setText(QStringLiteral("取消"));
+childBottomBtn1->setText(("确定"));
+childBottomBtn2->setText(("取消"));
 childBottomBtn1->setEnabled(false);
 //关闭窗口
 connect(closeChildBtn,&QPushButton::clicked,contWidget,[=]()mutable{

@@ -8,6 +8,8 @@ import Qt.labs.platform 1.1
 import "qrc:/"
 //加载js
 import "../chinese-lunar.js" as CLunar
+//日历对象
+
 
 //好友个人资料
 Window {
@@ -288,14 +290,14 @@ Window {
     onEmitPersonalCoverAndPhoto: {
         console.log(" onEmitPersonalCoverAndPhoto")
         if (cover != "")
-            leftImg.source = "file:../user/" + number + "/" + cover
+            leftImg.source = "file:../user/" +qqMainWin.myqq+ "/photoWall/"+number+"/"+ cover
         var length = walls.length
         var id = 0
         for (var i = 0; i < length; ++i) {
             //好友id+1+照片墙序号区分各个背景照片
             if (images.setPixmap3(
                         number + "1" + id,
-                        "../user/" + number + "/photoWall/" + walls[i])) {
+                        "../user/" +qqMainWin.myqq+ "/photoWall/"+number+"/" + walls[i])) {
                 ++id
             } else {
                 console.log("initialization failed to add a photo wall pixmap")
@@ -401,7 +403,7 @@ Window {
     onClosing: {
         console.log("friendsInfoWin onClosing")
         hide()
-        mapInfo.delete(number) //先移除map
+        mapInfo.delete(number + "1") //先移除map
         destroy() //毁灭窗口
     }
     //显示所有非空资料
@@ -683,13 +685,7 @@ Window {
                 hoverEnabled: true
                 text: "发消息"
                 onClicked: {
-                    var title = friendsInfoWin.tag //好友名称
-                    if (title == "") {
-                        title = friendsInfoWin.name
-                    }
-                    qqMainWin.sentFriendInfo(friendsInfoWin.number,
-                                             friendsInfoWin.headImg,
-                                             title) //打开对话界面
+                    qqMainWin.sentFriendInfo(friendsInfoWin.number) //打开对话界面
                 }
 
                 background: Rectangle {

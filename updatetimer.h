@@ -15,8 +15,9 @@ class UpdateTimer:public QObject
 public:
     enum ReceiveType{
       NoType,
-       SignatureAndName,
-        HeadImage,
+       SignatureAndName,//个性和签名更新
+        HeadImage,//头像更新
+        Status//状态更新
     };
     UpdateTimer(QObject *parent = nullptr);
     ~UpdateTimer();
@@ -30,10 +31,14 @@ public:
 private:
     void splitSignatureAndName(QByteArray&data);
     void makePixmap(const QByteArray&);
+    void handleStatus(const QByteArray&);
 signals:
     void stopTimer();
     void startTimer();
     void emitResult(const bool &ok);
+    void update();//
+public slots:
+    void immediateGet();//立即获取数据一次
 private slots:
     void writeInstruct();
     void readD();
@@ -41,6 +46,7 @@ public:
     QMap<QString,QPixmap>historyMap;//记录好友头像
     QMap<QString,QString>sigMap;//记录好友个性签名
     QMap<QString,QString>nameMap;//记录好友昵称
+    QVariantMap statusMap;//记录状态
 private:
     QTimer*timer;
     QThread*t;
@@ -49,6 +55,7 @@ private:
     QString ip;
     quint16 port;
     QEventLoop* loop;
+    bool isReceiving;//是否正在处理，用来防止阻塞
 
     qint64 size;
     QString number;//好友MyQQ

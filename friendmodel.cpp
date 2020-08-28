@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "friendmodel.h"
 
 #include <qdebug.h>
@@ -117,7 +120,7 @@ FriendModel::FriendModel(QObject *parent)
 FriendModel::~FriendModel()
 {
     for (FriendData* i : m_dataList) {
-      i->deleteLater();
+        i->deleteLater();
     }
     m_dataList.clear();
     qDebug()<<"~FriendModel()";
@@ -131,26 +134,27 @@ void FriendModel::sort()
         for(int j=var;j<total-1;++j){
             QString status=m_dataList.at(j)->status();
             //ÀëÏß×´Ì¬
-          if(status=="0"){
-              QString as=m_dataList.at(j+1)->status();
-            if(status<as){
-                m_dataList.swap(j,j+1);
-            }else {
+            QString as=m_dataList.at(j+1)->status();
+            if(status=="0"){
+                if(status<as){
+                    m_dataList.swap(j,j+1);
+                }else {
+                    if(m_dataList.at(j)->name()>m_dataList.at(j+1)->name())
+                        m_dataList.swap(j,j+1);
+                }
+            }else{
+                if(as>"0")
                 if(m_dataList.at(j)->name()>m_dataList.at(j+1)->name())
                     m_dataList.swap(j,j+1);
             }
-          }else{
-              if(m_dataList.at(j)->name()>m_dataList.at(j+1)->name())
-                  m_dataList.swap(j,j+1);
-          }
         }
     }
-   this->update(0,total);
+    this->update(0,total);
 }
 
 void FriendModel::deletion()
 {
-    delete this;
+    this->deleteLater();
 }
 int FriendModel::rowCount(const QModelIndex &parent) const
 {
@@ -316,17 +320,17 @@ void FriendModel::insert(int row, FriendData*value)
 
 FriendData *FriendModel::takeItem(const int index)
 {
- try{
-       if(index<0||index>=rowCount())
-           throw -1;
+    try{
+        if(index<0||index>=rowCount())
+            throw -1;
     }catch(int&code){
         qDebug()<<"index is more than range of array";
     }
-   FriendData* item=m_dataList.value(index);
-   beginRemoveRows(this->createIndex(index,0),index,index);
-   m_dataList.removeAt(index);
-     endRemoveRows();
-   return item;
+    FriendData* item=m_dataList.value(index);
+    beginRemoveRows(this->createIndex(index,0),index,index);
+    m_dataList.removeAt(index);
+    endRemoveRows();
+    return item;
 }
 
 
@@ -372,6 +376,7 @@ void FriendModel::setData(const int &row,const QString& value, int role)
         break;
     case StatusRole:
         data->setStatus(value);
+        this->sort();
         break;
     case InfoSetRole:
         data->setInfoSet(value);
@@ -383,7 +388,6 @@ void FriendModel::setData(const int &row,const QString& value, int role)
         break;
     };
     dataChanged(createIndex(row,0),createIndex(row,0));
-    qDebug()<<" dataChanged(createIndex(row,0),createIndex(row,0))";
 }
 
 void FriendModel::append(FriendData *item)
@@ -409,3 +413,5 @@ void FriendModel::append(const QString &myqq,const QString &name, const QString 
     data->setStatusSet(statusSet);
     this->insert(this->rowCount(),data);
 }
+
+

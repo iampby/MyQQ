@@ -9,6 +9,7 @@
 #include"netmonitor.h"
 #include"UpdateTimer.h"
 #include"nativeserver.h"
+#include"sendsocket.h"
 #include <QObject>
 #include<QQuickWindow>
 #include<qapplication.h>
@@ -61,15 +62,17 @@ public:
     Q_INVOKABLE void registerMyQQ(const QString&MyName,const QString&passwd);// 注册MyQQ,参数MyQQ、passwd
     Q_INVOKABLE bool saveStringToTxt(const QString &str,const QString& title,const QString&dir);
 
-    Q_INVOKABLE void  login(const QString&myqq, const QString&passwd);
+    Q_INVOKABLE void  login(const QString&myqq, const QString&passwd);//登录点击
     void newServer();//建立一个本地与远程通信的服务器
     Q_INVOKABLE void realseServer();//释放server
     Q_INVOKABLE bool  writeFile(const QByteArray&content,const QString&filepath);//保存数据到文件
     bool  writeImg(const QByteArray&content,const QString&filepath, const char *format = nullptr);//保存图片到文件
-    //Q_INVOKABLE QString openFile(const QString&title,const QString&dir,const QString&filter)const;//打开文件对话框 这个函数不能在qml调用 指针问题难以解决固不用
+    //Q_INVOKABLE QString openFile(const QString&title,const QString&dir,const QString&filter)const;//打开文件对话框 由于调用静态成员打开文件对话框方式不能在qml调用，故使用qml本地对话框
 
     Q_INVOKABLE void startClock();// 开始计时（用于实时监测网络）
     Q_INVOKABLE void stopClock();// 停止计时（用于实时监测网络）
+
+    Q_INVOKABLE void update();// 刷新 联系人
 
     Q_INVOKABLE void setMyCursor(const int &direct, QWindow*w)const;//设置鼠标类型 用于窗口拉伸
     Q_INVOKABLE void openTempMesWin()const;//打开一个升级提示框
@@ -99,6 +102,14 @@ public:
     Q_INVOKABLE void alterFTag(QVariantMap map);//修改好友备注
     Q_INVOKABLE void dmrFriend(QJsonObject&obj);//好友删除移动修改备注
 
+    Q_INVOKABLE void screenShot();//截屏
+    Q_INVOKABLE void removeDir(QString path);//删除某个目录
+    Q_INVOKABLE void getFIP(QString number);//参数为好友号码+1 获取 ip port
+    Q_INVOKABLE void sendFMessage(QString ip, QString port, QString number, QString html, QQuickWindow*win);//解析html 发送消息 参数为对方信息
+    QByteArray parseFHtml(QString&html, QString&ptext);//把发送给好友的html解析 返回一个xml格式的消息数据 和获得一个纯文本给消息列表用
+    Q_INVOKABLE void loadFChatLog(QQuickWindow*qmlWin,QString number);//加载聊天记录 参数1作为调用函数对象 参数2 作为查找记录文件 为好友号码
+    Q_INVOKABLE void saveSentFLog(QString number,QString bytes);//保存发送的好友聊天记录
+    Q_INVOKABLE QString saveSentFLog(QString bytes);//保存发送的好友聊天记录 这个好友是自己 返回消息列表提示语
 
     Q_INVOKABLE void startAddFriendsProcess(QQuickWindow*arg, QMap<QString, QVariant> obj, QList<QVariant> arr);//添加好友进程
     unsigned short addFriendsProcessCount()const;//返回当前进程启动的好友进程数
@@ -112,7 +123,7 @@ public:
     Q_INVOKABLE void initLoginInfo();//登录是初始化相关信息
     Q_INVOKABLE void readWeatherFile(const QString&fileName);
     Q_INVOKABLE void writeWeatherFile(const QString&fileName);
-    Q_INVOKABLE void connectGetFile(const QString&instructDescription);//(2 headImg myqq)获取所有好友头像
+    Q_INVOKABLE void connectGetFile(const QString&instructDescription);//(2 headImg myqq)获取所有好友头像及未接收消息
 
     Q_INVOKABLE QString getCityData(const int &r,const int &c)const;//读取cityNameAboutWeather[3][2]的元素
     Q_INVOKABLE void setCityData(const QString& v, const int &r,const int &c);//设置cityNameAboutWeather[3][2]的元素
@@ -144,6 +155,7 @@ Q_SIGNALS://使用第三方源码解析时相当有用 这里用来给qml传递信号比较好
 
     void getFriendGroup(QString name,QString set,int pos);
     void getFileFinished(int code);//获取头像等文件完成信号
+    void getReceiveFMessage(QVariantMap iobj,QVariantMap vobj);//中转好友列表未接收消息及验证消息到qml
 
     void localCityChanged();
     void localUrlChanged();
@@ -151,7 +163,13 @@ Q_SIGNALS://使用第三方源码解析时相当有用 这里用来给qml传递信号比较好
     void netChanged(const bool& flags);//断开或连接网络
     void crawWeatherUrlFinished();
     void updateFriendsModel(const QString&value,const qint32& role,const QString&number)const;//刷新好友模型数据
+    void updateTotalFModel();//刷新整个好友模型信号
+    void getScreenPximap(QPixmap pix);//传图片到聊天界面
+    void getAddress(QString ip=QString(),QString port=QString(),QString status=QString("0"));//传地址到聊天界面
+    void friendMessage(QString number,QString html,QString time);// 一个好友消息在线发送 参数为消息列表(时间;;消息列表提示) 号码 和html消息内容
+
 Q_SIGNALS:
+    void emitHandleVerifyAndInfoList();//处理获取的未接收 消息 列表和验证消息
     void emitCloseMyProcess();//随qqmainwin同死
     void emitHeadImgOpenFile(const QString& filename);//更改头像界面打开一个文件
     void emitCloseHead();//释放更改头像界面
@@ -164,8 +182,11 @@ Q_SIGNALS:
     void emitFVeify(QVariantMap obj);//传好友验证到lqml
     void emitFriend(QVariantMap obj);//传好友到lqml
     void emitOffline(QVariantMap obj);//发送信号给 qqmainwin 进行下线框弹出
+signals:
+    void tempMidSig();
 private slots:
     void analysisWh(QString totalGeoAddr);//解析本地IP获取地理位置及Url
+
     void handleProcessStarted();
     // void GetInternetConnectState();
     void registerFinished();
@@ -175,6 +196,7 @@ private slots:
     void getFVerify(QByteArray data);
     void getFriend(QByteArray data,QPixmap pix);//处理好友
     void offline(QString ip, QString host, QString datetime);//下线处理
+    void GetFMessage(QString html, QString number, QString time);//好友的html内容消息 <(.*)</p>
 private:
     QQuickWindow *m_win;//便于调用 不要删除它
     QString m_sourceIco;

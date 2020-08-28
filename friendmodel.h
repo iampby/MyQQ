@@ -51,9 +51,10 @@ public:
         ImgPathRole,
         TagRole,
         GradeRole,
-        StatusRole,
+        StatusRole,//6
         InfoSetRole,
-        StatusSetRole
+        StatusSetRole,//8
+        Visible//代理项 可视化控制
     };
     FriendModel(QObject *parent = nullptr);
     ~FriendModel();

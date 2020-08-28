@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_NativeServer_t {
-    QByteArrayData data[17];
-    char stringdata0[157];
+    QByteArrayData data[21];
+    char stringdata0[187];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -44,15 +44,20 @@ QT_MOC_LITERAL(9, 72, 11), // "emitOffline"
 QT_MOC_LITERAL(10, 84, 2), // "ip"
 QT_MOC_LITERAL(11, 87, 4), // "host"
 QT_MOC_LITERAL(12, 92, 8), // "datetime"
-QT_MOC_LITERAL(13, 101, 11), // "slotStarted"
-QT_MOC_LITERAL(14, 113, 18), // "incomingConnection"
-QT_MOC_LITERAL(15, 132, 7), // "qintptr"
-QT_MOC_LITERAL(16, 140, 16) // "socketDescriptor"
+QT_MOC_LITERAL(13, 101, 12), // "emitFMessage"
+QT_MOC_LITERAL(14, 114, 4), // "html"
+QT_MOC_LITERAL(15, 119, 6), // "number"
+QT_MOC_LITERAL(16, 126, 4), // "time"
+QT_MOC_LITERAL(17, 131, 11), // "slotStarted"
+QT_MOC_LITERAL(18, 143, 18), // "incomingConnection"
+QT_MOC_LITERAL(19, 162, 7), // "qintptr"
+QT_MOC_LITERAL(20, 170, 16) // "socketDescriptor"
 
     },
     "NativeServer\0emitExit\0\0findPort\0port\0"
     "emitFverify\0data\0emitGetFriend\0pix\0"
-    "emitOffline\0ip\0host\0datetime\0slotStarted\0"
+    "emitOffline\0ip\0host\0datetime\0emitFMessage\0"
+    "html\0number\0time\0slotStarted\0"
     "incomingConnection\0qintptr\0socketDescriptor"
 };
 #undef QT_MOC_LITERAL
@@ -63,23 +68,24 @@ static const uint qt_meta_data_NativeServer[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-       7,   14, // methods
+       8,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       5,       // signalCount
+       6,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    0,   49,    2, 0x06 /* Public */,
-       3,    1,   50,    2, 0x06 /* Public */,
-       5,    1,   53,    2, 0x06 /* Public */,
-       7,    2,   56,    2, 0x06 /* Public */,
-       9,    3,   61,    2, 0x06 /* Public */,
+       1,    0,   54,    2, 0x06 /* Public */,
+       3,    1,   55,    2, 0x06 /* Public */,
+       5,    1,   58,    2, 0x06 /* Public */,
+       7,    2,   61,    2, 0x06 /* Public */,
+       9,    3,   66,    2, 0x06 /* Public */,
+      13,    3,   73,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-      13,    0,   68,    2, 0x0a /* Public */,
-      14,    1,   69,    2, 0x08 /* Private */,
+      17,    0,   80,    2, 0x0a /* Public */,
+      18,    1,   81,    2, 0x08 /* Private */,
 
  // signals: parameters
     QMetaType::Void,
@@ -87,10 +93,11 @@ static const uint qt_meta_data_NativeServer[] = {
     QMetaType::Void, QMetaType::QByteArray,    6,
     QMetaType::Void, QMetaType::QByteArray, QMetaType::QPixmap,    6,    8,
     QMetaType::Void, QMetaType::QString, QMetaType::QString, QMetaType::QString,   10,   11,   12,
+    QMetaType::Void, QMetaType::QString, QMetaType::QString, QMetaType::QString,   14,   15,   16,
 
  // slots: parameters
     QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 15,   16,
+    QMetaType::Void, 0x80000000 | 19,   20,
 
        0        // eod
 };
@@ -106,8 +113,9 @@ void NativeServer::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
         case 2: _t->emitFverify((*reinterpret_cast< QByteArray(*)>(_a[1]))); break;
         case 3: _t->emitGetFriend((*reinterpret_cast< QByteArray(*)>(_a[1])),(*reinterpret_cast< QPixmap(*)>(_a[2]))); break;
         case 4: _t->emitOffline((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2])),(*reinterpret_cast< QString(*)>(_a[3]))); break;
-        case 5: _t->slotStarted(); break;
-        case 6: _t->incomingConnection((*reinterpret_cast< qintptr(*)>(_a[1]))); break;
+        case 5: _t->emitFMessage((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2])),(*reinterpret_cast< QString(*)>(_a[3]))); break;
+        case 6: _t->slotStarted(); break;
+        case 7: _t->incomingConnection((*reinterpret_cast< qintptr(*)>(_a[1]))); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -147,6 +155,13 @@ void NativeServer::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
                 return;
             }
         }
+        {
+            using _t = void (NativeServer::*)(QString , QString , QString );
+            if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&NativeServer::emitFMessage)) {
+                *result = 5;
+                return;
+            }
+        }
     }
 }
 
@@ -179,13 +194,13 @@ int NativeServer::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 7)
+        if (_id < 8)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 7;
+        _id -= 8;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 7)
+        if (_id < 8)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 7;
+        _id -= 8;
     }
     return _id;
 }
@@ -222,6 +237,13 @@ void NativeServer::emitOffline(QString _t1, QString _t2, QString _t3)
 {
     void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)), const_cast<void*>(reinterpret_cast<const void*>(&_t3)) };
     QMetaObject::activate(this, &staticMetaObject, 4, _a);
+}
+
+// SIGNAL 5
+void NativeServer::emitFMessage(QString _t1, QString _t2, QString _t3)
+{
+    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)), const_cast<void*>(reinterpret_cast<const void*>(&_t3)) };
+    QMetaObject::activate(this, &staticMetaObject, 5, _a);
 }
 QT_WARNING_POP
 QT_END_MOC_NAMESPACE

@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "friendgroupmodel.h"
 
 Data::Data():
@@ -19,6 +22,11 @@ QString Data::online() const
 QString Data::count() const
 {
     return m_count;
+}
+
+bool Data::visible() const
+{
+    return m_visible;
 }
 QString Data::set() const
 {
@@ -51,6 +59,11 @@ bool Data::setCount(const QString &arg)
 void Data::setSet(const QString&arg)
 {
     m_set=arg;
+}
+
+void Data::setVisible(const bool &b)
+{
+    m_visible=b;
 }
 
 
@@ -108,7 +121,7 @@ void FriendGroupModel::swap(const int &i1, const int &i2)
     }
 }
 
-void FriendGroupModel::setData(const int &i, const QString &value, int role)
+void FriendGroupModel::setData(const int &i, const QVariant &value, int role)
 {
     if(m_dataList.size()<=i||i<0)
         return;
@@ -119,26 +132,38 @@ void FriendGroupModel::setData(const int &i, const QString &value, int role)
         newData.setCount(oldData.count());
         newData.setOnline(oldData.online());
         newData.setSet(oldData.set());
-        newData.setGroupName(value);
+        newData.setVisible(oldData.visible());
+        newData.setGroupName(value.toString());
         emit groupListChanged();
         break;
     case OnlineRole:
         newData.setCount(oldData.count());
         newData.setGroupName(oldData.groupName());
         newData.setSet(oldData.set());
-        newData.setOnline(value);
+        newData.setVisible(oldData.visible());
+        newData.setOnline(value.toString());
         break;
     case CountRole:
         newData.setGroupName(oldData.groupName());
         newData.setOnline(oldData.online());
         newData.setSet(oldData.set());
-        newData.setCount(value);
+         newData.setVisible(oldData.visible());
+        newData.setCount(value.toString());
         break;
     case SetRole:
         newData.setCount(oldData.count());
         newData.setOnline(oldData.online());
         newData.setGroupName(oldData.groupName());
-        newData.setSet(value);
+        newData.setVisible(oldData.visible());
+        newData.setSet(value.toString());
+        break;
+    case Visible:
+        newData.setCount(oldData.count());
+        newData.setOnline(oldData.online());
+        newData.setGroupName(oldData.groupName());
+        newData.setSet(oldData.set());
+        newData.setVisible(value.toBool());
+        qDebug()<<"a friend group had changed to "<<value.toBool()<<" on visible ";
         break;
     default:
         return;
@@ -164,16 +189,14 @@ QVariant FriendGroupModel::data(const QModelIndex &index, int role) const
     switch (role) {
     case GroupRole:
         return data.groupName();
-        break;
     case OnlineRole:
         return data.online();
-        break;
     case CountRole:
         return data.count();
-        break;
     case SetRole:
         return data.set();
-        break;
+    case Visible:
+        return data.visible();
     }
     return QVariant();
 }
@@ -186,6 +209,7 @@ QHash<int, QByteArray> FriendGroupModel::roleNames() const
     roles.insert(OnlineRole,QByteArray("r_online"));
     roles.insert(SetRole,QByteArray("r_set"));
     roles.insert(CountRole,QByteArray("r_count"));
+    roles.insert(Visible,QByteArray("r_visible"));
     return roles;
 }
 
@@ -201,7 +225,7 @@ void FriendGroupModel::insert(const int& index, const Data &data)
      emit groupListChanged();
 }
 
-void FriendGroupModel::insert( int index, const QString &group, const QString &online, const QString &count, const QString &set)
+void FriendGroupModel::insert( int index, const QString &group, const QString &online, const QString &count, const QString &set,const bool&b)
 {
     if(index < 0 ) {
       index=0;
@@ -214,6 +238,7 @@ d.setGroupName(group);
 d.setOnline(online);
 d.setCount(count);
 d.setSet(set);
+d.setVisible(b);
     beginInsertRows(QModelIndex(), index, index);
     m_dataList.insert(index, d);
     endInsertRows();
@@ -235,7 +260,7 @@ void FriendGroupModel::remove(const int& index)
 
 
 
-bool FriendGroupModel::append(const QString &group,const QString &online, const QString &count,const QString &set)
+bool FriendGroupModel::append(const QString &group,const QString &online, const QString &count,const QString &set,const bool&b)
 {
     Data d;
     d.setGroupName(group);
@@ -243,6 +268,7 @@ bool FriendGroupModel::append(const QString &group,const QString &online, const 
     ok=ok&&d.setOnline(online);
     ok=ok&&d.setCount(count);
     d.setSet(set);
+    d.setVisible(b);
     if(ok)
         insert(this->count(), d);
     return ok;

@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "funcc.h"
 #include"registersocket.h"
 #include"loginsocket.h"
@@ -5,6 +8,7 @@
 #include"headimgwidget.h"
 #include"friendmodel.h"
 #include"addfriendgroupwidget.h"
+#include"screenwidget.h"
 #include<qthread.h>
 #include<QDebug>
 #include<qprocess.h>
@@ -14,12 +18,17 @@
 #include <qhostaddress.h>
 #include<QFileDialog>
 #include<QXmlStreamReader>
+#include<QXmlStreamWriter>
+#include<qtextcodec.h>
 #include <QQuickItem>
 #include <qlabel.h>
 #include <QBuffer>
 #include<qmessagebox.h>
 #include <qjsonarray.h>
 #include<qmath.h>
+#include<thread>
+#include<sstream>
+#include<qsqlerror.h>
 //funcc类
 FuncC::FuncC(QObject *parent):QObject(parent)
 {
@@ -67,6 +76,7 @@ FuncC::~FuncC()
     if(server){
         emit server->emitExit();//退出线程，删除
     }
+    ScreenWidget::deletionInstance();
 }
 
 QQuickWindow *FuncC::win() const
@@ -154,7 +164,6 @@ void FuncC::initLoginInfo()
     QMetaObject::invokeMethod(obj,"runGetUserInfo",Qt::DirectConnection,
                               Q_ARG(QVariant,QVariant::fromValue(userInfo)));
     QFile info("../user/"+m_myQQ+"/info.xml");
-    qDebug()<<m_myQQ<<endl;
     if(!info.open(QFile::ReadOnly)){
         qDebug()<<"opened info.xml unsuccessfully";
         return;
@@ -176,6 +185,10 @@ void FuncC::initLoginInfo()
     }
     info.close();
     info.remove();
+    //定时2秒后发送信号处理先前的验证消息对象和信息列表 让qml界面有空隙先生成界面
+    QTimer::singleShot(1500,this,[=](){
+        emit    emitHandleVerifyAndInfoList();
+    });
     qDebug()<<"initLoginInfo() function running successfully.";
 }
 
@@ -255,7 +268,7 @@ void FuncC::parseFriendInfo(QXmlStreamReader &reader, QString &endString,int&pos
 
                         myqqMap.insert("Message-Settin",info);
                         myqqMap.insert("Status-Settin",status);
-                    }else if(reader.name().toString()==QStringLiteral("个性签名")||reader.name().toString()==QStringLiteral("备注")){
+                    }else if(reader.name().toString()==("个性签名")||reader.name().toString()==("备注")){
                         QString text=reader.attributes().value("isNull").toString();
                         if(text=="true") myqqMap.insert(reader.name().toString(),"");
                         else  myqqMap.insert(reader.name().toString(),reader.readElementText());
@@ -399,6 +412,7 @@ void FuncC::login(const QString &myqq,const QString &passwd)
     loginSock=new LoginSocket(myqq,passwd,this);
     connect(loginSock,&LoginSocket::finished,[=](int result){
         qDebug()<<"result:"<<result;
+        //成功
         if(result==0){
             userInfo=loginSock->infoObj.toVariantMap();
             userInfo.remove("instruct");
@@ -415,9 +429,9 @@ void FuncC::login(const QString &myqq,const QString &passwd)
                     qDebug()<<"writeImg() return true";
                     userInfo.insert("headUrl",d.absoluteFilePath("../user/"+myqq+"/historyHeadImg/01.png"));
                     emit loginResult(result);
-                    loginSock->close();
-                    if(loginSock->state()!=QAbstractSocket::UnconnectedState)
-                        loginSock->waitForDisconnected();
+                    if(loginSock->isOpen())
+                        loginSock->close();
+
                     // initLoginInfo();
                     /*QFile r("../user/"+myqq+"/info.xml");
                 if(!r.remove())
@@ -438,6 +452,15 @@ void FuncC::login(const QString &myqq,const QString &passwd)
                             online=true;
                         }
                     });
+                    //程序终止 直接删除
+                    connect(qApp,&QApplication::aboutToQuit,timer,[=](){
+                        if(timer){
+                            qDebug()<<"network timer can be to delete";
+                            timer->thread()->requestInterruption();//中断
+                            emit timer->stopMonitor();//阻塞队列连接信号发出 必须先退出进程事件圈在删除对象
+                            delete timer,timer=nullptr;
+                        }
+                    });
                     emit timer->startMonitor();
                     //子线程 定时更新界面信息
                     updateTimer=new UpdateTimer();
@@ -447,17 +470,28 @@ void FuncC::login(const QString &myqq,const QString &passwd)
                     updateTimer->setTimerInterval(100000);//五分钟获取一次更新
                     emit updateTimer->startTimer();
                     connect(updateTimer,&UpdateTimer::emitResult,this,&FuncC::updateHandle);
-
+                    //程序终止 直接删除
+                    connect(qApp,&QApplication::aboutToQuit,updateTimer,[=](){
+                        qDebug()<<"updating timer can be to delete";
+                        if(updateTimer){
+                            updateTimer->thread()->requestInterruption();//中断
+                            emit updateTimer->stopTimer();//阻塞队列连接信号发出 必须先退出进程事件圈在删除对象
+                            delete updateTimer,updateTimer=nullptr;
+                        }
+                    });
                     return;
                 }
             }
             emit loginResult(3);
         }
         emit loginResult(result);
-        loginSock->close();
-        if(loginSock->state()!=QAbstractSocket::UnconnectedState)
-            loginSock->waitForDisconnected();
+        if(loginSock->isOpen())
+            loginSock->close();
         loginSock->deleteLater();//删除指针
+        //清理本地服务器
+        if(server){
+            emit server->emitExit();//发送信号清理所有server线程对象
+        }
         return;
     });
     connect(loginSock,&LoginSocket::connected,loginSock,[=](){
@@ -476,25 +510,28 @@ void FuncC::newServer()
 {
     if(server)qDebug()<<"a wild pointer was found,name server";
     server=new NativeServer();
-    QThread*thread=new QThread(this);
+    server->setMyQQ(m_myQQ);
+    QThread*thread=new QThread(this);//线程父对象最好不要和线程活跃在一个线程 因为父对象毁灭时删除子对象，而线程可能还没退出
     server->moveToThread(thread);
     connect(thread,&QThread::started,server,&NativeServer::slotStarted);
+    connect(thread,&QThread::finished,thread,&QThread::deleteLater);
     connect(thread,&QThread::finished,server,[=]()mutable{
         server->deleteLater();
-        server=nullptr;
+        server=nullptr;//sever已赋值地址值，可以置为0 防止野指针
     });
-    connect(thread,&QThread::finished,thread,&QThread::deleteLater);
     connect(server,&NativeServer::emitExit,server,[=](){
         qDebug()<<"server thread will be exited";
+        thread->requestInterruption();
         thread->exit(0);
         thread->quit();
-        server->close();
+        thread->wait();
     });
     //验证消息
     connect(server,&NativeServer::emitFverify,this,&FuncC::getFVerify);
     //添加好友消息
-    connect(server,&NativeServer::emitGetFriend,this,&FuncC::getFriend);
-    connect(server,&NativeServer::emitOffline,this,&FuncC::offline);
+    connect(server,&NativeServer::emitGetFriend,this,&FuncC::getFriend,Qt::DirectConnection);//直连为子线程运行
+    connect(server,&NativeServer::emitOffline,this,&FuncC::offline,Qt::DirectConnection);
+    connect(server,&NativeServer::emitFMessage,this,&FuncC::GetFMessage,Qt::DirectConnection);
     thread->start();
 }
 
@@ -520,7 +557,6 @@ void FuncC::updateHandle(const bool &ok)
                 QPixmap&newpix= images->provider2->images[number];
                 newpix= i.value();//赋新值
                 newpix.save("./x.png");
-                qDebug()<<endl<<endl;
                 emit updateFriendsModel("image://friends/"+number+"1",FriendModel::ImgPathRole,number);//更新一个好友头像
                 ++i;
             }
@@ -552,6 +588,21 @@ void FuncC::updateHandle(const bool &ok)
             }
             updateTimer->nameMap.clear();
         }
+        //更新状态
+        if(updateTimer->statusMap.size()>0){
+            qDebug()<<"updated  friends status";
+            QVariantMap::const_iterator i=updateTimer->statusMap.cbegin();
+            QVariantMap::const_iterator end=updateTimer->statusMap.cend();
+            while(i!=end){
+                QString number=i.key();
+                QString name=i.value().toString();
+                emit updateFriendsModel(name,FriendModel::StatusRole,number);//更新一个好友昵称
+                ++i;
+            }
+            updateTimer->statusMap.clear();
+        }
+        //由于正常刷新灰度图不能正常刷新 发送信号换掉整个模型
+        emit updateTotalFModel();
     }else{
         if(!updateTimer->historyMap.isEmpty())updateTimer->historyMap.clear();
         if(!updateTimer->sigMap.isEmpty())updateTimer->sigMap.clear();
@@ -603,6 +654,15 @@ void FuncC::offline(QString ip, QString host,QString datetime)
     map.insert("datetime",datetime);
     emit emitOffline(map);
 }
+
+void FuncC::GetFMessage(QString html,QString number,QString time)
+{
+    if(html.isEmpty()){
+        qDebug()<<"lost html content on the midway";
+        return;
+    }
+    emit friendMessage(number, html,time);//发送消息信号
+}
 bool FuncC::writeFile(const QByteArray &content, const QString &filepath)
 {
     QFile file(filepath);
@@ -640,6 +700,14 @@ void FuncC::startClock()
 void FuncC::stopClock()
 {
     //timer->stop();
+}
+
+void FuncC::update()
+{
+    qDebug()<<"start upating";
+    if(updateTimer){
+        emit  updateTimer->update();//立即获取一次
+    }
 }
 
 
@@ -687,8 +755,8 @@ void FuncC::openTempMesWin() const
     tipWin->setWindowFlags(Qt::WindowCloseButtonHint|Qt::WindowStaysOnTopHint);//主窗口之上
     QLabel*lab=new QLabel(tipWin);
     lab->move(180,215);
-    lab->setText(QStringLiteral("恭喜你！已经是最新版本"));
-    tipWin->setToolTip(QStringLiteral("恭喜你！已经是最新版本"));
+    lab->setText(("恭喜你！已经是最新版本"));
+    tipWin->setToolTip(("恭喜你！已经是最新版本"));
     tipWin->setAttribute(Qt::WA_QuitOnClose,false);//关闭默认顶层窗口关闭退出行为
     tipWin->setAttribute(Qt::WA_DeleteOnClose,true);//用完就删
     tipWin->show();
@@ -965,7 +1033,7 @@ void FuncC::getIndividualData(QString content,QString number,QQuickWindow*qmlWin
     getPersonalDataSock->setIp(ip);
     getPersonalDataSock->setPort(loginPort);
     getPersonalDataSock->setTimeout(40000);//超时40s
-    QThread*thread=new QThread();
+    QThread*thread=new QThread();//子线程父对象最好在父线程
     getPersonalDataSock->moveToThread(thread);
     thread->start();
     emit getPersonalDataSock->start();//转移到新线程去post host
@@ -980,7 +1048,7 @@ void FuncC::getIndividualData(QString content,QString number,QQuickWindow*qmlWin
             qDebug()<<"the most personal  json-data is not got ";
         }
         QDir dir;
-        dir.mkpath("../user/"+number+"/photowall");
+        dir.mkpath("../user/"+m_myQQ+"/photowall/"+number);
         qDebug()<<"the user's cover and photowall would be dispatched ";
         QMap<QString,QByteArray>::const_iterator i=getPersonalDataSock->img.cbegin();
         QMap<QString,QByteArray>::const_iterator end=getPersonalDataSock->img.cend();
@@ -993,13 +1061,13 @@ void FuncC::getIndividualData(QString content,QString number,QQuickWindow*qmlWin
             pix.loadFromData(i.value());
             //注意保存时指定格式
             if(name!="cover"){
-                if(!pix.save("../user/"+m_myQQ+"/photowall/"+name,"png"))
+                if(!pix.save("../user/"+m_myQQ+"/photowall/"+number+"/"+name,"png"))
                     qDebug()<<"warning:file is not save,named "<<name;
                 else {
                     names.append(name);
                 }
             }else{
-                if(!pix.save("../user/"+m_myQQ+"/"+name,"png")){
+                if(!pix.save("../user/"+m_myQQ+"/photowall/"+number+"/"+name,"png")){
                     qDebug()<<"warning:file is not save,named "<<name;
                 }else
                     cover=name;
@@ -1128,9 +1196,9 @@ void FuncC::inintCityData(QQuickWindow*w)
     db.setUserName("sa");
     db.setPassword("@123456x");
     if(db.open())
-        qDebug()<<QStringLiteral("打开数据库成功！");
+        qDebug()<<("打开数据库成功！");
     else {
-        qDebug()<<QStringLiteral("打开数据库失败！");
+        qDebug()<<("打开数据库失败！");
         return;
     }
     QSqlQuery query2(db);
@@ -1208,6 +1276,7 @@ void FuncC::inintCityData(QQuickWindow*w)
     if(!query2.exec(" end transaction ")){
         qDebug()<<"warning:end transaction is of failure";
     }
+    db.close();//记得关闭 好删除文件
     QMetaObject::invokeMethod(w," addCountryData",Qt::DirectConnection,Q_ARG(QVariant,QVariant::fromValue(countryList)));
     QMetaObject::invokeMethod(w," addProvinceData",Qt::DirectConnection,Q_ARG(QVariant,QVariant::fromValue(provinceList)));
     QMetaObject::invokeMethod(w," addCityData",Qt::DirectConnection,Q_ARG(QVariant,QVariant::fromValue(cityList)));
@@ -1360,7 +1429,12 @@ void FuncC::exitMyQQ(QQuickWindow*w)
             QMetaObject::invokeMethod((QObject*)w,"aboutToQuit",Qt::DirectConnection);
     });
     exitSock->connectToHost(ip,updatePort);
-    exitSock->waitForConnected(1500);//等待1.5秒 至多3s删除套接字
+    QTimer::singleShot(3000,exitSock,[=]()mutable{
+        qDebug()<<"timeout 3s,now socket will be deleted";
+        exitSock->deleteLater();
+        if(w)
+            QMetaObject::invokeMethod((QObject*)w,"aboutToQuit",Qt::DirectConnection);
+    }) ;//等待1.5秒 至多3s删除套接字
 }
 
 void FuncC::getVerifyArray(const QString &myqq,QQuickWindow *qmlWin)
@@ -1556,6 +1630,574 @@ void FuncC::dmrFriend(QJsonObject &obj)
     });
 }
 
+void FuncC::screenShot()
+{
+    ScreenWidget*temp=  ScreenWidget::Instance();
+    temp->showFullScreen();
+    connect(temp,&ScreenWidget::finished,this,[=](){
+        QPixmap pix=temp->getPixmap();//数据获取完成
+        if(!pix.isNull()){
+            emit getScreenPximap(pix);
+        }
+        disconnect(temp,&ScreenWidget::finished,0,0);//只连一次
+    });
+}
+
+void FuncC::removeDir(QString path)
+{
+    QDir dir(path);
+    if(dir.exists()){
+        if(!dir.removeRecursively()){
+            qDebug()<<"it's of failure for removing";
+            return;
+        }
+    }
+}
+
+void FuncC::getFIP(QString number)
+{
+    qDebug()<<"getFIP";
+    QJsonObject inObj;
+    inObj.insert("instruct",QJsonValue("17"));
+    inObj.insert("content",QJsonValue("getFIP"));
+    inObj.insert("myqq",QJsonValue(m_myQQ));
+    inObj.insert("number",QJsonValue(number.left(number.length()-1)));
+    BigFileSocket*getFIPSock=new BigFileSocket();//子线程对象最好不要有父类
+    getFIPSock->setInstruct(inObj);
+
+    getFIPSock->setIp(ip);
+    getFIPSock->setPort(loginPort);
+    getFIPSock->setTimeout(10000);//超时10s
+    QThread*thread=new QThread(this);
+    getFIPSock->moveToThread(thread);
+    connect(thread,&QThread::finished,thread,&QThread::deleteLater);//删除线程
+    thread->start();
+    emit getFIPSock->start();//转移到新线程去post host
+    connect(getFIPSock,&BigFileSocket::finished,getFIPSock,[=](){
+        qDebug()<<"test opposite status  finish or timeout";
+        QJsonDocument tempDoc=QJsonDocument::fromJson(getFIPSock->carrier);
+        if(tempDoc.isObject()){
+            QJsonObject info=tempDoc.object();
+            QString  status=info.value("status").toString();
+            if(info.value("result").toString()=="true"){
+                if(info.value("online").toBool()){
+                    qDebug()<<"friend is online";
+                    QString ip=info.value("ip").toString();
+                    QString port=QString("%1").arg(info.value("port").toVariant().toUInt());
+                    emit getAddress(ip,port,status);
+                    //超时放弃或完成结束线程
+                    getFIPSock->moveToThread(thread->thread());//移动到主线程
+                    getFIPSock->deleteLater();//子线程删除
+                    thread->exit(0);
+                    thread->quit();
+                    thread->wait();
+                    return;
+                }
+            }
+        }else{
+            qDebug()<<"data is not correct";
+        }
+        emit getAddress();
+        //超时放弃或完成结束线程
+        getFIPSock->moveToThread(thread->thread());//移动到主线程
+        getFIPSock->deleteLater();//子线程删除
+        thread->exit(0);
+        thread->quit();
+        thread->wait();
+    });
+}
+
+void FuncC::sendFMessage(QString ip, QString port, QString number,QString html,QQuickWindow*win)
+{
+    qDebug()<<"start sending message to"<<number;
+    QString text=QString();
+    QByteArray sendData=parseFHtml(html,text);
+    if(sendData.isEmpty()){
+        qDebug()<<"warning:send a message is empty";
+        QMetaObject::invokeMethod((QObject*)win,"sendResult",Qt::DirectConnection,Q_ARG(bool,false),Q_ARG(QString,text));
+        QMetaObject::invokeMethod((QObject*)win,"getInfoListPlainText",Qt::DirectConnection,Q_ARG(QString,QString(sendData)));
+        return;
+    }
+
+    //发送解析的纯文本到qml win
+    QMetaObject::invokeMethod((QObject*)win,"getInfoListPlainText",Qt::DirectConnection,Q_ARG(QString,text));
+    SendSocket*sendSock=new SendSocket();
+    sendSock->setIP(ip);
+    sendSock->setPort((quint16)port.toUInt());
+    sendSock->setMessage(sendData);
+    sendSock->setTimeout(20000);//超时20s
+    sendSock->setNumber(m_myQQ,number);//  我方号码 用于查找对象 ,对方号码 用于接收判断号码是否正确
+    //不建议线程写在类内 ，不知道为什么总是线程毁灭时运行,无法及时退出删除，deletelater根本调用不了析构函数，可能是丢失事件圈无法响应
+    QThread*thread=new QThread(this);
+    sendSock->moveToThread(thread);
+
+    connect(win,&QQuickWindow::destroyed,sendSock,[=](){
+        thread->exit(0);
+        thread->quit();
+        thread->wait();
+    });//关闭则退出线程
+    //退出线程则删除对象 注意先把对象在子线程删除或移除才能删除子线程对象，这是qthread的关键点
+    connect(thread,&QThread::finished,sendSock,[=](){
+        sendSock->moveToThread(qApp->thread());//移动到gui线程
+        sendSock->deleteLater();
+        thread->deleteLater();
+    });
+    //开始post
+    connect(thread,&QThread::started,sendSock,[=](){
+        sendSock->post();
+    });
+    connect(sendSock,&SendSocket::finished,sendSock,[=](int code,QString descp){
+        qDebug()<<code<<descp;
+        //失败重连服务器
+        if(code<0){
+            QJsonObject obj;
+            obj.insert("content",QJsonValue("sendFMessage"));
+            obj.insert("instruct",QJsonValue("18"));
+            obj.insert("myqq",QJsonValue(m_myQQ));
+            obj.insert("number",QJsonValue(number));
+            obj.insert("headerSize",QJsonValue(true));
+
+            BigFileSocket*twoSendSock=new BigFileSocket();//子线程对象最好不要有父类
+            twoSendSock->setInstruct(obj);
+            twoSendSock->setIp(this->ip);
+            twoSendSock->setPort(updatePort);
+            twoSendSock->setTimeout(15000);//超时15s
+
+            QThread*twoThread=new QThread(sendSock);
+            twoSendSock->moveToThread(twoThread);
+            twoThread->start();
+            emit twoSendSock->start();//转移到新线程去post host
+            connect(twoThread,&QThread::finished,twoSendSock,[=](){
+                twoSendSock->moveToThread(qApp->thread());
+                twoSendSock->deleteLater();
+                twoThread->deleteLater();
+                thread->exit(0);
+                thread->quit();
+                thread->wait();
+            });
+            connect(twoSendSock,&BigFileSocket::writtenInstruction,twoSendSock,[=](){
+                qDebug()<<"message sending to remote host,data size:"<<sendData.size();
+                twoSendSock->write(sendData);
+                twoSendSock->loop.exec();
+                //删除资源
+                /**发送数据时不能用这个关闭，这个死循环会导致数据不能写入
+          if(twoSendSock->isOpen()){
+              twoSendSock->close();
+               while(true){
+                   if(twoSendSock->state()==QAbstractSocket::UnconnectedState)break;
+                   qDebug()<<"true";
+               };//等待关闭
+          }
+          */
+                //注意gui对象如何在子线程通信 千万不要把gui代码运行在子线程
+                QMetaObject::invokeMethod((QObject*)win,"sendResult",Qt::BlockingQueuedConnection,Q_ARG(bool,true),Q_ARG(QString,QString(sendData)));
+                twoThread->exit(0);
+                twoThread->quit();
+                twoThread->wait();
+            });
+            //发送失败
+            connect(twoSendSock,&BigFileSocket::finished,twoSendSock,[=](){
+                qDebug()<<"message sending failure";
+
+
+                //注意gui对象如何在子线程通信 千万不要把gui代码运行在子线程
+                QMetaObject::invokeMethod((QObject*)win,"sendResult",Qt::BlockingQueuedConnection,Q_ARG(bool,false),Q_ARG(QString,QString(sendData)));
+                twoThread->exit(0);
+                twoThread->quit();
+                twoThread->wait();
+
+            });
+        }else{//成功
+            //注意gui对象如何在子线程通信 千万不要把gui代码运行在子线程
+            QMetaObject::invokeMethod((QObject*)win,"sendResult",Qt::BlockingQueuedConnection,Q_ARG(bool,true),Q_ARG(QString,QString(sendData)));
+            thread->exit(0);
+            thread->quit();
+            thread->wait();
+        }
+    });
+    thread->start();
+}
+
+QByteArray FuncC::parseFHtml(QString &html,QString&ptext)
+{
+
+    QByteArray sendData;
+    QXmlStreamWriter writer(&sendData);
+    writer.setAutoFormatting(true);
+    writer.writeStartDocument("1.0");
+    writer.writeStartElement("消息");
+    writer.writeAttribute("datetime",QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss"));
+    QRegExp reg("(?:<p.*)(>.*</p>)");
+    reg.setMinimal(true);//非贪婪模式
+    qint32 pos=reg.indexIn(html);
+    if(pos==-1){
+        qDebug()<<"document content is not correct to html";
+        return sendData;
+    }
+    QString content=reg.cap(1);//>内容</p>
+    QRegularExpression ex("(>)(.*)(<img src=\\\"file:///(.*)\\\".*/)|((.*)</p>)");
+    ex.setPatternOptions(QRegularExpression::InvertedGreedinessOption);//非贪婪匹配
+    QRegularExpressionMatchIterator iteror=  ex.globalMatch(content);
+    pos=0;
+    //无效写入全部
+    if(!iteror.isValid()){
+        QString text=content.mid(1,content.length()-5);
+        writer.writeStartElement(QString("消息%1").arg(++pos));
+        writer.writeAttribute("type","text");
+        writer.writeCharacters(text);
+        writer.writeEndElement();
+        //纯文本获取
+        ptext=text;
+    }else
+        while(iteror.hasNext()){
+            QRegularExpressionMatch item=  iteror.next();
+            QString text=item.captured(2);
+            QString name=item.captured(4);
+            //如果是结尾则匹配的是第三项 但包含着> 不知道为啥匹配的包含第一项
+            if(text.isEmpty()&&name.isEmpty()){
+                text=item.captured(6);
+                text=text.right(text.length()-1);
+                //一条文本写入
+                writer.writeStartElement(QString("消息%1").arg(++pos));
+                writer.writeAttribute("type","text");
+                writer.writeCharacters(text);
+                writer.writeEndElement();
+                //纯文本获取
+                ptext.append(text);
+                break;//结束获取
+            }else if(!name.isEmpty()){
+                if(!text.isEmpty()){
+                    writer.writeStartElement(QString("消息%1").arg(++pos));
+                    writer.writeAttribute("type","text");
+                    writer.writeCharacters(text);//图片数据为16进制
+                    writer.writeEndElement();
+                    //纯文本获取
+                    ptext.append(text);
+                }
+                QPixmap pix;
+                pix.load(name);
+                if(pix.isNull()){
+                    qDebug()<<" a pixmap is null  for saving as infromation";
+                    continue;
+                }
+                QBuffer buf;
+                if(!buf.open(QIODevice::ReadWrite)){
+                    qDebug()<<"opened a buffer  is of failure for saving as  infromation";
+                    continue;
+                }
+                pix.save(&buf,"png");
+                QByteArray data=buf.data();
+                writer.writeStartElement(QString("消息%1").arg(++pos));
+                writer.writeAttribute("type","pixmap");
+                writer.writeCharacters(QString(data.toHex()));//图片数据为16进制
+                writer.writeEndElement();
+                //纯文本获取
+                ptext.append("[图片]");
+            }
+        }
+
+    writer.writeEndElement();
+    writer.writeEndDocument();
+    return sendData;
+}
+
+void FuncC::loadFChatLog(QQuickWindow *qmlWin, QString number)
+{
+    QThread*thread=new QThread();
+    thread->moveToThread(thread);//线程自己移动到开辟线程
+    //子线程点
+    connect(thread,&QThread::started,thread,[=](){
+        QFile dbFile(QString("../user/%1/friends/%2/chat/_%3.db").arg(m_myQQ,number,number));
+        if(dbFile.exists()){
+            std::thread::id tid=std::this_thread::get_id();
+            std::stringstream sin;
+            sin << tid;
+            QString tstr =QString::fromStdString(sin.str());
+            //打开数据库
+            bool ok;
+            QSqlDatabase db=QSqlDatabase::addDatabase("QSQLITE",tstr+m_myQQ+number);
+            QDir dir(QString("../user/%1/friends/%2/chat/").arg(m_myQQ,number));
+            dir.mkpath("./temp");//制造temp目录
+            db.setDatabaseName(QString("../user/%1/friends/%2/chat/_%3.db").arg(m_myQQ,number,number));//打开已存在数据库
+            db.setHostName("MyQQ");
+            db.setUserName("sa");
+            db.setPassword("@123456x");
+            if(db.open()){
+                qDebug()<<("打开sqliite数据库成功！");
+                QSqlQuery query(db);//存在数据库的查询对象
+                ok=  query.exec(QString(" select data,type,datetime,adhesion,number from _%1info  order by id desc limit 5000 ").arg(number));//查询最新的5000行记录
+
+                if(ok){
+                    query.next();
+                    int sum= 0;
+                    QString html=QString();
+                    QString mq=QString();
+                    QString time=QString();
+                    int count=0;//记录消息数，让它最多获取500条消息
+                    while (query.isValid()) {
+                        if(count>500)break;//大于500不在获取
+                        QByteArray data=query.value("data").toByteArray();//BLOD
+                        QString type=query.value("type").toString();
+                        bool adhesion=query.value("adhesion").toBool();
+                        qDebug()<<"adhesion"<<adhesion;
+                        if(!adhesion){//一条消息处理
+                            if(!html.isEmpty()){//有消息则发送
+                                //注意gui只能在gui线程的含义 即gui涉及ui的执行代码只能在gui线程，而gui对象及其他操作是可以在子线程执行的
+                                //消息接受 注意线程在gui线程 不能为子线程 因为有qml ui 发送参数 h't'm'l内容 发送时间 发送方号码
+                                // qmlwin第一个对象是qobject，直接强转即可，无需动态转换
+                                //gui操作比需在gui线程 注意线程
+                                QMetaObject::invokeMethod((QObject*)qmlWin,"loadLog",Qt::DirectConnection,Q_ARG(QString,html),Q_ARG(QString,time),Q_ARG(QString,mq));
+                                html="";
+                                ++count;//计数加1
+                            }
+                            mq=query.value("number").toString();//现在消息的时间
+                            time=query.value("datetime").toString();
+                            if(type=="text"){
+                                html=QString(data)+html;//插入文本
+                                qDebug()<<"text1:"<<html;
+                            }else if(type=="pixmap"){
+                                QPixmap pix;
+                                pix.loadFromData(data);
+                                QString name=dir.absoluteFilePath("temp/"+QString("%1").arg(QDateTime::currentDateTime().toTime_t())+QString("%1").arg(rand()));
+                                ok=  pix.save(name,"png");
+                                if(!ok){
+                                    qDebug()<<"saved a pixmap is of failure while loading a pixcture chat log！1"<<name;
+                                }else{
+                                    int width=pix.width(),height=pix.height();
+                                    if(width>height){
+                                        height=height*1.0/width*290;
+                                        width=290;
+                                    }else{
+                                        width=width*1.0/height*290;
+                                        height=290;
+                                    }
+                                    QString name="<img src=\"file:///"+name+"\" width=\""+QString::number(width)+
+                                            "\" height=\""+QString::number(height)+"\" />";
+                                    html=name+html;//插图图片
+                                    qDebug()<<"pixmap1:"<<html;
+                                }
+                            }
+
+                        }else{//是片段信息
+                            mq=query.value("number").toString();
+                            //现在消息的时间
+                            time=query.value("datetime").toString();
+                            if(type=="text"){
+                                html=QString(data)+html;//插入文本
+                                qDebug()<<"text2:"<<html;
+                            }else if(type=="pixmap"){
+                                QPixmap pix;
+                                pix.loadFromData(data);
+                                QString name=dir.absoluteFilePath("temp/"+QString("%1").arg(QDateTime::currentDateTime().toTime_t())+QString("%1").arg(rand()));
+                                ok=  pix.save(name,"png");
+                                if(!ok){
+                                    qDebug()<<"saved a pixmap is of failure while loading a pixcture chat log！2"<<name;
+                                }else{
+                                    int width=pix.width(),height=pix.height();
+                                    if(width>height){
+                                        height=height*1.0/width*290;
+                                        width=290;
+                                    }else{
+                                        width=width*1.0/height*290;
+                                        height=290;
+                                    }
+                                    name="<img src=\"file:///"+name+"\" width=\""+QString::number(width)+
+                                            "\" height=\""+QString::number(height)+"\" />";
+                                    html=name+html;//插图图片
+                                    qDebug()<<"pixmap2:"<<html;
+                                }
+                            }
+                        }
+                        query.next();//前进一步
+                        ++sum;
+                    }
+                    //判断是否保留最后一个html
+                    if(sum<5000){//小于说明最后一项是完整的消息 发送
+                        //注意gui只能在gui线程的含义 即gui涉及ui的执行代码只能在gui线程，而gui对象及其他操作是可以在子线程执行的
+                        //消息接受 注意线程在gui线程 不能为子线程 因为有qml ui 发送参数 h't'm'l内容 发送时间 发送方号码
+                        // qmlwin第一个对象是qobject，直接强转即可，无需动态转换
+                        //gui操作比需在gui线程 注意线程
+                       QMetaObject::invokeMethod((QObject*)qmlWin,"loadLog",Qt::DirectConnection,Q_ARG(QString,html),Q_ARG(QString,time),Q_ARG(QString,mq));
+                   }
+                    db.close();//记得关闭 好删除文件
+                    //退出线程
+                    thread->exit(0);
+                    thread->quit();
+                    thread->wait();
+                    return;//成功不继续运行
+                }else{
+                    qDebug()<<"select count(*),data,type,datetime,adhesion,number from _%1info  order by id desc limit 5000 sentence excuting failure:"<<endl<<query.lastError();
+                }
+                db.close();//记得关闭 好删除文件
+            }else{
+                qDebug()<<("打开sqliite数据库失败！");
+            }
+        }else{
+            qDebug()<<"not find local database file";
+        }
+        //退出线程
+
+        thread->exit(0);
+        thread->quit();
+        thread->wait();
+    });
+    connect(thread,&QThread::destroyed,this,[=](){
+        qDebug()<<"~QThread()";
+    });
+    connect(thread,&QThread::finished,thread,[=](){
+        thread->moveToThread(qApp->thread());//移动到gui线程
+        thread->deleteLater();//利用槽函数实现线程转移，安全毁灭线程
+    });
+    connect(qApp,&QApplication::aboutToQuit,thread,[=](){
+        thread->exit(0);
+        thread->quit();
+        thread->wait();
+    },Qt::DirectConnection);//改直接连接 强制转线程为gui线程
+    thread->start();//开启线程
+}
+
+void FuncC::saveSentFLog(QString number,QString bytes)
+{
+    if(bytes.isEmpty()){
+        qDebug()<<"warning:message is empty";
+        return;
+    }
+    QByteArray sendData=bytes.toUtf8();
+    //打开数据库
+    QDir dir(QString("../user/%1/friends/%2/chat/").arg(m_myQQ).arg(number));
+    if(!dir.mkpath("./")){
+        qDebug()<<"dir mkpath is of failure";
+        return ;
+    }
+    QSqlDatabase db=QSqlDatabase::addDatabase("QSQLITE",QString("%1").arg(rand())+number);
+    db.setDatabaseName(QString("../user/%1/friends/%2/chat/_%3.db").arg(m_myQQ).arg(number,number));
+    db.setHostName("MyQQ");
+    db.setUserName("sa");
+    db.setPassword("@123456x");
+    if(db.open())
+        qDebug()<<("打开sqliite数据库成功！");
+    else {
+        qDebug()<<("打开sqliite数据库失败！名字:")<<(db.databaseName());
+        return ;
+    }
+    QSqlQuery query(db);
+    bool ok=  query.exec(QString(" SELECT count(*) FROM sqlite_master WHERE type='table' AND name ='_%1info' ").arg(number));
+    if(!ok){
+        qDebug()<<"count of table query is of failure ";
+         db.close();//记得关闭 好删除文件
+        return ;
+    }
+    query.next();
+    if(query.value(0).toInt()==0){
+        //注意autoincrement只与Integer挂钩
+        ok= query.exec(QString( " create table _%1info (\
+                                id integer not null primary key  autoincrement,\
+                                data BLOD not null,\
+                                datetime datetime not null,\
+                                type text not null,\
+                                adhesion bit default 0,\
+                                number text not null\
+                                )").arg(number));
+                       if(!ok){
+                           qDebug()<<"create a table is of failure";
+                            db.close();//记得关闭 好删除文件
+                           return ;
+                       }
+    }
+    QXmlStreamReader reader(bytes);
+    while (!reader.atEnd()) {
+        reader.readNext();
+        if(reader.isStartElement()){
+            if(reader.qualifiedName()=="消息"){
+                QString time=reader.attributes().value("datetime").toString();
+                qDebug()<<"message content finding ,sending time"<<time;
+                //内容处理
+                while(!reader.atEnd()){
+                    reader.readNext();
+                    if(reader.isStartElement()){
+                        QString name=reader.qualifiedName().toString();
+                        qDebug()<<"information qualified name:"<<name;
+                        QString type=reader.attributes().value("type").toString();
+                        QString text=reader.readElementText();
+                        if(type=="text"){
+                            query.prepare(QString(" insert into _%1info(data,datetime,type,adhesion,number) values(?,?,?,?,?) ").arg(number));
+                            query.addBindValue(QVariant(text));
+                            query.addBindValue(QVariant(time));
+                            query.addBindValue(QVariant(type));
+                            query.addBindValue(QVariant(true));
+                            query.addBindValue(QVariant(m_myQQ));
+                            ok=query.exec();
+                            if(!ok){
+                                qDebug()<<"type:text;query.exec(\" insert into _%1info(data,datetime,type,adhesion) values(?,?,?,?) \")=false";
+                                continue;
+                            }
+                        }else if(type=="pixmap"){//把16进制转为原数据保存
+                            QByteArray pix=QByteArray::fromHex(text.toUtf8());//转化为原数据
+                            query.prepare(QString(" insert into _%1info(data,datetime,type,adhesion,number) values(?,?,?,?,?) ").arg(number));
+                            query.addBindValue(QVariant(pix));
+                            query.addBindValue(QVariant(time));
+                            query.addBindValue(QVariant(type));
+                            query.addBindValue(QVariant(true));
+                            query.addBindValue(QVariant(m_myQQ));
+                            ok=query.exec();
+                            if(!ok){
+                                qDebug()<<"type:pixmap; query.exec(\" insert into _%1info(data,datetime,type,adhesion) values(?,?,?,?) \")=false";
+                                continue;
+                            }
+                        }
+                    }else if(reader.isEndElement()){
+                        if(reader.qualifiedName()=="消息")
+                            break;
+                    }
+                }
+                break;
+            }
+        }
+    }
+    ok= query.exec(QString(" select count(*) from _%1info ").arg(number));
+    if(!ok){
+        qDebug()<<"query.exec(QString(\" select count(*) from _%1info \").arg(myqq)) is of failure";
+         db.close();//记得关闭 好删除文件
+        return ;
+    }
+    try{
+        query.next();
+        int count=query.value(0).toInt();
+        if(count<=0)throw "table is empty";
+        ok= query.exec(QString(" update _%1info set adhesion=%2 where id=%3 ").arg(number).arg(false).arg(count));
+        if(!ok){
+            qDebug()<<" update _%1info set adhesion=%2  failure";
+             db.close();//记得关闭 好删除文件
+            return ;
+        }
+    }catch(_exception&e){
+        qDebug()<<"a exception:"<<"type is "<<e.type<<"name is"<<e.name;
+         db.close();//记得关闭 好删除文件
+        return;
+    }catch(...){
+        qDebug()<<"a unknow excpetion";
+         db.close();//记得关闭 好删除文件
+        return;
+    }
+     db.close();//记得关闭 好删除文件
+     return;
+}
+
+QString FuncC::saveSentFLog(QString bytes)
+{
+    qDebug()<<"start saveing native log for chating with myself ";
+    QString text=QString();
+    QByteArray sendData=parseFHtml(bytes,text);
+    if(sendData.isEmpty()){
+        qDebug()<<"warning:send a message is empty";
+        return QString();
+    }
+    saveSentFLog(m_myQQ,sendData);
+    return text;
+}
+
+
+
 
 void FuncC::startAddFriendsProcess(QQuickWindow*arg,QMap<QString, QVariant>obj,QList<QVariant>arr)
 {
@@ -1626,7 +2268,7 @@ void FuncC::startAddFriendsProcess(QQuickWindow*arg,QMap<QString, QVariant>obj,Q
         QJsonDocument doc(QJsonObject::fromVariantMap(obj));
         QStringList list;
         list<<doc.toJson();
-        myProcess->start( QStringLiteral("../MyQQExternal/addFriendsWin"),list);
+        myProcess->start( ("../MyQQExternal/addFriendsWin"),list);
     }
 }
 
@@ -1652,13 +2294,13 @@ void FuncC::updateAuxiliaryProcessFGoup(QList<QVariant>arr)
 void FuncC::analysisWh(QString totalGeoAddr)
 {
     //因为网址不行，只能强赋值
-    totalGeoAddr=QStringLiteral("中国 北京市朝阳区");
+    totalGeoAddr=("中国 北京市朝阳区");
     int s1=0,s2=0,s3=0;
     QString cityN="";
     for(int i=0;i<totalGeoAddr.size();i++){
         QString s=totalGeoAddr.data()[i];
-        if(s==QStringLiteral("省")||s==QStringLiteral("市")||s==QStringLiteral("区")||
-                s==QStringLiteral("县")||s==QStringLiteral("州"))
+        if(s==("省")||s==("市")||s==("区")||
+                s==("县")||s==("州"))
             if(s1==0){
                 s1=i;
             }
@@ -1733,7 +2375,7 @@ void FuncC::crawWeatherUrl(const QString &url)
             firtarItr = firtar.match(QString::fromUtf8(data.data()));
             if(tarItr.hasMatch()){
                 _3dayWeaAndTem[count][0]=tarItr.captured(1);
-                qDebug()<<QStringLiteral("wea:")<<_3dayWeaAndTem[count][0];
+                qDebug()<<("wea:")<<_3dayWeaAndTem[count][0];
                 data=reply->readLine(1024);
                 data=reply->readLine(1024);
                 QRegularExpression temRe("^(?:<span>)(.+)(?:</span>)(.+)(?:<i>)(.+)(?:</i>)$");
@@ -1741,7 +2383,7 @@ void FuncC::crawWeatherUrl(const QString &url)
                 temItr = temRe.match(QString::fromUtf8(data.data()));
                 if(temItr.hasMatch()){
                     _3dayWeaAndTem[count][1]=temItr.captured(1)+temItr.captured(2)+temItr.captured(3);
-                    qDebug()<<QStringLiteral("温度:")<<_3dayWeaAndTem[count][1];
+                    qDebug()<<("温度:")<<_3dayWeaAndTem[count][1];
                 }
                 ++count;
                 if(!(count<3)){
@@ -1749,8 +2391,8 @@ void FuncC::crawWeatherUrl(const QString &url)
                     return ;
                 }
             }else if(firtarItr.hasMatch()){
-                _3dayWeaAndTem[0][1]=firtarItr.captured(1)+QStringLiteral("℃")+"/"+firtarItr.captured(2)+QStringLiteral("℃");
-                qDebug()<<QStringLiteral("天气:")<<_3dayWeaAndTem[0][1];
+                _3dayWeaAndTem[0][1]=firtarItr.captured(1)+("℃")+"/"+firtarItr.captured(2)+("℃");
+                qDebug()<<("天气:")<<_3dayWeaAndTem[0][1];
             }
             data=reply->readLine(1024);
         }
@@ -1777,13 +2419,13 @@ void FuncC::mkDir(const QString &dirString)
     QDir*dir=new QDir;
 
     if(dir->exists(dirString))
-        qDebug()<<QStringLiteral("存在文件夹'%1'").arg(dirString);
+        qDebug()<<QString("存在文件夹'%1'").arg(dirString);
     else{
         bool ok=dir->mkpath(dirString);
         if(!ok)
-            qDebug()<<QStringLiteral("创建失败");
+            qDebug()<<("创建失败");
         else
-            qDebug()<<QStringLiteral("创建成功");
+            qDebug()<<("创建成功");
     }
 }
 
@@ -1791,18 +2433,18 @@ void FuncC::readWeatherFile(const QString &fileName)
 {
     QFile file(fileName);
     if(!file.exists()){
-        qDebug()<<QStringLiteral("不存在文件:'%1'").arg(fileName);
+        qDebug()<<QString("不存在文件:'%1'").arg(fileName);
         if (!file.open(QIODevice::WriteOnly|QIODevice::Text)){
-            qDebug()<<QStringLiteral("创建文件失败");
+            qDebug()<<("创建文件失败");
         }
         file.close();
         return;
     }
     if(!file.open(QIODevice::ReadOnly|QIODevice::Text)){
-        qDebug()<<QStringLiteral("打开文件失败");
+        qDebug()<<("打开文件失败");
         return;
     }
-    qDebug()<<QStringLiteral("打开文件成功");
+    qDebug()<<("打开文件成功");
     QDataStream in(&file);
     in.setVersion(QDataStream::Qt_4_0);
     in>>cityNameAboutWeather[0][0]>>cityNameAboutWeather[0][1]>>cityNameAboutWeather[1][0]>>cityNameAboutWeather[1][1]
@@ -1815,10 +2457,10 @@ void FuncC::writeWeatherFile(const QString &fileName)
     QFile file(fileName);
 
     if(!file.open(QIODevice::WriteOnly|QIODevice::Text)){
-        qDebug()<<QStringLiteral("打开文件失败");
+        qDebug()<<("打开文件失败");
         return;
     }
-    qDebug()<<QStringLiteral("打开文件成功");
+    qDebug()<<("打开文件成功");
     QDataStream out(&file);
     out.setVersion(QDataStream::Qt_4_0);
     for(int i=0;i<3;i++){
@@ -1838,6 +2480,7 @@ void FuncC::connectGetFile(const QString &instructDescription)
     sendFileSock->setInstruct(instructDescription);
     sendFileSock->setIp(ip);
     sendFileSock->setPort(loginPort);
+    sendFileSock->setTimeout(30000);
     QThread*thread=new QThread();
     sendFileSock->moveToThread(thread);
     thread->start();
@@ -1847,10 +2490,21 @@ void FuncC::connectGetFile(const QString &instructDescription)
     connect(thread,&QThread::finished,thread,&QThread::deleteLater);
     //获取文件结果收尾处理
     connect(sendFileSock,&BigFileSocket::finished,[=](int code){
-        qDebug()<<"code"<<code;
+        emit getFileFinished(code);//先发送完成信号更新头像及界面
+        if(code==-1){
+            qDebug()<<"login code is equal to -1";
+        }else{
+            QJsonDocument tdoc=QJsonDocument::fromJson(sendFileSock->carrier);
+            QVariantMap map=QVariantMap();
+            if(tdoc.isObject()){
+                map=tdoc.object().toVariantMap();
+            }else{
+                qDebug()<<"verify message is empty or not corrected";
+            }
+            emit getReceiveFMessage(sendFileSock->infoList,map);
+        }
         thread->exit(0);
         thread->quit();
-        emit getFileFinished(code);
     });
 }
 
@@ -1945,7 +2599,6 @@ void FuncC::setSourceIco(QQuickWindow *win, QString key)
         thread->deleteLater();
     });
     connect(thread,&QThread::finished,this,[=]()mutable{
-        qDebug()<<"thra???"<<ico->isNull();
         win->setIcon(*ico);
         delete ico,ico=nullptr;
     });
@@ -1957,7 +2610,7 @@ void FuncC::setSourceIco(QQuickWindow *win, QString key)
             return;
         }
         QImage img=pix.toImage();
-       img= img.convertToFormat(QImage::Format_ARGB32_Premultiplied);//格式转换32位
+        img= img.convertToFormat(QImage::Format_ARGB32_Premultiplied);//格式转换32位
         int h=img.height(),w=img.width();
         qreal r=w/2.0;
         for (int i = 0; i < h; ++i) {
@@ -1969,7 +2622,7 @@ void FuncC::setSourceIco(QQuickWindow *win, QString key)
             }
         }
         pix =QPixmap::fromImage(img);
-         ico->addPixmap(pix);
+        ico->addPixmap(pix);
 
         if(ico->isNull()){
             qDebug()<<"it's of failure for converting pixmap to ico";
@@ -1979,387 +2632,387 @@ void FuncC::setSourceIco(QQuickWindow *win, QString key)
         thread->exit(0);
         thread->quit();
     });
-thread->start();
+    thread->start();
 }
 
 
 void FuncC::initAllCitys()
 {
 
-    allCitys.insert(QStringLiteral("北京"),"http://www.weather.com.cn/weather/101010100.shtml");
-    allCitys.insert(QStringLiteral("石家庄"),"http://www.weather.com.cn/weather/101090101.shtml");
-    allCitys.insert(QStringLiteral("保定"),	"http://www.weather.com.cn/weather/101090201.shtml");
-    allCitys.insert(QStringLiteral("张家口"),"http://www.weather.com.cn/weather/101090301.shtml");
-    allCitys.insert(QStringLiteral("承德"),	"http://www.weather.com.cn/weather/101090401.shtml");
-    allCitys.insert(QStringLiteral("唐山"),"http://www.weather.com.cn/weather/101090501.shtml");
-    allCitys.insert(QStringLiteral("廊坊"),"http://www.weather.com.cn/weather/101090601.shtml");
-    allCitys.insert(QStringLiteral("沧州"),"http://www.weather.com.cn/weather/101090701.shtml");
-    allCitys.insert(QStringLiteral("衡水"),"http://www.weather.com.cn/weather/101090801.shtml");
-    allCitys.insert(QStringLiteral("邢台"),"http://www.weather.com.cn/weather/101090901.shtml");
-    allCitys.insert(QStringLiteral("邯郸"),"http://www.weather.com.cn/weather/101091001.shtml");
-    allCitys.insert(QStringLiteral("秦皇岛"),"http://www.weather.com.cn/weather/101091101.shtml");
-    allCitys.insert(QStringLiteral("雄安新区"),"http://www.weather.com.cn/weather/101091201.shtml");
-    allCitys.insert(QStringLiteral("重庆"),"http://www.weather.com.cn/weather/101040100.shtml");
-    allCitys.insert(QStringLiteral("呼和浩特"),"http://www.weather.com.cn/weather/101080101.shtml");
-    allCitys.insert(QStringLiteral("包头"),"http://www.weather.com.cn/weather/101080201.shtml");
-    allCitys.insert(QStringLiteral("乌海"),"http://www.weather.com.cn/weather/101080301.shtml");
-    allCitys.insert(QStringLiteral("乌兰察布"),"http://www.weather.com.cn/weather/101080401.shtml");
-    allCitys.insert(QStringLiteral("通辽"),"http://www.weather.com.cn/weather/101080501.shtml");
-    allCitys.insert(QStringLiteral("赤峰"),"http://www.weather.com.cn/weather/101080601.shtml");
-    allCitys.insert(QStringLiteral("鄂尔多斯"),"http://www.weather.com.cn/weather/101080701.shtml");
-    allCitys.insert(QStringLiteral("巴彦淖尔"),"http://www.weather.com.cn/weather/101080801.shtml");
-    allCitys.insert(QStringLiteral("锡林郭勒"),"http://www.weather.com.cn/weather/101080901.shtml");
-    allCitys.insert(QStringLiteral("呼伦贝尔"),"http://www.weather.com.cn/weather/101081001.shtml");
-    allCitys.insert(QStringLiteral("兴安盟"),"http://www.weather.com.cn/weather/101081101.shtml");
-    allCitys.insert(QStringLiteral("阿拉善盟"),"http://www.weather.com.cn/weather/101081201.shtml");
-    allCitys.insert(QStringLiteral("上海"),"http://www.weather.com.cn/weather/101020100.shtml");
-    allCitys.insert(QStringLiteral("武汉"),"http://www.weather.com.cn/weather/101200101.shtml");
-    allCitys.insert(QStringLiteral("襄阳"),"http://www.weather.com.cn/weather/101200201.shtml");
-    allCitys.insert(QStringLiteral("鄂州"),"http://www.weather.com.cn/weather/101200301.shtml");
-    allCitys.insert(QStringLiteral("孝感"),"http://www.weather.com.cn/weather/101200401.shtml");
-    allCitys.insert(QStringLiteral("黄冈"),"http://www.weather.com.cn/weather/101200501.shtml");
-    allCitys.insert(QStringLiteral("黄石"),"http://www.weather.com.cn/weather/101200601.shtml");
-    allCitys.insert(QStringLiteral("咸宁"),"http://www.weather.com.cn/weather/101200701.shtml");
-    allCitys.insert(QStringLiteral("荆州"),"http://www.weather.com.cn/weather/101200801.shtml");
-    allCitys.insert(QStringLiteral("宜昌"),"http://www.weather.com.cn/weather/101200901.shtml");
-    allCitys.insert(QStringLiteral("恩施"),"http://www.weather.com.cn/weather/101201001.shtml");
-    allCitys.insert(QStringLiteral("十堰"),"http://www.weather.com.cn/weather/101201101.shtml");
-    allCitys.insert(QStringLiteral("神农架"),"http://www.weather.com.cn/weather/101201201.shtml");
-    allCitys.insert(QStringLiteral("随州"),"http://www.weather.com.cn/weather/101201301.shtml");
-    allCitys.insert(QStringLiteral("荆门"),"http://www.weather.com.cn/weather/101201401.shtml");
-    allCitys.insert(QStringLiteral("天门"),"http://www.weather.com.cn/weather/101201501.shtml");
-    allCitys.insert(QStringLiteral("仙桃"),"http://www.weather.com.cn/weather/101201601.shtml");
-    allCitys.insert(QStringLiteral("潜江"),"http://www.weather.com.cn/weather/101201701.shtml");
-    allCitys.insert(QStringLiteral("太原"),"http://www.weather.com.cn/weather/101100101.shtml");
-    allCitys.insert(QStringLiteral("大同"),"http://www.weather.com.cn/weather/101100201.shtml");
-    allCitys.insert(QStringLiteral("阳泉"),"http://www.weather.com.cn/weather/101100301.shtml");
-    allCitys.insert(QStringLiteral("晋中"),"http://www.weather.com.cn/weather/101100401.shtml");
-    allCitys.insert(QStringLiteral("长治"),"http://www.weather.com.cn/weather/101100501.shtml");
-    allCitys.insert(QStringLiteral("晋城"),"http://www.weather.com.cn/weather/101100601.shtml");
-    allCitys.insert(QStringLiteral("临汾"),"http://www.weather.com.cn/weather/101100701.shtml");
-    allCitys.insert(QStringLiteral("运城"),"http://www.weather.com.cn/weather/101100801.shtml");
-    allCitys.insert(QStringLiteral("朔州"),"http://www.weather.com.cn/weather/101100901.shtml");
-    allCitys.insert(QStringLiteral("忻州"),"http://www.weather.com.cn/weather/101101001.shtml");
-    allCitys.insert(QStringLiteral("吕梁"),"http://www.weather.com.cn/weather/101101100.shtml");
-    allCitys.insert(QStringLiteral("长沙"),"http://www.weather.com.cn/weather/101250101.shtml");
-    allCitys.insert(QStringLiteral("湘潭"),"http://www.weather.com.cn/weather/101250201.shtml");
-    allCitys.insert(QStringLiteral("株洲"),"http://www.weather.com.cn/weather/101250301.shtml");
-    allCitys.insert(QStringLiteral("衡阳"),"http://www.weather.com.cn/weather/101250401.shtml");
-    allCitys.insert(QStringLiteral("郴州"),"http://www.weather.com.cn/weather/101250501.shtml");
-    allCitys.insert(QStringLiteral("常德"),"http://www.weather.com.cn/weather/101250601.shtml");
-    allCitys.insert(QStringLiteral("益阳"),"http://www.weather.com.cn/weather/101250700.shtml");
-    allCitys.insert(QStringLiteral("娄底"),"http://www.weather.com.cn/weather/101250801.shtml");
-    allCitys.insert(QStringLiteral("邵阳"),"http://www.weather.com.cn/weather/101250901.shtml");
-    allCitys.insert(QStringLiteral("岳阳"),"http://www.weather.com.cn/weather/101251001.shtml");
-    allCitys.insert(QStringLiteral("张家界"),"http://www.weather.com.cn/weather/101251101.shtml");
-    allCitys.insert(QStringLiteral("怀化"),"http://www.weather.com.cn/weather/101251201.shtml");
-    allCitys.insert(QStringLiteral("永州"),"http://www.weather.com.cn/weather/101251401.shtml");
-    allCitys.insert(QStringLiteral("湘西"),"http://www.weather.com.cn/weather/101251501.shtml");
-    allCitys.insert(QStringLiteral("天津"),"http://www.weather.com.cn/weather/101030100.shtml");
-    allCitys.insert(QStringLiteral("郑州"),"http://www.weather.com.cn/weather/101180101.shtml");
-    allCitys.insert(QStringLiteral("安阳"),"http://www.weather.com.cn/weather/101180201.shtml");
-    allCitys.insert(QStringLiteral("新乡"),"http://www.weather.com.cn/weather/101180301.shtml");
-    allCitys.insert(QStringLiteral("许昌"),"http://www.weather.com.cn/weather/101180401.shtml");
-    allCitys.insert(QStringLiteral("平顶山"),"http://www.weather.com.cn/weather/101180501.shtml");
-    allCitys.insert(QStringLiteral("信阳"),"http://www.weather.com.cn/weather/101180601.shtml");
-    allCitys.insert(QStringLiteral("南阳"),"http://www.weather.com.cn/weather/101180701.shtml");
-    allCitys.insert(QStringLiteral("开封"),"http://www.weather.com.cn/weather/101180801.shtml");
-    allCitys.insert(QStringLiteral("洛阳"),"http://www.weather.com.cn/weather/101180901.shtml");
-    allCitys.insert(QStringLiteral("商丘"),"http://www.weather.com.cn/weather/101181001.shtml");
-    allCitys.insert(QStringLiteral("焦作"),"http://www.weather.com.cn/weather/101181101.shtml");
-    allCitys.insert(QStringLiteral("鹤壁"),"http://www.weather.com.cn/weather/101181201.shtml");
-    allCitys.insert(QStringLiteral("濮阳"),"http://www.weather.com.cn/weather/101181301.shtml");
-    allCitys.insert(QStringLiteral("周口"),"http://www.weather.com.cn/weather/101181401.shtml");
-    allCitys.insert(QStringLiteral("漯河"),"http://www.weather.com.cn/weather/101181501.shtml");
-    allCitys.insert(QStringLiteral("驻马店"),"http://www.weather.com.cn/weather/101181601.shtml");
-    allCitys.insert(QStringLiteral("三门峡"),"http://www.weather.com.cn/weather/101181701.shtml");
-    allCitys.insert(QStringLiteral("济源"),"http://www.weather.com.cn/weather/101181801.shtml");
-    allCitys.insert(QStringLiteral("合肥"),"http://www.weather.com.cn/weather/101220101.shtml");
-    allCitys.insert(QStringLiteral("蚌埠"),"http://www.weather.com.cn/weather/101220201.shtml");
-    allCitys.insert(QStringLiteral("芜湖"),"http://www.weather.com.cn/weather/101220301.shtml");
-    allCitys.insert(QStringLiteral("淮南"),"http://www.weather.com.cn/weather/101220401.shtml");
-    allCitys.insert(QStringLiteral("马鞍山"),"http://www.weather.com.cn/weather/101220501.shtml");
-    allCitys.insert(QStringLiteral("安庆"),"http://www.weather.com.cn/weather/101220601.shtml");
-    allCitys.insert(QStringLiteral("宿州"),"http://www.weather.com.cn/weather/101220701.shtml");
-    allCitys.insert(QStringLiteral("阜阳"),"http://www.weather.com.cn/weather/101220801.shtml");
-    allCitys.insert(QStringLiteral("亳州"),"http://www.weather.com.cn/weather/101220901.shtml");
-    allCitys.insert(QStringLiteral("黄山"),"http://www.weather.com.cn/weather/101221001.shtml");
-    allCitys.insert(QStringLiteral("滁州"),"http://www.weather.com.cn/weather/101221101.shtml");
-    allCitys.insert(QStringLiteral("淮北"),"http://www.weather.com.cn/weather/101221201.shtml");
-    allCitys.insert(QStringLiteral("铜陵"),"http://www.weather.com.cn/weather/101221301.shtml");
-    allCitys.insert(QStringLiteral("宣城"),"http://www.weather.com.cn/weather/101221401.shtml");
-    allCitys.insert(QStringLiteral("六安"),"http://www.weather.com.cn/weather/101221501.shtml");
-    allCitys.insert(QStringLiteral("池州"),"http://www.weather.com.cn/weather/101221701.shtml");
-    allCitys.insert(QStringLiteral("贵阳"),"http://www.weather.com.cn/weather/101260101.shtml");
-    allCitys.insert(QStringLiteral("遵义"),"http://www.weather.com.cn/weather/101260201.shtml");
-    allCitys.insert(QStringLiteral("安顺"),"http://www.weather.com.cn/weather/101260301.shtml");
-    allCitys.insert(QStringLiteral("黔南"),"http://www.weather.com.cn/weather/101260401.shtml");
-    allCitys.insert(QStringLiteral("黔东南"),"http://www.weather.com.cn/weather/101260501.shtml");
-    allCitys.insert(QStringLiteral("铜仁"),"http://www.weather.com.cn/weather/101260601.shtml");
-    allCitys.insert(QStringLiteral("毕节"),"http://www.weather.com.cn/weather/101260701.shtml");
-    allCitys.insert(QStringLiteral("六盘水"),"http://www.weather.com.cn/weather/101260801.shtml");
-    allCitys.insert(QStringLiteral("黔西南"),"http://www.weather.com.cn/weather/101260901.shtml");
-    allCitys.insert(QStringLiteral("南京"),"http://www.weather.com.cn/weather/101190101.shtml");
-    allCitys.insert(QStringLiteral("无锡"),"http://www.weather.com.cn/weather/101190201.shtml");
-    allCitys.insert(QStringLiteral(" 镇江"),"http://www.weather.com.cn/weather/101190301.shtml");
-    allCitys.insert(QStringLiteral("苏州"),"http://www.weather.com.cn/weather/101190401.shtml");
-    allCitys.insert(QStringLiteral("南通"),"http://www.weather.com.cn/weather/101190501.shtml");
-    allCitys.insert(QStringLiteral("扬州"),"http://www.weather.com.cn/weather/101190601.shtml");
-    allCitys.insert(QStringLiteral("盐城"),"http://www.weather.com.cn/weather/101190701.shtml");
-    allCitys.insert(QStringLiteral("徐州"),"http://www.weather.com.cn/weather/101190801.shtml");
-    allCitys.insert(QStringLiteral("淮安"),"http://www.weather.com.cn/weather/101190901.shtml");
-    allCitys.insert(QStringLiteral("连云港"),"http://www.weather.com.cn/weather/101191001.shtml");
-    allCitys.insert(QStringLiteral("常州"),"http://www.weather.com.cn/weather/101191101.shtml");
-    allCitys.insert(QStringLiteral("泰州"),"http://www.weather.com.cn/weather/101191201.shtml");
-    allCitys.insert(QStringLiteral("宿迁"),"http://www.weather.com.cn/weather/101191301.shtml");
-    allCitys.insert(QStringLiteral("西安"),"http://www.weather.com.cn/weather/101110101.shtml");
-    allCitys.insert(QStringLiteral("咸阳"),"http://www.weather.com.cn/weather/101110200.shtml");
-    allCitys.insert(QStringLiteral("延安"),"http://www.weather.com.cn/weather/101110300.shtml");
-    allCitys.insert(QStringLiteral("榆林"),"http://www.weather.com.cn/weather/101110401.shtml");
-    allCitys.insert(QStringLiteral("渭南"),"http://www.weather.com.cn/weather/101110501.shtml");
-    allCitys.insert(QStringLiteral("商洛"),"http://www.weather.com.cn/weather/101110601.shtml");
-    allCitys.insert(QStringLiteral("安康"),"http://www.weather.com.cn/weather/101110701.shtml");
-    allCitys.insert(QStringLiteral("汉中"),"http://www.weather.com.cn/weather/101110801.shtml");
-    allCitys.insert(QStringLiteral("宝鸡"),"http://www.weather.com.cn/weather/101110901.shtml");
-    allCitys.insert(QStringLiteral("铜川"),"http://www.weather.com.cn/weather/101111001.shtml");
-    allCitys.insert(QStringLiteral("杨凌"),"http://www.weather.com.cn/weather/101111101.shtml");
-    allCitys.insert(QStringLiteral("西宁"),"http://www.weather.com.cn/weather/101150101.shtml");
-    allCitys.insert(QStringLiteral("海东"),"http://www.weather.com.cn/weather/101150201.shtml");
-    allCitys.insert(QStringLiteral("黄南"),"http://www.weather.com.cn/weather/101150301.shtml");
-    allCitys.insert(QStringLiteral("海南"),"http://www.weather.com.cn/weather/101150401.shtml");
-    allCitys.insert(QStringLiteral("果洛"),"http://www.weather.com.cn/weather/101150501.shtml");
-    allCitys.insert(QStringLiteral("玉树"),"http://www.weather.com.cn/weather/101150601.shtml");
-    allCitys.insert(QStringLiteral("海西"),"http://www.weather.com.cn/weather/101150701.shtml");
-    allCitys.insert(QStringLiteral("海北"),"http://www.weather.com.cn/weather/101150801.shtml");
-    allCitys.insert(QStringLiteral("济南"),"http://www.weather.com.cn/weather/101120101.shtml");
-    allCitys.insert(QStringLiteral("青岛"),"http://www.weather.com.cn/weather/101120201.shtml");
-    allCitys.insert(QStringLiteral("淄博"),"http://www.weather.com.cn/weather/101120301.shtml");
-    allCitys.insert(QStringLiteral("德州"),"http://www.weather.com.cn/weather/101120401.shtml");
-    allCitys.insert(QStringLiteral("烟台"),"http://www.weather.com.cn/weather/101120501.shtml");
-    allCitys.insert(QStringLiteral("潍坊"),"http://www.weather.com.cn/weather/101120601.shtml");
-    allCitys.insert(QStringLiteral("济宁"),"http://www.weather.com.cn/weather/101120701.shtml");
-    allCitys.insert(QStringLiteral("泰安"),"http://www.weather.com.cn/weather/101120801.shtml");
-    allCitys.insert(QStringLiteral("临沂"),"http://www.weather.com.cn/weather/101120901.shtml");
-    allCitys.insert(QStringLiteral("菏泽"),"http://www.weather.com.cn/weather/101121001.shtml");
-    allCitys.insert(QStringLiteral("滨州"),"http://www.weather.com.cn/weather/101121101.shtml");
-    allCitys.insert(QStringLiteral("东营"),"http://www.weather.com.cn/weather/101121201.shtml");
-    allCitys.insert(QStringLiteral("威海"),"http://www.weather.com.cn/weather/101121301.shtml");
-    allCitys.insert(QStringLiteral("枣庄"),"http://www.weather.com.cn/weather/101121401.shtml");
-    allCitys.insert(QStringLiteral("日照"),"http://www.weather.com.cn/weather/101121501.shtml");
-    allCitys.insert(QStringLiteral("莱芜"),"http://www.weather.com.cn/weather/101121601.shtml");
-    allCitys.insert(QStringLiteral("聊城"),"http://www.weather.com.cn/weather/101121701.shtml");
-    allCitys.insert(QStringLiteral("杭州"),"http://www.weather.com.cn/weather/101210101.shtml");
-    allCitys.insert(QStringLiteral("湖州"),"http://www.weather.com.cn/weather/101210201.shtml");
-    allCitys.insert(QStringLiteral("嘉兴"),"http://www.weather.com.cn/weather/101210301.shtml");
-    allCitys.insert(QStringLiteral("宁波"),"http://www.weather.com.cn/weather/101210401.shtml");
-    allCitys.insert(QStringLiteral("绍兴"),"http://www.weather.com.cn/weather/101210501.shtml");
-    allCitys.insert(QStringLiteral("台州"),"http://www.weather.com.cn/weather/101210601.shtml");
-    allCitys.insert(QStringLiteral("温州"),"http://www.weather.com.cn/weather/101210701.shtml");
-    allCitys.insert(QStringLiteral("丽水"),"http://www.weather.com.cn/weather/101210801.shtml");
-    allCitys.insert(QStringLiteral("金华"),"http://www.weather.com.cn/weather/101210901.shtml");
-    allCitys.insert(QStringLiteral("衢州"),"http://www.weather.com.cn/weather/101211001.shtml");
-    allCitys.insert(QStringLiteral("舟山"),"http://www.weather.com.cn/weather/101211101.shtml");
-    allCitys.insert(QStringLiteral("银川"),"http://www.weather.com.cn/weather/101170101.shtml");
-    allCitys.insert(QStringLiteral("石嘴山"),"http://www.weather.com.cn/weather/101170201.shtml");
-    allCitys.insert(QStringLiteral("吴忠"),"http://www.weather.com.cn/weather/101170301.shtml");
-    allCitys.insert(QStringLiteral("固原"),"http://www.weather.com.cn/weather/101170401.shtml");
-    allCitys.insert(QStringLiteral("中卫"),"http://www.weather.com.cn/weather/101170501.shtml");
-    allCitys.insert(QStringLiteral("拉萨"),"http://www.weather.com.cn/weather/101140101.shtml");
-    allCitys.insert(QStringLiteral("日喀则"),"http://www.weather.com.cn/weather/101140201.shtml");
-    allCitys.insert(QStringLiteral("山南"),"http://www.weather.com.cn/weather/101140301.shtml");
-    allCitys.insert(QStringLiteral("林芝"),"http://www.weather.com.cn/weather/101140401.shtml");
-    allCitys.insert(QStringLiteral("昌都"),"http://www.weather.com.cn/weather/101140501.shtml");
-    allCitys.insert(QStringLiteral("那曲"),"http://www.weather.com.cn/weather/101140601.shtml");
-    allCitys.insert(QStringLiteral("阿里"),"http://www.weather.com.cn/weather/101140701.shtml");
-    allCitys.insert(QStringLiteral("昆明"),"http://www.weather.com.cn/weather/101290101.shtml");
-    allCitys.insert(QStringLiteral("大理"),"http://www.weather.com.cn/weather/101290201.shtml");
-    allCitys.insert(QStringLiteral("红河"),"http://www.weather.com.cn/weather/101290301.shtml");
-    allCitys.insert(QStringLiteral("曲靖"),"http://www.weather.com.cn/weather/101290401.shtml");
-    allCitys.insert(QStringLiteral("保山"),"http://www.weather.com.cn/weather/101290501.shtml");
-    allCitys.insert(QStringLiteral("文山"),"http://www.weather.com.cn/weather/101290601.shtml");
-    allCitys.insert(QStringLiteral("玉溪"),"http://www.weather.com.cn/weather/101290701.shtml");
-    allCitys.insert(QStringLiteral("楚雄"),"http://www.weather.com.cn/weather/101290801.shtml");
-    allCitys.insert(QStringLiteral("普洱"),"http://www.weather.com.cn/weather/101290901.shtml");
-    allCitys.insert(QStringLiteral("昭通"),"http://www.weather.com.cn/weather/101291001.shtml");
-    allCitys.insert(QStringLiteral("临沧"),"http://www.weather.com.cn/weather/101291101.shtml");
-    allCitys.insert(QStringLiteral("怒江"),"http://www.weather.com.cn/weather/101291201.shtml");
-    allCitys.insert(QStringLiteral("迪庆"),"http://www.weather.com.cn/weather/101291301.shtml");
-    allCitys.insert(QStringLiteral("丽江"),"http://www.weather.com.cn/weather/101291401.shtml");
-    allCitys.insert(QStringLiteral("德宏"),"http://www.weather.com.cn/weather/101291501.shtml");
-    allCitys.insert(QStringLiteral("西双版纳"),"http://www.weather.com.cn/weather/101291601.shtml");
-    allCitys.insert(QStringLiteral("福州"),"http://www.weather.com.cn/weather/101230101.shtml");
-    allCitys.insert(QStringLiteral("厦门"),"http://www.weather.com.cn/weather/101230201.shtml");
-    allCitys.insert(QStringLiteral("宁德"),"http://www.weather.com.cn/weather/101230301.shtml");
-    allCitys.insert(QStringLiteral("莆田"),"http://www.weather.com.cn/weather/101230401.shtml");
-    allCitys.insert(QStringLiteral("泉州"),"http://www.weather.com.cn/weather/101230501.shtml");
-    allCitys.insert(QStringLiteral("漳州"),"http://www.weather.com.cn/weather/101230601.shtml");
-    allCitys.insert(QStringLiteral("龙岩"),"http://www.weather.com.cn/weather/101230701.shtml");
-    allCitys.insert(QStringLiteral("三明"),"http://www.weather.com.cn/weather/101230801.shtml");
-    allCitys.insert(QStringLiteral("南平"),"http://www.weather.com.cn/weather/101230901.shtml");
-    allCitys.insert(QStringLiteral("钓鱼岛"),"http://www.weather.com.cn/weather/101231001.shtml");
-    allCitys.insert(QStringLiteral("香港"),"http://www.weather.com.cn/weather/101320101.shtml");
-    allCitys.insert(QStringLiteral("兰州"),"http://www.weather.com.cn/weather/101160101.shtml");
-    allCitys.insert(QStringLiteral("定西"),"http://www.weather.com.cn/weather/101160201.shtml");
-    allCitys.insert(QStringLiteral("平凉"),"http://www.weather.com.cn/weather/101160301.shtml");
-    allCitys.insert(QStringLiteral("庆阳"),"http://www.weather.com.cn/weather/101160401.shtml");
-    allCitys.insert(QStringLiteral("武威"),"http://www.weather.com.cn/weather/101160501.shtml");
-    allCitys.insert(QStringLiteral("金昌"),"http://www.weather.com.cn/weather/101160601.shtml");
-    allCitys.insert(QStringLiteral("张掖"),"http://www.weather.com.cn/weather/101160701.shtml");
-    allCitys.insert(QStringLiteral("酒泉"),"http://www.weather.com.cn/weather/101160801.shtml");
-    allCitys.insert(QStringLiteral("天水"),"http://www.weather.com.cn/weather/101160901.shtml");
-    allCitys.insert(QStringLiteral("陇南"),"http://www.weather.com.cn/weather/101161001.shtml");
-    allCitys.insert(QStringLiteral("临夏"),"http://www.weather.com.cn/weather/101161101.shtml");
-    allCitys.insert(QStringLiteral("甘南"),"http://www.weather.com.cn/weather/101161201.shtml");
-    allCitys.insert(QStringLiteral("白银"),"http://www.weather.com.cn/weather/101161301.shtml");
-    allCitys.insert(QStringLiteral("嘉峪关"),"http://www.weather.com.cn/weather/101161401.shtml");
-    allCitys.insert(QStringLiteral("台北"),"http://www.weather.com.cn/weather/101340101.shtml");
-    allCitys.insert(QStringLiteral("高雄"),"http://www.weather.com.cn/weather/101340201.shtml");
-    allCitys.insert(QStringLiteral("台中"),"http://www.weather.com.cn/weather/101340401.shtml");
-    allCitys.insert(QStringLiteral("乌鲁木齐"),"http://www.weather.com.cn/weather/101130101.shtml");
-    allCitys.insert(QStringLiteral("克拉玛依"),"http://www.weather.com.cn/weather/101130201.shtml");
-    allCitys.insert(QStringLiteral("石河子"),"http://www.weather.com.cn/weather/101130301.shtml");
-    allCitys.insert(QStringLiteral("昌吉"),"http://www.weather.com.cn/weather/101130401.shtml");
-    allCitys.insert(QStringLiteral("吐鲁番"),"http://www.weather.com.cn/weather/101130501.shtml");
-    allCitys.insert(QStringLiteral("巴音郭楞"),"http://www.weather.com.cn/weather/101130601.shtml");
-    allCitys.insert(QStringLiteral("阿拉尔"),"http://www.weather.com.cn/weather/101130701.shtml");
-    allCitys.insert(QStringLiteral("阿克苏"),"http://www.weather.com.cn/weather/101130801.shtml");
-    allCitys.insert(QStringLiteral("喀什"),"http://www.weather.com.cn/weather/101130901.shtml");
-    allCitys.insert(QStringLiteral("伊犁"),"http://www.weather.com.cn/weather/101131001.shtml");
-    allCitys.insert(QStringLiteral("塔城"),"http://www.weather.com.cn/weather/101131101.shtml");
-    allCitys.insert(QStringLiteral("哈密"),"http://www.weather.com.cn/weather/101131201.shtml");
-    allCitys.insert(QStringLiteral("和田"),"http://www.weather.com.cn/weather/101131301.shtml");
-    allCitys.insert(QStringLiteral("阿勒泰"),"http://www.weather.com.cn/weather/101131401.shtml");
-    allCitys.insert(QStringLiteral("克州"),"http://www.weather.com.cn/weather/101131501.shtml");
-    allCitys.insert(QStringLiteral("博尔塔拉"),"http://www.weather.com.cn/weather/101131601.shtml");
-    allCitys.insert(QStringLiteral("图木舒克"),"http://www.weather.com.cn/weather/101131701.shtml");
-    allCitys.insert(QStringLiteral("五家渠"),"http://www.weather.com.cn/weather/101131801.shtml");
-    allCitys.insert(QStringLiteral("铁门关"),"http://www.weather.com.cn/weather/101131901.shtml");
-    allCitys.insert(QStringLiteral("北屯"),"http://www.weather.com.cn/weather/101132101.shtml");
-    allCitys.insert(QStringLiteral("双河"),"http://www.weather.com.cn/weather/101132201.shtml");
-    allCitys.insert(QStringLiteral("可克达拉"),"http://www.weather.com.cn/weather/101132301.shtml");
-    allCitys.insert(QStringLiteral("南宁"),"http://www.weather.com.cn/weather/101300101.shtml");
-    allCitys.insert(QStringLiteral("崇左"),"http://www.weather.com.cn/weather/101300201.shtml");
-    allCitys.insert(QStringLiteral("柳州"),"http://www.weather.com.cn/weather/101300301.shtml");
-    allCitys.insert(QStringLiteral("来宾"),"http://www.weather.com.cn/weather/101300401.shtml");
-    allCitys.insert(QStringLiteral("桂林"),"http://www.weather.com.cn/weather/101300501.shtml");
-    allCitys.insert(QStringLiteral("梧州"),"http://www.weather.com.cn/weather/101300601.shtml");
-    allCitys.insert(QStringLiteral("贺州"),"http://www.weather.com.cn/weather/101300701.shtml");
-    allCitys.insert(QStringLiteral("贵港"),"http://www.weather.com.cn/weather/101300801.shtml");
-    allCitys.insert(QStringLiteral("玉林"),"http://www.weather.com.cn/weather/101300901.shtml");
-    allCitys.insert(QStringLiteral("百色"),"http://www.weather.com.cn/weather/101301001.shtml");
-    allCitys.insert(QStringLiteral("钦州"),"http://www.weather.com.cn/weather/101301101.shtml");
-    allCitys.insert(QStringLiteral("河池"),"http://www.weather.com.cn/weather/101301201.shtml");
-    allCitys.insert(QStringLiteral("北海"),"http://www.weather.com.cn/weather/101301301.shtml");
-    allCitys.insert(QStringLiteral("防城港"),"http://www.weather.com.cn/weather/101301401.shtml");
-    allCitys.insert(QStringLiteral("澳门"),"http://www.weather.com.cn/weather/101330101.shtml");
-    allCitys.insert(QStringLiteral("广州"),"http://www.weather.com.cn/weather/101280101.shtml");
-    allCitys.insert(QStringLiteral("韶关"),"http://www.weather.com.cn/weather/101280201.shtml");
-    allCitys.insert(QStringLiteral("惠州"),"http://www.weather.com.cn/weather/101280301.shtml");
-    allCitys.insert(QStringLiteral("梅州"),"http://www.weather.com.cn/weather/101280401.shtml");
-    allCitys.insert(QStringLiteral("汕头"),"http://www.weather.com.cn/weather/101280501.shtml");
-    allCitys.insert(QStringLiteral("深圳"),"http://www.weather.com.cn/weather/101280601.shtml");
-    allCitys.insert(QStringLiteral("珠海"),"http://www.weather.com.cn/weather/101280701.shtml");
-    allCitys.insert(QStringLiteral("佛山"),"http://www.weather.com.cn/weather/101280800.shtml");
-    allCitys.insert(QStringLiteral("肇庆"),"http://www.weather.com.cn/weather/101280901.shtml");
-    allCitys.insert(QStringLiteral("湛江"),"http://www.weather.com.cn/weather/101281001.shtml");
-    allCitys.insert(QStringLiteral("江门"),"http://www.weather.com.cn/weather/101281101.shtml");
-    allCitys.insert(QStringLiteral("河源"),"http://www.weather.com.cn/weather/101281201.shtml");
-    allCitys.insert(QStringLiteral("清远"),"http://www.weather.com.cn/weather/101281301.shtml");
-    allCitys.insert(QStringLiteral("云浮"),"http://www.weather.com.cn/weather/101281401.shtml");
-    allCitys.insert(QStringLiteral("潮州"),"http://www.weather.com.cn/weather/101281501.shtml");
-    allCitys.insert(QStringLiteral("东莞"),"http://www.weather.com.cn/weather/101281601.shtml");
-    allCitys.insert(QStringLiteral("中山"),"http://www.weather.com.cn/weather/101281701.shtml");
-    allCitys.insert(QStringLiteral("阳江"),"http://www.weather.com.cn/weather/101281801.shtml");
-    allCitys.insert(QStringLiteral("揭阳"),"http://www.weather.com.cn/weather/101281901.shtml");
-    allCitys.insert(QStringLiteral("茂名"),"http://www.weather.com.cn/weather/101282001.shtml");
-    allCitys.insert(QStringLiteral("汕尾"),"http://www.weather.com.cn/weather/101282101.shtml");
-    allCitys.insert(QStringLiteral("海口"),"http://www.weather.com.cn/weather/101310101.shtml");
-    allCitys.insert(QStringLiteral("三亚"),"http://www.weather.com.cn/weather/101310201.shtml");
-    allCitys.insert(QStringLiteral("东方"),"http://www.weather.com.cn/weather/101310202.shtml");
-    allCitys.insert(QStringLiteral("临高"),"http://www.weather.com.cn/weather/101310203.shtml");
-    allCitys.insert(QStringLiteral("澄迈"),"http://www.weather.com.cn/weather/101310204.shtml");
-    allCitys.insert(QStringLiteral("儋州"),"http://www.weather.com.cn/weather/101310205.shtml");
-    allCitys.insert(QStringLiteral("昌江"),"http://www.weather.com.cn/weather/101310206.shtml");
-    allCitys.insert(QStringLiteral("白沙"),"http://www.weather.com.cn/weather/101310207.shtml");
-    allCitys.insert(QStringLiteral("琼中"),"http://www.weather.com.cn/weather/101310208.shtml");
-    allCitys.insert(QStringLiteral("定安"),"http://www.weather.com.cn/weather/101310209.shtml");
-    allCitys.insert(QStringLiteral("屯昌"),"http://www.weather.com.cn/weather/101310210.shtml");
-    allCitys.insert(QStringLiteral("琼海"),"http://www.weather.com.cn/weather/101310211.shtml");
-    allCitys.insert(QStringLiteral("文昌"),"http://www.weather.com.cn/weather/101310212.shtml");
-    allCitys.insert(QStringLiteral("保亭"),"http://www.weather.com.cn/weather/101310214.shtml");
-    allCitys.insert(QStringLiteral("万宁"),"http://www.weather.com.cn/weather/101310215.shtml");
-    allCitys.insert(QStringLiteral("陵水"),"http://www.weather.com.cn/weather/101310216.shtml");
-    allCitys.insert(QStringLiteral("乐东"),"http://www.weather.com.cn/weather/101310221.shtml");
-    allCitys.insert(QStringLiteral("五指山"),"http://www.weather.com.cn/weather/101310222.shtml");
-    allCitys.insert(QStringLiteral("西沙"),"http://www.weather.com.cn/weather/101310302.shtml");
-    allCitys.insert(QStringLiteral("中沙"),"http://www.weather.com.cn/weather/101310303.shtml");
-    allCitys.insert(QStringLiteral("南沙"),"http://www.weather.com.cn/weather/101310304.shtml");
-    allCitys.insert(QStringLiteral("沈阳"),"http://www.weather.com.cn/weather/101070101.shtml");
-    allCitys.insert(QStringLiteral("大连"),"http://www.weather.com.cn/weather/101070201.shtml");
-    allCitys.insert(QStringLiteral("鞍山"),"http://www.weather.com.cn/weather/101070301.shtml");
-    allCitys.insert(QStringLiteral("抚顺"),"http://www.weather.com.cn/weather/101070401.shtml");
-    allCitys.insert(QStringLiteral("本溪"),"http://www.weather.com.cn/weather/101070501.shtml");
-    allCitys.insert(QStringLiteral("丹东"),"http://www.weather.com.cn/weather/101070601.shtml");
-    allCitys.insert(QStringLiteral("锦州"),"http://www.weather.com.cn/weather/101070701.shtml");
-    allCitys.insert(QStringLiteral("营口"),"http://www.weather.com.cn/weather/101070801.shtml");
-    allCitys.insert(QStringLiteral("阜新"),"http://www.weather.com.cn/weather/101070901.shtml");
-    allCitys.insert(QStringLiteral("辽阳"),"http://www.weather.com.cn/weather/101071001.shtml");
-    allCitys.insert(QStringLiteral("铁岭"),"http://www.weather.com.cn/weather/101071101.shtml");
-    allCitys.insert(QStringLiteral("朝阳"),"http://www.weather.com.cn/weather/101071201.shtml");
-    allCitys.insert(QStringLiteral("盘锦"),"http://www.weather.com.cn/weather/101071301.shtml");
-    allCitys.insert(QStringLiteral("葫芦岛"),"http://www.weather.com.cn/weather/101071401.shtml");
-    allCitys.insert(QStringLiteral("成都"),"http://www.weather.com.cn/weather/101270101.shtml");
-    allCitys.insert(QStringLiteral("攀枝花"),"http://www.weather.com.cn/weather/101270201.shtml");
-    allCitys.insert(QStringLiteral("自贡"),"http://www.weather.com.cn/weather/101270301.shtml");
-    allCitys.insert(QStringLiteral("绵阳"),"http://www.weather.com.cn/weather/101270401.shtml");
-    allCitys.insert(QStringLiteral("南充"),"http://www.weather.com.cn/weather/101270501.shtml");
-    allCitys.insert(QStringLiteral("达州"),"http://www.weather.com.cn/weather/101270601.shtml");
-    allCitys.insert(QStringLiteral("遂宁"),"http://www.weather.com.cn/weather/101270701.shtml");
-    allCitys.insert(QStringLiteral("广安"),"http://www.weather.com.cn/weather/101270801.shtml");
-    allCitys.insert(QStringLiteral("巴中"),"http://www.weather.com.cn/weather/101270901.shtml");
-    allCitys.insert(QStringLiteral("泸州"),"http://www.weather.com.cn/weather/101271001.shtml");
-    allCitys.insert(QStringLiteral("宜宾"),"http://www.weather.com.cn/weather/101271101.shtml");
-    allCitys.insert(QStringLiteral("内江"),"http://www.weather.com.cn/weather/101271201.shtml");
-    allCitys.insert(QStringLiteral("资阳"),"http://www.weather.com.cn/weather/101271301.shtml");
-    allCitys.insert(QStringLiteral("乐山"),"http://www.weather.com.cn/weather/101271401.shtml");
-    allCitys.insert(QStringLiteral("眉山"),"http://www.weather.com.cn/weather/101271501.shtml");
-    allCitys.insert(QStringLiteral("凉山"),"http://www.weather.com.cn/weather/101271601.shtml");
-    allCitys.insert(QStringLiteral("雅安"),"http://www.weather.com.cn/weather/101271701.shtml");
-    allCitys.insert(QStringLiteral("甘孜"),"http://www.weather.com.cn/weather/101271801.shtml");
-    allCitys.insert(QStringLiteral("阿坝"),"http://www.weather.com.cn/weather/101271901.shtml");
-    allCitys.insert(QStringLiteral("德阳"),"http://www.weather.com.cn/weather/101272001.shtml");
-    allCitys.insert(QStringLiteral("广元"),"http://www.weather.com.cn/weather/101272101.shtml");
-    allCitys.insert(QStringLiteral("哈尔滨"),"http://www.weather.com.cn/weather/101050101.shtml");
-    allCitys.insert(QStringLiteral("齐齐哈尔"),"http://www.weather.com.cn/weather/101050201.shtml");
-    allCitys.insert(QStringLiteral("牡丹江"),"http://www.weather.com.cn/weather/101050301.shtml");
-    allCitys.insert(QStringLiteral("佳木斯"),"http://www.weather.com.cn/weather/101050401.shtml");
-    allCitys.insert(QStringLiteral("绥化"),"http://www.weather.com.cn/weather/101050501.shtml");
-    allCitys.insert(QStringLiteral("黑河"),"http://www.weather.com.cn/weather/101050601.shtml");
-    allCitys.insert(QStringLiteral("大兴安岭"),"http://www.weather.com.cn/weather/101050701.shtml");
-    allCitys.insert(QStringLiteral("伊春"),"http://www.weather.com.cn/weather/101050801.shtml");
-    allCitys.insert(QStringLiteral("大庆"),"http://www.weather.com.cn/weather/101050901.shtml");
-    allCitys.insert(QStringLiteral("七台河"),"http://www.weather.com.cn/weather/101051001.shtml");
-    allCitys.insert(QStringLiteral("鸡西"),"http://www.weather.com.cn/weather/101051101.shtml");
-    allCitys.insert(QStringLiteral("鹤岗"),"http://www.weather.com.cn/weather/101051201.shtml");
-    allCitys.insert(QStringLiteral("双鸭山"),"http://www.weather.com.cn/weather/101051301.shtml");
-    allCitys.insert(QStringLiteral("长春"),"http://www.weather.com.cn/weather/101060101.shtml");
-    allCitys.insert(QStringLiteral(" 吉林"),"http://www.weather.com.cn/weather/101060201.shtml");
-    allCitys.insert(QStringLiteral("延边"),"http://www.weather.com.cn/weather/101060301.shtml");
-    allCitys.insert(QStringLiteral("四平"),"http://www.weather.com.cn/weather/101060401.shtml");
-    allCitys.insert(QStringLiteral("通化"),"http://www.weather.com.cn/weather/101060501.shtml");
-    allCitys.insert(QStringLiteral("白城"),"http://www.weather.com.cn/weather/101060601.shtml");
-    allCitys.insert(QStringLiteral("辽源"),"http://www.weather.com.cn/weather/101060701.shtml");
-    allCitys.insert(QStringLiteral("松原"),"http://www.weather.com.cn/weather/101060801.shtml");
-    allCitys.insert(QStringLiteral("白山"),"http://www.weather.com.cn/weather/101060901.shtml");
-    allCitys.insert(QStringLiteral("南昌"),"http://www.weather.com.cn/weather/101240101.shtml");
-    allCitys.insert(QStringLiteral("九江"),"http://www.weather.com.cn/weather/101240201.shtml");
-    allCitys.insert(QStringLiteral("上饶 "),"http://www.weather.com.cn/weather/101240301.shtml");
-    allCitys.insert(QStringLiteral("抚州 "),"http://www.weather.com.cn/weather/101240401.shtml");
-    allCitys.insert(QStringLiteral("宜春"),"http://www.weather.com.cn/weather/101240501.shtml");
-    allCitys.insert(QStringLiteral("吉安"),"http://www.weather.com.cn/weather/101240601.shtml");
-    allCitys.insert(QStringLiteral("赣州"),"http://www.weather.com.cn/weather/101240701.shtml");
-    allCitys.insert(QStringLiteral("景德镇"),"http://www.weather.com.cn/weather/101240801.shtml");
-    allCitys.insert(QStringLiteral("萍乡"),"http://www.weather.com.cn/weather/101240901.shtml");
-    allCitys.insert(QStringLiteral("新余"),"http://www.weather.com.cn/weather/101241001.shtml");
-    allCitys.insert(QStringLiteral("鹰潭"),"http://www.weather.com.cn/weather/101241101.shtml");
+    allCitys.insert(("北京"),"http://www.weather.com.cn/weather/101010100.shtml");
+    allCitys.insert(("石家庄"),"http://www.weather.com.cn/weather/101090101.shtml");
+    allCitys.insert(("保定"),	"http://www.weather.com.cn/weather/101090201.shtml");
+    allCitys.insert(("张家口"),"http://www.weather.com.cn/weather/101090301.shtml");
+    allCitys.insert(("承德"),	"http://www.weather.com.cn/weather/101090401.shtml");
+    allCitys.insert(("唐山"),"http://www.weather.com.cn/weather/101090501.shtml");
+    allCitys.insert(("廊坊"),"http://www.weather.com.cn/weather/101090601.shtml");
+    allCitys.insert(("沧州"),"http://www.weather.com.cn/weather/101090701.shtml");
+    allCitys.insert(("衡水"),"http://www.weather.com.cn/weather/101090801.shtml");
+    allCitys.insert(("邢台"),"http://www.weather.com.cn/weather/101090901.shtml");
+    allCitys.insert(("邯郸"),"http://www.weather.com.cn/weather/101091001.shtml");
+    allCitys.insert(("秦皇岛"),"http://www.weather.com.cn/weather/101091101.shtml");
+    allCitys.insert(("雄安新区"),"http://www.weather.com.cn/weather/101091201.shtml");
+    allCitys.insert(("重庆"),"http://www.weather.com.cn/weather/101040100.shtml");
+    allCitys.insert(("呼和浩特"),"http://www.weather.com.cn/weather/101080101.shtml");
+    allCitys.insert(("包头"),"http://www.weather.com.cn/weather/101080201.shtml");
+    allCitys.insert(("乌海"),"http://www.weather.com.cn/weather/101080301.shtml");
+    allCitys.insert(("乌兰察布"),"http://www.weather.com.cn/weather/101080401.shtml");
+    allCitys.insert(("通辽"),"http://www.weather.com.cn/weather/101080501.shtml");
+    allCitys.insert(("赤峰"),"http://www.weather.com.cn/weather/101080601.shtml");
+    allCitys.insert(("鄂尔多斯"),"http://www.weather.com.cn/weather/101080701.shtml");
+    allCitys.insert(("巴彦淖尔"),"http://www.weather.com.cn/weather/101080801.shtml");
+    allCitys.insert(("锡林郭勒"),"http://www.weather.com.cn/weather/101080901.shtml");
+    allCitys.insert(("呼伦贝尔"),"http://www.weather.com.cn/weather/101081001.shtml");
+    allCitys.insert(("兴安盟"),"http://www.weather.com.cn/weather/101081101.shtml");
+    allCitys.insert(("阿拉善盟"),"http://www.weather.com.cn/weather/101081201.shtml");
+    allCitys.insert(("上海"),"http://www.weather.com.cn/weather/101020100.shtml");
+    allCitys.insert(("武汉"),"http://www.weather.com.cn/weather/101200101.shtml");
+    allCitys.insert(("襄阳"),"http://www.weather.com.cn/weather/101200201.shtml");
+    allCitys.insert(("鄂州"),"http://www.weather.com.cn/weather/101200301.shtml");
+    allCitys.insert(("孝感"),"http://www.weather.com.cn/weather/101200401.shtml");
+    allCitys.insert(("黄冈"),"http://www.weather.com.cn/weather/101200501.shtml");
+    allCitys.insert(("黄石"),"http://www.weather.com.cn/weather/101200601.shtml");
+    allCitys.insert(("咸宁"),"http://www.weather.com.cn/weather/101200701.shtml");
+    allCitys.insert(("荆州"),"http://www.weather.com.cn/weather/101200801.shtml");
+    allCitys.insert(("宜昌"),"http://www.weather.com.cn/weather/101200901.shtml");
+    allCitys.insert(("恩施"),"http://www.weather.com.cn/weather/101201001.shtml");
+    allCitys.insert(("十堰"),"http://www.weather.com.cn/weather/101201101.shtml");
+    allCitys.insert(("神农架"),"http://www.weather.com.cn/weather/101201201.shtml");
+    allCitys.insert(("随州"),"http://www.weather.com.cn/weather/101201301.shtml");
+    allCitys.insert(("荆门"),"http://www.weather.com.cn/weather/101201401.shtml");
+    allCitys.insert(("天门"),"http://www.weather.com.cn/weather/101201501.shtml");
+    allCitys.insert(("仙桃"),"http://www.weather.com.cn/weather/101201601.shtml");
+    allCitys.insert(("潜江"),"http://www.weather.com.cn/weather/101201701.shtml");
+    allCitys.insert(("太原"),"http://www.weather.com.cn/weather/101100101.shtml");
+    allCitys.insert(("大同"),"http://www.weather.com.cn/weather/101100201.shtml");
+    allCitys.insert(("阳泉"),"http://www.weather.com.cn/weather/101100301.shtml");
+    allCitys.insert(("晋中"),"http://www.weather.com.cn/weather/101100401.shtml");
+    allCitys.insert(("长治"),"http://www.weather.com.cn/weather/101100501.shtml");
+    allCitys.insert(("晋城"),"http://www.weather.com.cn/weather/101100601.shtml");
+    allCitys.insert(("临汾"),"http://www.weather.com.cn/weather/101100701.shtml");
+    allCitys.insert(("运城"),"http://www.weather.com.cn/weather/101100801.shtml");
+    allCitys.insert(("朔州"),"http://www.weather.com.cn/weather/101100901.shtml");
+    allCitys.insert(("忻州"),"http://www.weather.com.cn/weather/101101001.shtml");
+    allCitys.insert(("吕梁"),"http://www.weather.com.cn/weather/101101100.shtml");
+    allCitys.insert(("长沙"),"http://www.weather.com.cn/weather/101250101.shtml");
+    allCitys.insert(("湘潭"),"http://www.weather.com.cn/weather/101250201.shtml");
+    allCitys.insert(("株洲"),"http://www.weather.com.cn/weather/101250301.shtml");
+    allCitys.insert(("衡阳"),"http://www.weather.com.cn/weather/101250401.shtml");
+    allCitys.insert(("郴州"),"http://www.weather.com.cn/weather/101250501.shtml");
+    allCitys.insert(("常德"),"http://www.weather.com.cn/weather/101250601.shtml");
+    allCitys.insert(("益阳"),"http://www.weather.com.cn/weather/101250700.shtml");
+    allCitys.insert(("娄底"),"http://www.weather.com.cn/weather/101250801.shtml");
+    allCitys.insert(("邵阳"),"http://www.weather.com.cn/weather/101250901.shtml");
+    allCitys.insert(("岳阳"),"http://www.weather.com.cn/weather/101251001.shtml");
+    allCitys.insert(("张家界"),"http://www.weather.com.cn/weather/101251101.shtml");
+    allCitys.insert(("怀化"),"http://www.weather.com.cn/weather/101251201.shtml");
+    allCitys.insert(("永州"),"http://www.weather.com.cn/weather/101251401.shtml");
+    allCitys.insert(("湘西"),"http://www.weather.com.cn/weather/101251501.shtml");
+    allCitys.insert(("天津"),"http://www.weather.com.cn/weather/101030100.shtml");
+    allCitys.insert(("郑州"),"http://www.weather.com.cn/weather/101180101.shtml");
+    allCitys.insert(("安阳"),"http://www.weather.com.cn/weather/101180201.shtml");
+    allCitys.insert(("新乡"),"http://www.weather.com.cn/weather/101180301.shtml");
+    allCitys.insert(("许昌"),"http://www.weather.com.cn/weather/101180401.shtml");
+    allCitys.insert(("平顶山"),"http://www.weather.com.cn/weather/101180501.shtml");
+    allCitys.insert(("信阳"),"http://www.weather.com.cn/weather/101180601.shtml");
+    allCitys.insert(("南阳"),"http://www.weather.com.cn/weather/101180701.shtml");
+    allCitys.insert(("开封"),"http://www.weather.com.cn/weather/101180801.shtml");
+    allCitys.insert(("洛阳"),"http://www.weather.com.cn/weather/101180901.shtml");
+    allCitys.insert(("商丘"),"http://www.weather.com.cn/weather/101181001.shtml");
+    allCitys.insert(("焦作"),"http://www.weather.com.cn/weather/101181101.shtml");
+    allCitys.insert(("鹤壁"),"http://www.weather.com.cn/weather/101181201.shtml");
+    allCitys.insert(("濮阳"),"http://www.weather.com.cn/weather/101181301.shtml");
+    allCitys.insert(("周口"),"http://www.weather.com.cn/weather/101181401.shtml");
+    allCitys.insert(("漯河"),"http://www.weather.com.cn/weather/101181501.shtml");
+    allCitys.insert(("驻马店"),"http://www.weather.com.cn/weather/101181601.shtml");
+    allCitys.insert(("三门峡"),"http://www.weather.com.cn/weather/101181701.shtml");
+    allCitys.insert(("济源"),"http://www.weather.com.cn/weather/101181801.shtml");
+    allCitys.insert(("合肥"),"http://www.weather.com.cn/weather/101220101.shtml");
+    allCitys.insert(("蚌埠"),"http://www.weather.com.cn/weather/101220201.shtml");
+    allCitys.insert(("芜湖"),"http://www.weather.com.cn/weather/101220301.shtml");
+    allCitys.insert(("淮南"),"http://www.weather.com.cn/weather/101220401.shtml");
+    allCitys.insert(("马鞍山"),"http://www.weather.com.cn/weather/101220501.shtml");
+    allCitys.insert(("安庆"),"http://www.weather.com.cn/weather/101220601.shtml");
+    allCitys.insert(("宿州"),"http://www.weather.com.cn/weather/101220701.shtml");
+    allCitys.insert(("阜阳"),"http://www.weather.com.cn/weather/101220801.shtml");
+    allCitys.insert(("亳州"),"http://www.weather.com.cn/weather/101220901.shtml");
+    allCitys.insert(("黄山"),"http://www.weather.com.cn/weather/101221001.shtml");
+    allCitys.insert(("滁州"),"http://www.weather.com.cn/weather/101221101.shtml");
+    allCitys.insert(("淮北"),"http://www.weather.com.cn/weather/101221201.shtml");
+    allCitys.insert(("铜陵"),"http://www.weather.com.cn/weather/101221301.shtml");
+    allCitys.insert(("宣城"),"http://www.weather.com.cn/weather/101221401.shtml");
+    allCitys.insert(("六安"),"http://www.weather.com.cn/weather/101221501.shtml");
+    allCitys.insert(("池州"),"http://www.weather.com.cn/weather/101221701.shtml");
+    allCitys.insert(("贵阳"),"http://www.weather.com.cn/weather/101260101.shtml");
+    allCitys.insert(("遵义"),"http://www.weather.com.cn/weather/101260201.shtml");
+    allCitys.insert(("安顺"),"http://www.weather.com.cn/weather/101260301.shtml");
+    allCitys.insert(("黔南"),"http://www.weather.com.cn/weather/101260401.shtml");
+    allCitys.insert(("黔东南"),"http://www.weather.com.cn/weather/101260501.shtml");
+    allCitys.insert(("铜仁"),"http://www.weather.com.cn/weather/101260601.shtml");
+    allCitys.insert(("毕节"),"http://www.weather.com.cn/weather/101260701.shtml");
+    allCitys.insert(("六盘水"),"http://www.weather.com.cn/weather/101260801.shtml");
+    allCitys.insert(("黔西南"),"http://www.weather.com.cn/weather/101260901.shtml");
+    allCitys.insert(("南京"),"http://www.weather.com.cn/weather/101190101.shtml");
+    allCitys.insert(("无锡"),"http://www.weather.com.cn/weather/101190201.shtml");
+    allCitys.insert((" 镇江"),"http://www.weather.com.cn/weather/101190301.shtml");
+    allCitys.insert(("苏州"),"http://www.weather.com.cn/weather/101190401.shtml");
+    allCitys.insert(("南通"),"http://www.weather.com.cn/weather/101190501.shtml");
+    allCitys.insert(("扬州"),"http://www.weather.com.cn/weather/101190601.shtml");
+    allCitys.insert(("盐城"),"http://www.weather.com.cn/weather/101190701.shtml");
+    allCitys.insert(("徐州"),"http://www.weather.com.cn/weather/101190801.shtml");
+    allCitys.insert(("淮安"),"http://www.weather.com.cn/weather/101190901.shtml");
+    allCitys.insert(("连云港"),"http://www.weather.com.cn/weather/101191001.shtml");
+    allCitys.insert(("常州"),"http://www.weather.com.cn/weather/101191101.shtml");
+    allCitys.insert(("泰州"),"http://www.weather.com.cn/weather/101191201.shtml");
+    allCitys.insert(("宿迁"),"http://www.weather.com.cn/weather/101191301.shtml");
+    allCitys.insert(("西安"),"http://www.weather.com.cn/weather/101110101.shtml");
+    allCitys.insert(("咸阳"),"http://www.weather.com.cn/weather/101110200.shtml");
+    allCitys.insert(("延安"),"http://www.weather.com.cn/weather/101110300.shtml");
+    allCitys.insert(("榆林"),"http://www.weather.com.cn/weather/101110401.shtml");
+    allCitys.insert(("渭南"),"http://www.weather.com.cn/weather/101110501.shtml");
+    allCitys.insert(("商洛"),"http://www.weather.com.cn/weather/101110601.shtml");
+    allCitys.insert(("安康"),"http://www.weather.com.cn/weather/101110701.shtml");
+    allCitys.insert(("汉中"),"http://www.weather.com.cn/weather/101110801.shtml");
+    allCitys.insert(("宝鸡"),"http://www.weather.com.cn/weather/101110901.shtml");
+    allCitys.insert(("铜川"),"http://www.weather.com.cn/weather/101111001.shtml");
+    allCitys.insert(("杨凌"),"http://www.weather.com.cn/weather/101111101.shtml");
+    allCitys.insert(("西宁"),"http://www.weather.com.cn/weather/101150101.shtml");
+    allCitys.insert(("海东"),"http://www.weather.com.cn/weather/101150201.shtml");
+    allCitys.insert(("黄南"),"http://www.weather.com.cn/weather/101150301.shtml");
+    allCitys.insert(("海南"),"http://www.weather.com.cn/weather/101150401.shtml");
+    allCitys.insert(("果洛"),"http://www.weather.com.cn/weather/101150501.shtml");
+    allCitys.insert(("玉树"),"http://www.weather.com.cn/weather/101150601.shtml");
+    allCitys.insert(("海西"),"http://www.weather.com.cn/weather/101150701.shtml");
+    allCitys.insert(("海北"),"http://www.weather.com.cn/weather/101150801.shtml");
+    allCitys.insert(("济南"),"http://www.weather.com.cn/weather/101120101.shtml");
+    allCitys.insert(("青岛"),"http://www.weather.com.cn/weather/101120201.shtml");
+    allCitys.insert(("淄博"),"http://www.weather.com.cn/weather/101120301.shtml");
+    allCitys.insert(("德州"),"http://www.weather.com.cn/weather/101120401.shtml");
+    allCitys.insert(("烟台"),"http://www.weather.com.cn/weather/101120501.shtml");
+    allCitys.insert(("潍坊"),"http://www.weather.com.cn/weather/101120601.shtml");
+    allCitys.insert(("济宁"),"http://www.weather.com.cn/weather/101120701.shtml");
+    allCitys.insert(("泰安"),"http://www.weather.com.cn/weather/101120801.shtml");
+    allCitys.insert(("临沂"),"http://www.weather.com.cn/weather/101120901.shtml");
+    allCitys.insert(("菏泽"),"http://www.weather.com.cn/weather/101121001.shtml");
+    allCitys.insert(("滨州"),"http://www.weather.com.cn/weather/101121101.shtml");
+    allCitys.insert(("东营"),"http://www.weather.com.cn/weather/101121201.shtml");
+    allCitys.insert(("威海"),"http://www.weather.com.cn/weather/101121301.shtml");
+    allCitys.insert(("枣庄"),"http://www.weather.com.cn/weather/101121401.shtml");
+    allCitys.insert(("日照"),"http://www.weather.com.cn/weather/101121501.shtml");
+    allCitys.insert(("莱芜"),"http://www.weather.com.cn/weather/101121601.shtml");
+    allCitys.insert(("聊城"),"http://www.weather.com.cn/weather/101121701.shtml");
+    allCitys.insert(("杭州"),"http://www.weather.com.cn/weather/101210101.shtml");
+    allCitys.insert(("湖州"),"http://www.weather.com.cn/weather/101210201.shtml");
+    allCitys.insert(("嘉兴"),"http://www.weather.com.cn/weather/101210301.shtml");
+    allCitys.insert(("宁波"),"http://www.weather.com.cn/weather/101210401.shtml");
+    allCitys.insert(("绍兴"),"http://www.weather.com.cn/weather/101210501.shtml");
+    allCitys.insert(("台州"),"http://www.weather.com.cn/weather/101210601.shtml");
+    allCitys.insert(("温州"),"http://www.weather.com.cn/weather/101210701.shtml");
+    allCitys.insert(("丽水"),"http://www.weather.com.cn/weather/101210801.shtml");
+    allCitys.insert(("金华"),"http://www.weather.com.cn/weather/101210901.shtml");
+    allCitys.insert(("衢州"),"http://www.weather.com.cn/weather/101211001.shtml");
+    allCitys.insert(("舟山"),"http://www.weather.com.cn/weather/101211101.shtml");
+    allCitys.insert(("银川"),"http://www.weather.com.cn/weather/101170101.shtml");
+    allCitys.insert(("石嘴山"),"http://www.weather.com.cn/weather/101170201.shtml");
+    allCitys.insert(("吴忠"),"http://www.weather.com.cn/weather/101170301.shtml");
+    allCitys.insert(("固原"),"http://www.weather.com.cn/weather/101170401.shtml");
+    allCitys.insert(("中卫"),"http://www.weather.com.cn/weather/101170501.shtml");
+    allCitys.insert(("拉萨"),"http://www.weather.com.cn/weather/101140101.shtml");
+    allCitys.insert(("日喀则"),"http://www.weather.com.cn/weather/101140201.shtml");
+    allCitys.insert(("山南"),"http://www.weather.com.cn/weather/101140301.shtml");
+    allCitys.insert(("林芝"),"http://www.weather.com.cn/weather/101140401.shtml");
+    allCitys.insert(("昌都"),"http://www.weather.com.cn/weather/101140501.shtml");
+    allCitys.insert(("那曲"),"http://www.weather.com.cn/weather/101140601.shtml");
+    allCitys.insert(("阿里"),"http://www.weather.com.cn/weather/101140701.shtml");
+    allCitys.insert(("昆明"),"http://www.weather.com.cn/weather/101290101.shtml");
+    allCitys.insert(("大理"),"http://www.weather.com.cn/weather/101290201.shtml");
+    allCitys.insert(("红河"),"http://www.weather.com.cn/weather/101290301.shtml");
+    allCitys.insert(("曲靖"),"http://www.weather.com.cn/weather/101290401.shtml");
+    allCitys.insert(("保山"),"http://www.weather.com.cn/weather/101290501.shtml");
+    allCitys.insert(("文山"),"http://www.weather.com.cn/weather/101290601.shtml");
+    allCitys.insert(("玉溪"),"http://www.weather.com.cn/weather/101290701.shtml");
+    allCitys.insert(("楚雄"),"http://www.weather.com.cn/weather/101290801.shtml");
+    allCitys.insert(("普洱"),"http://www.weather.com.cn/weather/101290901.shtml");
+    allCitys.insert(("昭通"),"http://www.weather.com.cn/weather/101291001.shtml");
+    allCitys.insert(("临沧"),"http://www.weather.com.cn/weather/101291101.shtml");
+    allCitys.insert(("怒江"),"http://www.weather.com.cn/weather/101291201.shtml");
+    allCitys.insert(("迪庆"),"http://www.weather.com.cn/weather/101291301.shtml");
+    allCitys.insert(("丽江"),"http://www.weather.com.cn/weather/101291401.shtml");
+    allCitys.insert(("德宏"),"http://www.weather.com.cn/weather/101291501.shtml");
+    allCitys.insert(("西双版纳"),"http://www.weather.com.cn/weather/101291601.shtml");
+    allCitys.insert(("福州"),"http://www.weather.com.cn/weather/101230101.shtml");
+    allCitys.insert(("厦门"),"http://www.weather.com.cn/weather/101230201.shtml");
+    allCitys.insert(("宁德"),"http://www.weather.com.cn/weather/101230301.shtml");
+    allCitys.insert(("莆田"),"http://www.weather.com.cn/weather/101230401.shtml");
+    allCitys.insert(("泉州"),"http://www.weather.com.cn/weather/101230501.shtml");
+    allCitys.insert(("漳州"),"http://www.weather.com.cn/weather/101230601.shtml");
+    allCitys.insert(("龙岩"),"http://www.weather.com.cn/weather/101230701.shtml");
+    allCitys.insert(("三明"),"http://www.weather.com.cn/weather/101230801.shtml");
+    allCitys.insert(("南平"),"http://www.weather.com.cn/weather/101230901.shtml");
+    allCitys.insert(("钓鱼岛"),"http://www.weather.com.cn/weather/101231001.shtml");
+    allCitys.insert(("香港"),"http://www.weather.com.cn/weather/101320101.shtml");
+    allCitys.insert(("兰州"),"http://www.weather.com.cn/weather/101160101.shtml");
+    allCitys.insert(("定西"),"http://www.weather.com.cn/weather/101160201.shtml");
+    allCitys.insert(("平凉"),"http://www.weather.com.cn/weather/101160301.shtml");
+    allCitys.insert(("庆阳"),"http://www.weather.com.cn/weather/101160401.shtml");
+    allCitys.insert(("武威"),"http://www.weather.com.cn/weather/101160501.shtml");
+    allCitys.insert(("金昌"),"http://www.weather.com.cn/weather/101160601.shtml");
+    allCitys.insert(("张掖"),"http://www.weather.com.cn/weather/101160701.shtml");
+    allCitys.insert(("酒泉"),"http://www.weather.com.cn/weather/101160801.shtml");
+    allCitys.insert(("天水"),"http://www.weather.com.cn/weather/101160901.shtml");
+    allCitys.insert(("陇南"),"http://www.weather.com.cn/weather/101161001.shtml");
+    allCitys.insert(("临夏"),"http://www.weather.com.cn/weather/101161101.shtml");
+    allCitys.insert(("甘南"),"http://www.weather.com.cn/weather/101161201.shtml");
+    allCitys.insert(("白银"),"http://www.weather.com.cn/weather/101161301.shtml");
+    allCitys.insert(("嘉峪关"),"http://www.weather.com.cn/weather/101161401.shtml");
+    allCitys.insert(("台北"),"http://www.weather.com.cn/weather/101340101.shtml");
+    allCitys.insert(("高雄"),"http://www.weather.com.cn/weather/101340201.shtml");
+    allCitys.insert(("台中"),"http://www.weather.com.cn/weather/101340401.shtml");
+    allCitys.insert(("乌鲁木齐"),"http://www.weather.com.cn/weather/101130101.shtml");
+    allCitys.insert(("克拉玛依"),"http://www.weather.com.cn/weather/101130201.shtml");
+    allCitys.insert(("石河子"),"http://www.weather.com.cn/weather/101130301.shtml");
+    allCitys.insert(("昌吉"),"http://www.weather.com.cn/weather/101130401.shtml");
+    allCitys.insert(("吐鲁番"),"http://www.weather.com.cn/weather/101130501.shtml");
+    allCitys.insert(("巴音郭楞"),"http://www.weather.com.cn/weather/101130601.shtml");
+    allCitys.insert(("阿拉尔"),"http://www.weather.com.cn/weather/101130701.shtml");
+    allCitys.insert(("阿克苏"),"http://www.weather.com.cn/weather/101130801.shtml");
+    allCitys.insert(("喀什"),"http://www.weather.com.cn/weather/101130901.shtml");
+    allCitys.insert(("伊犁"),"http://www.weather.com.cn/weather/101131001.shtml");
+    allCitys.insert(("塔城"),"http://www.weather.com.cn/weather/101131101.shtml");
+    allCitys.insert(("哈密"),"http://www.weather.com.cn/weather/101131201.shtml");
+    allCitys.insert(("和田"),"http://www.weather.com.cn/weather/101131301.shtml");
+    allCitys.insert(("阿勒泰"),"http://www.weather.com.cn/weather/101131401.shtml");
+    allCitys.insert(("克州"),"http://www.weather.com.cn/weather/101131501.shtml");
+    allCitys.insert(("博尔塔拉"),"http://www.weather.com.cn/weather/101131601.shtml");
+    allCitys.insert(("图木舒克"),"http://www.weather.com.cn/weather/101131701.shtml");
+    allCitys.insert(("五家渠"),"http://www.weather.com.cn/weather/101131801.shtml");
+    allCitys.insert(("铁门关"),"http://www.weather.com.cn/weather/101131901.shtml");
+    allCitys.insert(("北屯"),"http://www.weather.com.cn/weather/101132101.shtml");
+    allCitys.insert(("双河"),"http://www.weather.com.cn/weather/101132201.shtml");
+    allCitys.insert(("可克达拉"),"http://www.weather.com.cn/weather/101132301.shtml");
+    allCitys.insert(("南宁"),"http://www.weather.com.cn/weather/101300101.shtml");
+    allCitys.insert(("崇左"),"http://www.weather.com.cn/weather/101300201.shtml");
+    allCitys.insert(("柳州"),"http://www.weather.com.cn/weather/101300301.shtml");
+    allCitys.insert(("来宾"),"http://www.weather.com.cn/weather/101300401.shtml");
+    allCitys.insert(("桂林"),"http://www.weather.com.cn/weather/101300501.shtml");
+    allCitys.insert(("梧州"),"http://www.weather.com.cn/weather/101300601.shtml");
+    allCitys.insert(("贺州"),"http://www.weather.com.cn/weather/101300701.shtml");
+    allCitys.insert(("贵港"),"http://www.weather.com.cn/weather/101300801.shtml");
+    allCitys.insert(("玉林"),"http://www.weather.com.cn/weather/101300901.shtml");
+    allCitys.insert(("百色"),"http://www.weather.com.cn/weather/101301001.shtml");
+    allCitys.insert(("钦州"),"http://www.weather.com.cn/weather/101301101.shtml");
+    allCitys.insert(("河池"),"http://www.weather.com.cn/weather/101301201.shtml");
+    allCitys.insert(("北海"),"http://www.weather.com.cn/weather/101301301.shtml");
+    allCitys.insert(("防城港"),"http://www.weather.com.cn/weather/101301401.shtml");
+    allCitys.insert(("澳门"),"http://www.weather.com.cn/weather/101330101.shtml");
+    allCitys.insert(("广州"),"http://www.weather.com.cn/weather/101280101.shtml");
+    allCitys.insert(("韶关"),"http://www.weather.com.cn/weather/101280201.shtml");
+    allCitys.insert(("惠州"),"http://www.weather.com.cn/weather/101280301.shtml");
+    allCitys.insert(("梅州"),"http://www.weather.com.cn/weather/101280401.shtml");
+    allCitys.insert(("汕头"),"http://www.weather.com.cn/weather/101280501.shtml");
+    allCitys.insert(("深圳"),"http://www.weather.com.cn/weather/101280601.shtml");
+    allCitys.insert(("珠海"),"http://www.weather.com.cn/weather/101280701.shtml");
+    allCitys.insert(("佛山"),"http://www.weather.com.cn/weather/101280800.shtml");
+    allCitys.insert(("肇庆"),"http://www.weather.com.cn/weather/101280901.shtml");
+    allCitys.insert(("湛江"),"http://www.weather.com.cn/weather/101281001.shtml");
+    allCitys.insert(("江门"),"http://www.weather.com.cn/weather/101281101.shtml");
+    allCitys.insert(("河源"),"http://www.weather.com.cn/weather/101281201.shtml");
+    allCitys.insert(("清远"),"http://www.weather.com.cn/weather/101281301.shtml");
+    allCitys.insert(("云浮"),"http://www.weather.com.cn/weather/101281401.shtml");
+    allCitys.insert(("潮州"),"http://www.weather.com.cn/weather/101281501.shtml");
+    allCitys.insert(("东莞"),"http://www.weather.com.cn/weather/101281601.shtml");
+    allCitys.insert(("中山"),"http://www.weather.com.cn/weather/101281701.shtml");
+    allCitys.insert(("阳江"),"http://www.weather.com.cn/weather/101281801.shtml");
+    allCitys.insert(("揭阳"),"http://www.weather.com.cn/weather/101281901.shtml");
+    allCitys.insert(("茂名"),"http://www.weather.com.cn/weather/101282001.shtml");
+    allCitys.insert(("汕尾"),"http://www.weather.com.cn/weather/101282101.shtml");
+    allCitys.insert(("海口"),"http://www.weather.com.cn/weather/101310101.shtml");
+    allCitys.insert(("三亚"),"http://www.weather.com.cn/weather/101310201.shtml");
+    allCitys.insert(("东方"),"http://www.weather.com.cn/weather/101310202.shtml");
+    allCitys.insert(("临高"),"http://www.weather.com.cn/weather/101310203.shtml");
+    allCitys.insert(("澄迈"),"http://www.weather.com.cn/weather/101310204.shtml");
+    allCitys.insert(("儋州"),"http://www.weather.com.cn/weather/101310205.shtml");
+    allCitys.insert(("昌江"),"http://www.weather.com.cn/weather/101310206.shtml");
+    allCitys.insert(("白沙"),"http://www.weather.com.cn/weather/101310207.shtml");
+    allCitys.insert(("琼中"),"http://www.weather.com.cn/weather/101310208.shtml");
+    allCitys.insert(("定安"),"http://www.weather.com.cn/weather/101310209.shtml");
+    allCitys.insert(("屯昌"),"http://www.weather.com.cn/weather/101310210.shtml");
+    allCitys.insert(("琼海"),"http://www.weather.com.cn/weather/101310211.shtml");
+    allCitys.insert(("文昌"),"http://www.weather.com.cn/weather/101310212.shtml");
+    allCitys.insert(("保亭"),"http://www.weather.com.cn/weather/101310214.shtml");
+    allCitys.insert(("万宁"),"http://www.weather.com.cn/weather/101310215.shtml");
+    allCitys.insert(("陵水"),"http://www.weather.com.cn/weather/101310216.shtml");
+    allCitys.insert(("乐东"),"http://www.weather.com.cn/weather/101310221.shtml");
+    allCitys.insert(("五指山"),"http://www.weather.com.cn/weather/101310222.shtml");
+    allCitys.insert(("西沙"),"http://www.weather.com.cn/weather/101310302.shtml");
+    allCitys.insert(("中沙"),"http://www.weather.com.cn/weather/101310303.shtml");
+    allCitys.insert(("南沙"),"http://www.weather.com.cn/weather/101310304.shtml");
+    allCitys.insert(("沈阳"),"http://www.weather.com.cn/weather/101070101.shtml");
+    allCitys.insert(("大连"),"http://www.weather.com.cn/weather/101070201.shtml");
+    allCitys.insert(("鞍山"),"http://www.weather.com.cn/weather/101070301.shtml");
+    allCitys.insert(("抚顺"),"http://www.weather.com.cn/weather/101070401.shtml");
+    allCitys.insert(("本溪"),"http://www.weather.com.cn/weather/101070501.shtml");
+    allCitys.insert(("丹东"),"http://www.weather.com.cn/weather/101070601.shtml");
+    allCitys.insert(("锦州"),"http://www.weather.com.cn/weather/101070701.shtml");
+    allCitys.insert(("营口"),"http://www.weather.com.cn/weather/101070801.shtml");
+    allCitys.insert(("阜新"),"http://www.weather.com.cn/weather/101070901.shtml");
+    allCitys.insert(("辽阳"),"http://www.weather.com.cn/weather/101071001.shtml");
+    allCitys.insert(("铁岭"),"http://www.weather.com.cn/weather/101071101.shtml");
+    allCitys.insert(("朝阳"),"http://www.weather.com.cn/weather/101071201.shtml");
+    allCitys.insert(("盘锦"),"http://www.weather.com.cn/weather/101071301.shtml");
+    allCitys.insert(("葫芦岛"),"http://www.weather.com.cn/weather/101071401.shtml");
+    allCitys.insert(("成都"),"http://www.weather.com.cn/weather/101270101.shtml");
+    allCitys.insert(("攀枝花"),"http://www.weather.com.cn/weather/101270201.shtml");
+    allCitys.insert(("自贡"),"http://www.weather.com.cn/weather/101270301.shtml");
+    allCitys.insert(("绵阳"),"http://www.weather.com.cn/weather/101270401.shtml");
+    allCitys.insert(("南充"),"http://www.weather.com.cn/weather/101270501.shtml");
+    allCitys.insert(("达州"),"http://www.weather.com.cn/weather/101270601.shtml");
+    allCitys.insert(("遂宁"),"http://www.weather.com.cn/weather/101270701.shtml");
+    allCitys.insert(("广安"),"http://www.weather.com.cn/weather/101270801.shtml");
+    allCitys.insert(("巴中"),"http://www.weather.com.cn/weather/101270901.shtml");
+    allCitys.insert(("泸州"),"http://www.weather.com.cn/weather/101271001.shtml");
+    allCitys.insert(("宜宾"),"http://www.weather.com.cn/weather/101271101.shtml");
+    allCitys.insert(("内江"),"http://www.weather.com.cn/weather/101271201.shtml");
+    allCitys.insert(("资阳"),"http://www.weather.com.cn/weather/101271301.shtml");
+    allCitys.insert(("乐山"),"http://www.weather.com.cn/weather/101271401.shtml");
+    allCitys.insert(("眉山"),"http://www.weather.com.cn/weather/101271501.shtml");
+    allCitys.insert(("凉山"),"http://www.weather.com.cn/weather/101271601.shtml");
+    allCitys.insert(("雅安"),"http://www.weather.com.cn/weather/101271701.shtml");
+    allCitys.insert(("甘孜"),"http://www.weather.com.cn/weather/101271801.shtml");
+    allCitys.insert(("阿坝"),"http://www.weather.com.cn/weather/101271901.shtml");
+    allCitys.insert(("德阳"),"http://www.weather.com.cn/weather/101272001.shtml");
+    allCitys.insert(("广元"),"http://www.weather.com.cn/weather/101272101.shtml");
+    allCitys.insert(("哈尔滨"),"http://www.weather.com.cn/weather/101050101.shtml");
+    allCitys.insert(("齐齐哈尔"),"http://www.weather.com.cn/weather/101050201.shtml");
+    allCitys.insert(("牡丹江"),"http://www.weather.com.cn/weather/101050301.shtml");
+    allCitys.insert(("佳木斯"),"http://www.weather.com.cn/weather/101050401.shtml");
+    allCitys.insert(("绥化"),"http://www.weather.com.cn/weather/101050501.shtml");
+    allCitys.insert(("黑河"),"http://www.weather.com.cn/weather/101050601.shtml");
+    allCitys.insert(("大兴安岭"),"http://www.weather.com.cn/weather/101050701.shtml");
+    allCitys.insert(("伊春"),"http://www.weather.com.cn/weather/101050801.shtml");
+    allCitys.insert(("大庆"),"http://www.weather.com.cn/weather/101050901.shtml");
+    allCitys.insert(("七台河"),"http://www.weather.com.cn/weather/101051001.shtml");
+    allCitys.insert(("鸡西"),"http://www.weather.com.cn/weather/101051101.shtml");
+    allCitys.insert(("鹤岗"),"http://www.weather.com.cn/weather/101051201.shtml");
+    allCitys.insert(("双鸭山"),"http://www.weather.com.cn/weather/101051301.shtml");
+    allCitys.insert(("长春"),"http://www.weather.com.cn/weather/101060101.shtml");
+    allCitys.insert((" 吉林"),"http://www.weather.com.cn/weather/101060201.shtml");
+    allCitys.insert(("延边"),"http://www.weather.com.cn/weather/101060301.shtml");
+    allCitys.insert(("四平"),"http://www.weather.com.cn/weather/101060401.shtml");
+    allCitys.insert(("通化"),"http://www.weather.com.cn/weather/101060501.shtml");
+    allCitys.insert(("白城"),"http://www.weather.com.cn/weather/101060601.shtml");
+    allCitys.insert(("辽源"),"http://www.weather.com.cn/weather/101060701.shtml");
+    allCitys.insert(("松原"),"http://www.weather.com.cn/weather/101060801.shtml");
+    allCitys.insert(("白山"),"http://www.weather.com.cn/weather/101060901.shtml");
+    allCitys.insert(("南昌"),"http://www.weather.com.cn/weather/101240101.shtml");
+    allCitys.insert(("九江"),"http://www.weather.com.cn/weather/101240201.shtml");
+    allCitys.insert(("上饶 "),"http://www.weather.com.cn/weather/101240301.shtml");
+    allCitys.insert(("抚州 "),"http://www.weather.com.cn/weather/101240401.shtml");
+    allCitys.insert(("宜春"),"http://www.weather.com.cn/weather/101240501.shtml");
+    allCitys.insert(("吉安"),"http://www.weather.com.cn/weather/101240601.shtml");
+    allCitys.insert(("赣州"),"http://www.weather.com.cn/weather/101240701.shtml");
+    allCitys.insert(("景德镇"),"http://www.weather.com.cn/weather/101240801.shtml");
+    allCitys.insert(("萍乡"),"http://www.weather.com.cn/weather/101240901.shtml");
+    allCitys.insert(("新余"),"http://www.weather.com.cn/weather/101241001.shtml");
+    allCitys.insert(("鹰潭"),"http://www.weather.com.cn/weather/101241101.shtml");
 }

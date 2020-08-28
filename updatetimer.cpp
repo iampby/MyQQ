@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "UpdateTimer.h"
 #include<qdebug.h>
 #include<qtimer.h>
@@ -12,7 +15,7 @@
 UpdateTimer::UpdateTimer(QObject *parent)
     :QObject(parent)
 {
-    size=0;r_type=NoType;number=QString();
+    size=0;r_type=NoType;number=QString();isReceiving=false;
     //父类对象管理子类对象的内存
     t=new QThread(this);
     timer=new QTimer(this);
@@ -20,15 +23,38 @@ UpdateTimer::UpdateTimer(QObject *parent)
     loop=new QEventLoop(this);
     moveToThread(t);
     t->start();
-    connect(timer,&QTimer::timeout,timer,[=](){
-        size=0;
-        number="";
-        startTcpScoket();
-    });
+    connect(timer,&QTimer::timeout,this,&UpdateTimer::immediateGet);
     connect(tcpsocket,&QTcpSocket::bytesWritten,loop,&QEventLoop::quit);
     connect(tcpsocket,&QTcpSocket::connected,this,&UpdateTimer::writeInstruct);
     connect(tcpsocket,&QTcpSocket::readyRead,this,&UpdateTimer::readD);
-    connect(tcpsocket,&QTcpSocket::disconnected,[=](){qDebug()<<"disconnection";});
+   //连接失败
+    connect(tcpsocket,QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),this,[=](QAbstractSocket::SocketError code){
+        switch (code) {
+        case QAbstractSocket::ConnectionRefusedError:
+            qDebug()<<"The connection was refused by the peer (or timed out).";
+            break;
+        case QAbstractSocket::RemoteHostClosedError:
+            qDebug()<<"The remote host closed the connection.";
+            break;
+        case QAbstractSocket::HostNotFoundError:
+            qDebug()<<"The host address was not found.";
+            break;
+        case QAbstractSocket::SocketAccessError:
+            qDebug()<<"The socket operation failed because the application lacked the required privileges.";
+            break;
+        case QAbstractSocket::NetworkError:
+            qDebug()<<"network error.";
+            break;
+        case    QAbstractSocket::UnknownSocketError:
+            qDebug()<<"An unidentified error occurred.";
+            break;
+        }
+        isReceiving=false;//重置
+    });
+    //断开连接
+    connect(tcpsocket,&QTcpSocket::disconnected,this,[=](){
+        isReceiving=false;//重置
+    });
     connect(this,&UpdateTimer::emitResult,this,[=](){
         tcpsocket->disconnectFromHost();
         qDebug()<<"tcpsocket->disconnectFromHost()";
@@ -42,6 +68,8 @@ UpdateTimer::UpdateTimer(QObject *parent)
         qDebug()<<":startTimer";
         start();
     },Qt::BlockingQueuedConnection);
+    //立即更新
+    connect(this,&UpdateTimer::update,this,&UpdateTimer::immediateGet);
 }
 
 UpdateTimer::~UpdateTimer()
@@ -57,13 +85,19 @@ void UpdateTimer::setMyqq(const QString &arg)
 void UpdateTimer::stop()
 {
     timer->stop();
-    if(t->isRunning())t->quit();
+    if(t->isRunning()){
+        t->requestInterruption();
+       t->exit();
+       t->quit();
+        t->wait();
+    }
+    isReceiving=false;
     qDebug()<<"update timer is stoped";
 }
 
 void UpdateTimer::start()
 {
-    timer->start();
+    timer->start();//注意定时器开启和结束线程要一致
     if(!t->isRunning())t->start();
     qDebug()<<"timer->start()";
 }
@@ -86,6 +120,17 @@ void UpdateTimer::setIp(const QString &arg)
 void UpdateTimer::setPort(const quint16 &arg)
 {
     port=arg;
+}
+
+void UpdateTimer::immediateGet()
+{
+    if(isReceiving){//如果上一次的没完就直接返回
+     return;
+    }
+    isReceiving=true;
+     size=0;
+     number="";
+     startTcpScoket();
 }
 
 void UpdateTimer::splitSignatureAndName(QByteArray &data)
@@ -138,8 +183,28 @@ void UpdateTimer::makePixmap(const QByteArray &data)
     else qDebug()<<"warning:number is empty";
 }
 
+void UpdateTimer::handleStatus(const QByteArray &bytes)
+{
+    qDebug()<<"in the proccess of  status data";
+    QJsonDocument json=QJsonDocument::fromJson(bytes);
+    if(json.isObject()){
+     QJsonObject obj=json.object();
+     if(obj.isEmpty()){
+         qDebug()<<"status object is empty";
+         return;
+     }
+     statusMap=obj.toVariantMap();
+    }
+}
+
 void UpdateTimer::writeInstruct()
 {
+    if(t->isInterruptionRequested()){
+        t->exit(0);
+        t->quit();
+        t->wait();
+        return;
+    }
     qDebug()<<"UpdateTimer:writeInstruct()";
     QJsonDocument json;
     QJsonObject obj;
@@ -155,6 +220,13 @@ void UpdateTimer::writeInstruct()
 
 void UpdateTimer::readD()
 {
+    //检查中断操作操作
+    if(t->isInterruptionRequested()){
+        t->exit(0);
+        t->quit();
+        t->wait();
+        return;
+    }
     while (tcpsocket->bytesAvailable()>0&&tcpsocket->bytesAvailable()>=size) {
         if(size==0){
             QByteArray data=tcpsocket->read(1);
@@ -190,6 +262,13 @@ void UpdateTimer::readD()
                 if(size==0)qDebug()<<"warning:toInt() is 0";
                 r_type=SignatureAndName;
                 continue;
+                //更新好友状态
+            }else if(content=="status"){
+                qDebug()<<"status:";
+                size=obj.value("size").toInt();
+                if(size==0)qDebug()<<"warning:toInt() is 0";
+                r_type=Status;
+                continue;
             }else if(content=="end"){
                 QString ok=obj.value("result").toString();
                 if(ok=="true"){
@@ -213,6 +292,12 @@ void UpdateTimer::readD()
             //个性签名处理和昵称
         case SignatureAndName:
             splitSignatureAndName(data);
+            size=0;
+            number="";
+            r_type=NoType;
+            break;
+        case Status:
+            handleStatus(data);
             size=0;
             number="";
             r_type=NoType;
