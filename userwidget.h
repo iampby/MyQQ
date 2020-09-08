@@ -12,6 +12,7 @@ class UserWidget : public QWidget
     Q_OBJECT
 public:
     explicit UserWidget(QWidget *parent = nullptr);
+    ~UserWidget();
 void setPixmap(const QPixmap &img);
 void setPrimitivePixmap(QPixmap *img);
 void setName(const QString&name);

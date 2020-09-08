@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "userwidget.h"
 #include"label.h"
 #include <qbitmap.h>
@@ -10,10 +13,11 @@
 UserWidget::UserWidget(QWidget *parent) : QWidget(parent)
 {
     resize(190,80);
+    primitivePixmap=nullptr;
     m_index=QModelIndex();
     pixLabel=new Label(this);
     pixLabel->resize(60,60);
-pixLabel->move(0,10);
+    pixLabel->move(0,10);
     pixLabel->setStyleSheet(QString("QLabel{\
                                     border:0px;\
                             border-radius:%1px;\
@@ -45,7 +49,7 @@ font: 10pt \"Adobe 仿宋 Std R\";\
 addBtn=new QPushButton(this);
 addBtn->resize(52,20);
 addBtn->move(74,50);
-addBtn->setText(QStringLiteral("＋好友"));
+addBtn->setText(("＋好友"));
 addBtn->setStyleSheet("QPushButton{\
                       color:white;\
 background-color: #8fc0e7;\
@@ -59,7 +63,14 @@ pixLabel->installEventFilter(this);
 connect(pixLabel,&Label::clicked,this,[=](){ emit imgClicked();});//点击信号
 connect(nameBtn,&QPushButton::clicked,this,[=](){emit nameClicked();});
 connect(addBtn,&QPushButton::clicked,this,[=](){emit addButtonClicked();});
+}
 
+UserWidget::~UserWidget()
+{
+    qDebug()<<"~UserWidget()";
+    if(primitivePixmap){
+        delete primitivePixmap,primitivePixmap=nullptr;//释放内存
+    }
 }
 
 
@@ -81,8 +92,8 @@ void UserWidget::setName(const QString &name)
     QFontMetrics f=nameBtn->fontMetrics();
     QString str=name;
     if(f.boundingRect(name).width()>=nameBtn->width()){
-    str=f.elidedText(name,Qt::ElideRight,nameBtn->width()-f.boundingRect("...").width());
-    str.replace(str.length()-3,3,"...");
+        str=f.elidedText(name,Qt::ElideRight,nameBtn->width()-f.boundingRect("...").width());
+        str.replace(str.length()-3,3,"...");
     }
     nameBtn->setText(str);
 }
@@ -97,14 +108,15 @@ void UserWidget::setAgeAndCountry(const QString&ageAndCountry)
 
 void UserWidget::setAgeAndCountry( QPixmap &img)
 {
-
     QPixmap mask(img.size());
-    QPainter p(&mask);
+    QPainter p;
+    p.begin(&mask);
     p.setRenderHints(QPainter::Antialiasing|QPainter::SmoothPixmapTransform);
     p.fillRect(0,0,img.width(),img.height(),QColor(255,255,255));
     p.setBrush(QColor(0,0,0));
     p.drawRoundedRect(0,0,img.width(),img.height(),img.width()/2,img.height()/2);
     img.setMask(mask);
+   p.end();
     ageAndCountryLabel->setPixmap(img);
 }
 
@@ -120,23 +132,28 @@ void UserWidget::setIndex(const QModelIndex &index)
 
 QPixmap *UserWidget::pixmapToRound(QPixmap*img) const
 {
-    QPainter p(img);
-    QRect rect=QRect(0,0,img->width(),img->height());
-    p.setRenderHints(QPainter::Antialiasing|QPainter::SmoothPixmapTransform);
-    QPainterPath path;
-    path.addRoundedRect(rect,100,100,Qt::RelativeSize);
-    p.setClipPath(path);
-    p.drawPixmap(0,0,rect.width(),rect.height(),*img);
+    QBitmap mask(QSize( img->width(),img->height()));
+    QPainter painter;
+    painter.begin(&mask);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+    painter.fillRect(QRect(0, 0, img->width(), img->height()), Qt::white);
+    painter.setBrush(QColor(0, 0, 0));
+    painter.drawRoundedRect(QRect(0, 0, img->width(), img->height()), 100, 100,Qt::RelativeSize);
+   img->setMask(mask);
+   painter.end();
     return img;
 }
 
 QPixmap &UserWidget::drawRoundOnPixmap(QPixmap &img) const
 {
-    QPainter p(&img);
+    QPainter p;
+    p.begin(&img);
     QPen pen=p.pen();
     p.setPen(QPen(QColor(62, 156, 234),2));
     p.drawRoundedRect(QRect(0,0,img.width(),img.height()),100,100,Qt::RelativeSize);
     p.setPen(pen);
+    p.end();
     return img;
 }
 

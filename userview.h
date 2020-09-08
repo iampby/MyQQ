@@ -31,11 +31,11 @@ public slots:
     void nextButtonClicked();
     void oneButtonClicked();
     void twoButtonClicked();
-
+void removeItem(const int&r,const int&c);//ÒÆ³ýÒ»¸öÏî
 signals:
-    void imgClicked(const QString&);
-    void nameClicked(const QString&);
-    void addButtonClicked(const QModelIndex&);
+    void imgClicked(const QString);
+    void nameClicked(const QString);
+    void addButtonClicked(const QModelIndex);
     void continueGetList();
 private:
     QList<UserWidget*>list;

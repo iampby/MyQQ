@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "userview.h"
 #include<qpushbutton.h>
 #include<qlayout.h>
@@ -79,11 +82,11 @@ buttonFrame=new QFrame;
 buttonFrame->resize(this->width(),50);
 buttonFrame->hide();
 lastBtn=new QPushButton(buttonFrame);
-lastBtn->setText(QStringLiteral("上一页"));
+lastBtn->setText(("上一页"));
 lastBtn->setStyleSheet(m_pageSheet);
 lastBtn->resize(62,25);
 nextBtn=new QPushButton(buttonFrame);
-nextBtn->setText(QStringLiteral("下一页"));
+nextBtn->setText(("下一页"));
 nextBtn->setStyleSheet(m_pageSheet);
 nextBtn->resize(62,25);
 oneBtn=new QPushButton(buttonFrame);
@@ -156,7 +159,7 @@ void UserView::setModel(FindUserModel *m)
     const int sum=m->sum();
     if(sum>120)//列表控制在2页之内 即120个
         return;
-  if(model)model->clear();
+    if(model)model->clear();
     model=m;
     int c=model->columnCount(),r=model->rowCount();
     qDebug()<<"start circulation";
@@ -170,7 +173,7 @@ void UserView::setModel(FindUserModel *m)
             QImage img=QImage::fromData(model->data(index,FindUserModel::HeadImgRole).toByteArray(),"png");
             QPixmap* pix=new QPixmap();
             *pix=QPixmap::fromImage(img);
-            w->setPrimitivePixmap(pix);
+            w->setPrimitivePixmap(pix);//w持有图片内存权
             w->setName(model->data(index,FindUserModel::NameRole).toString());
             w->setIndex(index);
             QString country=model->data(index,FindUserModel::AgeRole).toString();
@@ -179,7 +182,7 @@ void UserView::setModel(FindUserModel *m)
                 QPixmap temp= QPixmap(":/images/person.png","png");
                 w->setAgeAndCountry(temp);
             }
-            else  w->setAgeAndCountry(country+QStringLiteral("| ")+province);
+            else  w->setAgeAndCountry(country+("| ")+province);
             list.append(w);
             w->hide();
             if(count<fullFirstPageCount){
@@ -189,12 +192,15 @@ void UserView::setModel(FindUserModel *m)
             QString myqq=model->data(index,FindUserModel::MyqqRole).toString();
             count++;
             connect(w,&UserWidget::imgClicked,this,[=](){
-
+                qDebug()<<"imgClicked:\nmyqq="<<myqq;
+                emit  imgClicked(myqq);
             });
             connect(w,&UserWidget::nameClicked,this,[=](){
+                qDebug()<<"nameClicked:\nmyqq="<<myqq;
                 emit nameClicked(myqq);
             });
             connect(w,&UserWidget::addButtonClicked,this,[=](){
+                qDebug()<<"addButtonClicked:\nmyqq="<<myqq;
                 emit addButtonClicked(index);
             });
         }
@@ -204,6 +210,7 @@ void UserView::setModel(FindUserModel *m)
     connect(model,QOverload<const int &, const int &, const int &>::of(&FindUserModel::insert),this,&UserView::inserted);//连接插入信号
     connect(model,&QAbstractItemModel::modelReset,this,&UserView::reset);//连接重设信号到视图
     connect(model,&FindUserModel::dataChanged,this,&UserView::dataChanged);//连接数据变化信号到视图
+    connect(model,&FindUserModel::removeItem,this,&UserView::removeItem);//连接数据变化信号到视图
 }
 
 
@@ -252,16 +259,16 @@ void UserView::wheelEvent(QWheelEvent *wheel)
 void UserView::clearLayoutElements()
 {
     int c=model->columnCount();
-if(page==0){
-    for(int i=0;i<c*15;i++){
-        list.at(i)->setVisible(false);
+    if(page==0){
+        for(int i=0;i<c*15;i++){
+            list.at(i)->setVisible(false);
+        }
+    }else{
+        int count=list.count();
+        for(int i=15*c;i<count;i++){
+            list.at(i)->setVisible(false);
+        }
     }
-}else{
-    int count=list.count();
-    for(int i=15*c;i<count;i++){
-        list.at(i)->setVisible(false);
-    }
-}
 }
 
 
@@ -294,7 +301,6 @@ void UserView::inserted(const int &row, const int &column, const int&count)
     for(int i=realIndex;i<sum;i++){
         list.at(i)->hide();//隐藏控件
     }
-    qDebug()<<"inserted "<<row<<column;
     for(int i=0;i<count;i++){
         int cr,cc;
         cc=column+i;
@@ -307,7 +313,7 @@ void UserView::inserted(const int &row, const int &column, const int&count)
         QImage img=QImage::fromData(model->data(index,FindUserModel::HeadImgRole).toByteArray(),"png");
         QPixmap* pix=new QPixmap();
         *pix=QPixmap::fromImage(img);
-        w->setPrimitivePixmap(pix);
+        w->setPrimitivePixmap(pix);//w持有图片内存权
         w->setName(model->data(index,FindUserModel::NameRole).toString());
         QString country=model->data(index,FindUserModel::AgeRole).toString();
         QString province= model->data(index,FindUserModel::FirstLevelRegionRole).toString();
@@ -315,16 +321,29 @@ void UserView::inserted(const int &row, const int &column, const int&count)
             QPixmap temp= QPixmap(":/images/person.png","png");
             w->setAgeAndCountry(temp);
         }
-        else  w->setAgeAndCountry(country+QStringLiteral("| ")+province);
+        else  w->setAgeAndCountry(country+("| ")+province);
         list.insert(realIndex+i,w);
+        QString myqq=model->data(index,FindUserModel::MyqqRole).toString();
+        connect(w,&UserWidget::imgClicked,this,[=](){
+            qDebug()<<"imgClicked:\nmyqq="<<myqq;
+            emit  imgClicked(myqq);
+        });
+        connect(w,&UserWidget::nameClicked,this,[=](){
+            qDebug()<<"nameClicked:\nmyqq="<<myqq;
+            emit nameClicked(myqq);
+        });
+        connect(w,&UserWidget::addButtonClicked,this,[=](){
+            qDebug()<<"addButtonClicked:\nmyqq="<<myqq<<index;
+            emit addButtonClicked(index);
+        });
     }
     QModelIndex index=model->lastItemIndex();
     int r=index.row();
     qint32 sliderValue=0;
     if(row<15){
         if(list.count()==15*c){
-           sliderValue= adjustFrameSize(r+1,true);
-           canContinue=0;
+            sliderValue= adjustFrameSize(r+1,true);
+            canContinue=0;
         }else
             sliderValue=adjustFrameSize(r+1);
         qDebug()<<sliderValue<<sliderMaxValue;
@@ -342,12 +361,12 @@ void UserView::inserted(const int &row, const int &column, const int&count)
     }else{
         if(list.count()==30*c){
             canContinue=0;
-           sliderValue= adjustFrameSize(r-14,true);
+            sliderValue= adjustFrameSize(r-14,true);
         }else {
             if(canContinue==0)
-               sliderValue= adjustFrameSize(r-14,true);
+                sliderValue= adjustFrameSize(r-14,true);
             else
-               sliderValue= adjustFrameSize(r-14);
+                sliderValue= adjustFrameSize(r-14);
         }
         for(int i=row;i<r;i++)
             for(int j=0;j<c;j++){
@@ -364,7 +383,6 @@ void UserView::inserted(const int &row, const int &column, const int&count)
     }
     if(canContinue==-1)
         canContinue=1;
-    qDebug()<<"can?="<<canContinue;
 }
 
 void UserView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
@@ -383,11 +401,11 @@ void UserView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottom
                     w->setPixmap(pix);
                     break;
                 case FindUserModel::AgeRole:
-                    w->setAgeAndCountry(model->data(index,FindUserModel::AgeRole).toString()+QStringLiteral("| ")+
+                    w->setAgeAndCountry(model->data(index,FindUserModel::AgeRole).toString()+("| ")+
                                         model->data(index,FindUserModel::FirstLevelRegionRole).toString());
                     break;
                 case FindUserModel::FirstLevelRegionRole:
-                    w->setAgeAndCountry(model->data(index,FindUserModel::AgeRole).toString()+QStringLiteral("| ")+
+                    w->setAgeAndCountry(model->data(index,FindUserModel::AgeRole).toString()+("| ")+
                                         model->data(index,FindUserModel::FirstLevelRegionRole).toString());
                     break;
                 case FindUserModel::NameRole:
@@ -422,8 +440,8 @@ qint32 UserView::adjustFrameSize(const qint32&row,const bool &b)
         }
     }
     sliderMaxValue=frame->height()-this->height();//默认的滚动栏滑块最大值为当前控件大小-滚动区域大小
-   frame->move(0,0);//移动到0，抵消非自发移动对frame的影响影响
-   return last;
+    frame->move(0,0);//移动到0，抵消非自发移动对frame的影响影响
+    return last;
 }
 
 void UserView::setVerticalSpacing(const qint32 &spacing)
@@ -455,7 +473,7 @@ void UserView::lastButtonClicked()
     adjustFrameSize(r,true);//调整大小和显示按钮
     for (int i=0;i<r;i++)
         for(int j=0;j<c;j++){
-          list.at(i*c+j)->show();
+            list.at(i*c+j)->show();
         }
     verticalScrollBar()->setValue(0);
 }
@@ -518,6 +536,57 @@ void UserView::twoButtonClicked()
     }else{//当前页
         twoBtn->setChecked(!b);
         verticalScrollBar()->setValue(0);
+    }
+}
+
+void UserView::removeItem(const int &r, const int &c)
+{
+    int count=model->columnCount();
+    UserWidget*rw= list.takeAt(r*count+c);//删除指定项
+    rw->hide();
+    rw->deleteLater();
+    int pos=r*count+c;
+
+    if(pos>=60){//第二页数据
+        if(lastBtn->isVisible()){//第二页
+            count=list.length();
+            for (int var = pos; var <count; ++var) {
+                UserWidget*w=list.at(var);
+                QModelIndex ti=model->index(var-60);
+                int i=ti.row(),j=ti.column();
+                w->move(12+i*(w->width()+horizotalSpacing),10+j*(w->height()+verticalSpacing));
+                w->show();
+            }
+            //调整
+            QModelIndex index=model->lastItemIndex();
+            int r=index.row();
+            qint32 sliderValue=0;
+            sliderValue= adjustFrameSize(r-14,true);//调整时按钮显示
+
+            return;
+        }else{
+            return;
+        }
+    }else{
+        if(list.size()<60||nextBtn->isVisible()){
+            count=list.length();
+            if(count>=60)count=60;//限制为第一页
+            for (int var = pos; var <count; ++var) {
+                UserWidget*w=list.at(var);
+                QModelIndex ti=model->index(var);
+                int i=ti.row(),j=ti.column();
+                w->move(12+i*(w->width()+horizotalSpacing),10+j*(w->height()+verticalSpacing));
+                w->show();
+            }
+            QModelIndex index=model->lastItemIndex();
+            int r=index.row();
+            if(r>=15)r=14;//一页最大显示15行
+            qint32 sliderValue=0;
+                if(list.count()>=15*c){
+                    sliderValue= adjustFrameSize(r+1,true);
+                }else
+                    sliderValue=adjustFrameSize(r+1);
+        }
     }
 }
 

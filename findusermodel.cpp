@@ -1,12 +1,16 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "findusermodel.h"
 #include<qdebug.h>
+#include<iostream>
 //FindUserData class
 FindUserData::FindUserData(const QString &myqq, const QString& name, const QByteArray &headimg, const QString &age,
                            const QString &sex, const QString &location1, const QString &location2,
-                           const QString &location3, const QString &location4)
+                           const QString &location3, const QString &location4, const QString &signature)
 {
     m_myqq=myqq,m_name=name,m_headimg=headimg,m_age=age,m_sex=sex,m_location1=location1;
-    m_location2=location2,m_location3=location3,m_location4=location4;
+    m_location2=location2,m_location3=location3,m_location4=location4;m_signature=signature;
 }
 
 QString FindUserData::myqq() const
@@ -54,6 +58,11 @@ QString FindUserData::location4() const
     return m_location4;
 }
 
+QString FindUserData::signature() const
+{
+    return m_signature;
+}
+
 void FindUserData::setMyqq(const QString &arg)
 {
     m_myqq=arg;
@@ -99,6 +108,11 @@ void FindUserData::setLocation4(const QString &arg)
     m_location4=arg;
 }
 
+void FindUserData::setSignature(const QString &arg)
+{
+    m_signature=arg;
+}
+
 
 
 //FindUserModel class count of column default to four
@@ -123,6 +137,17 @@ QModelIndex FindUserModel::index(int row, int column, const QModelIndex &parent)
 {
     Q_UNUSED(parent);
     return this->createIndex(row,column,(void*)this);
+}
+
+QModelIndex FindUserModel::index(const int& row)
+{
+    if(row<0||row>=datalist.size())return QModelIndex();
+    int r=0,c=0;
+    r=row/columnCount();
+    if(row%columnCount()==0)c=0;
+    else c=row%columnCount();
+    QModelIndex index=this->createIndex(r,c);
+    return index;
 }
 
 int FindUserModel::rowCount(const QModelIndex &parent) const
@@ -174,7 +199,10 @@ QVariant FindUserModel::data(const QModelIndex &index, int role) const
         return QVariant(datalist.at(realIndex)->location3());
     case FourthLevelRegionRole:
         return QVariant(datalist.at(realIndex)->location4());
+    case SignatureRole:
+        return QVariant(datalist.at(realIndex)->signature());
     default:
+        qDebug()<<"model return QVariant()";
         return QVariant();
     }
 }
@@ -205,9 +233,9 @@ void FindUserModel::insert(int row,  int column,  QList<FindUserData*> &value)
     }
     int realIndex=row*m_column+column;
     for(int i=value.count()-1;i>=0;i--){
-        datalist.insert(realIndex,value.at(i));
+        datalist.insert(realIndex,value[i]);
     }
-    insert(row,column,value.count());//发射一个自定义信号提示已插入信息
+   emit  insert(row,column,value.count());//发射一个自定义信号提示已插入信息
 }
 
 void FindUserModel::insert(int row, int column, FindUserData *value)
@@ -231,6 +259,13 @@ void FindUserModel::insert(int row, int column, FindUserData *value)
     int realIndex=row*m_column+column;
     datalist.insert(realIndex,value);
     insert(row,column,1);//发射一个自定义信号提示已插入信息
+}
+
+void FindUserModel::removeItemOf(const int&row)
+{
+  QModelIndex tm=index(row);
+  datalist.removeAt(row);
+  emit removeItem(tm.row(),tm.column());
 }
 
 bool FindUserModel::setData(const QModelIndex &index, const QVariant &value, int role)
@@ -277,9 +312,25 @@ bool FindUserModel::setData(const QModelIndex &index, const QVariant &value, int
         item->setLocation4(value.toString());
         emit dataChanged(index,index,roles);//发射信号提示改变数据，定位索引index，角色role
         return true;
+    case SignatureRole:
+        item->setSignature(value.toString());
+        emit dataChanged(index,index,roles);//发射信号提示改变数据，定位索引index，角色role
+        return true;
     default:
         return false;
     }
+}
+
+int FindUserModel::rowOf(const QString &myqq) const
+{
+    int length=datalist.length();
+    for (int var = 0; var < length; ++var) {
+        FindUserData*item=datalist.at(var);
+        if(item->myqq()==myqq){
+            return var;
+        }
+    }
+    return -1;
 }
 
 void FindUserModel::clear()
@@ -308,3 +359,14 @@ int  FindUserModel::sum() const
     return datalist.count();
 }
 
+void FindUserModel::showAll() const
+{
+    for (FindUserData*v : datalist) {
+        qDebug()<<"myqq="<<v->myqq();
+        qDebug()<<"name="<<v->name();
+        qDebug()<<"sex="<<v->sex();
+        qDebug()<<"age="<<v->age();
+        qDebug()<<"two="<<v->location2();
+        qDebug()<<"three="<<v->location3();
+    }
+}

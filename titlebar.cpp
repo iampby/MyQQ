@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "titlebar.h"
 #include<QMainWindow>
 #include<qlayout.h>
@@ -29,7 +32,7 @@ winTitle->setStyleSheet("QLabel{\
 }");
 winTitle->setPalette(winTitlePalette);
 winTitle->setAutoFillBackground(true);
-winTitle->setText(QStringLiteral("查找"));
+winTitle->setText(("查找"));
 winIconLabel->move(5,0);
 winTitle->move(15+winIconLabel->width(),0);
 //标题栏右边布局
@@ -38,14 +41,14 @@ minBtn->resize(30,30);
 minBtn->setStyleSheet("QPushButton{border-image:url(:/images/minimum.png);}"
                       "QPushButton:hover{background-color:rgb(38,169,224);}");
 minBtn->move(766,0);
-minBtn->setToolTip(QStringLiteral("最小化"));
+minBtn->setToolTip(("最小化"));
 
 closeBtn=new QPushButton(this);
 closeBtn->resize(30,30);
 closeBtn->setStyleSheet("QPushButton{border-image:url(:/images/close.png);}"
                         "QPushButton:hover{background-color:rgb(212,64,39);}");
 closeBtn->move(796,0);
-closeBtn->setToolTip(QStringLiteral("关 闭"));
+closeBtn->setToolTip(("关 闭"));
 connect(minBtn,SIGNAL(clicked()),this,SLOT(forwardSiganlForMinBtn()));
 connect(closeBtn,SIGNAL(clicked()),this,SLOT(forwardSiganlForCloseBtn()));
 }

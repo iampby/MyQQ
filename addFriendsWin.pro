@@ -5,7 +5,7 @@
 #-------------------------------------------------
 RC_FILE=appinfo_resource.rc
 CONFIG += resources_big
-QT       += core gui \
+QT       += core gui sql \
     quick network
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -26,10 +26,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+    addfriendswidget.cpp \
     combobox.cpp \
     findusermodel.cpp \
         main.cpp \
         mainwindow.cpp \
+    movedwidget.cpp \
     placemodel.cpp \
     subcombobox.cpp \
     tcpsocket.cpp \
@@ -40,9 +42,11 @@ SOURCES += \
     userwidget.cpp
 
 HEADERS += \
+    addfriendswidget.h \
     combobox.h \
     findusermodel.h \
         mainwindow.h \
+    movedwidget.h \
     placemodel.h \
     subcombobox.h \
     tcpsocket.h \
@@ -65,5 +69,4 @@ RESOURCES += \
     images.qrc
 
 DISTFILES += \
-    build-addFriendsWin-Desktop_Qt_5_12_8_MSVC2017_64bit-Debug/debug/appInfo.res \
-    images/person.png
+    build-addFriendsWin-Desktop_Qt_5_12_8_MSVC2017_64bit-Debug/debug/appInfo.res

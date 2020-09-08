@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include"userview.h"
@@ -14,27 +17,37 @@
 #include <qlistwidget.h>
 #include<qtimer.h>
 #include<qsocketnotifier.h>
+#include <qsqldatabase.h>
+#include<qfileinfo.h>
+#include <qsqlquery.h>
+#include<iostream>
+#include <qdir.h>
 using namespace std ;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    socket=nullptr;
     qDebug()<<"addFriendsWin.exe would is execuated";
     setWindowFlags(Qt::FramelessWindowHint|Qt::Window);
     this->setAttribute(Qt::WA_TranslucentBackground);//设置透明背景
     TcpSocket::setBeginId("0");
-    where=QStringLiteral("不限");
-    hometown=QStringLiteral("不限");
-    sex=QStringLiteral("");
+    where=("不限");
+    hometown=("不限");
+    sex=("");
     host="127.0.0.1",port=5567;
+isSeach=true;//默认为是点击搜索标志
+
     ui->userListStackWindget->setCurrentIndex(0);
     userView=new UserView(ui->userListStackWindget->currentWidget());
-    userModel=new FindUserModel(this);
+    userModel=new FindUserModel(this);//自动释放
     userView->setModel(userModel);
-    connect(userView,&UserView::continueGetList,this,&MainWindow::continueAddFriendsList);
-    myqq="10010";
+    connect(userView,&UserView::continueGetList,this,&MainWindow::continueAddFriendsList);//不满20继续添加
+    connect(userView,&UserView::addButtonClicked,this,QOverload<const QModelIndex>::of(&MainWindow::showAddFriend));//添加好友界面
+    connect(userView,&UserView::imgClicked,this,&MainWindow::openPersonalData);//查看资料界面
+    connect(userView,&UserView::nameClicked,this,&MainWindow::openPersonalData);//查看资料界面
+    myqq="10001";
     hasSeachCBoxShow=false;
     isNeedDisabled1=false;
     isNeedDisabled2=false;
@@ -47,7 +60,7 @@ MainWindow::MainWindow(QWidget *parent) :
     shadow->setBlurRadius(5);
     ui->frame->setGraphicsEffect(shadow);
 
-    setWindowTitle(QStringLiteral("查找"));
+    setWindowTitle(("查找"));
     setWindowIcon(QIcon(":./MyQQ.ico"));
     titlebar=new titleBar(ui->bodyWidget);//标题栏
     connect(titlebar,SIGNAL(minBtnClicked()),this,SLOT(minBtnClicked()));
@@ -55,18 +68,18 @@ MainWindow::MainWindow(QWidget *parent) :
 
     findPersonBtn=new FindBtn(ui->frame1);
     findPersonBtn->setChecked(true);
-    findPersonBtn->setText(QStringLiteral("找人"));
+    findPersonBtn->setText(("找人"));
     findPersonBtn->move(320,0);
     findGroupBtn=new FindBtn(ui->frame1);
     findGroupBtn->setChecked(false);
-    findGroupBtn->setText(QStringLiteral("找群"));
+    findGroupBtn->setText(("找群"));
     findGroupBtn->move(434,0);
     ui->cityPop1->setVisible(false);//所在地城市控件集不可见
     ui->cityPop2->setVisible(false);//故乡城市控件集不可见
-    ui->whereCBox->setText(QStringLiteral("所在地：不限"));
-    ui->hometownCBox->setText(QStringLiteral("故乡：不限"));
-    ui->whereCBox->lineEdit()->setPlaceholderText(QStringLiteral("所在地"));
-    ui->hometownCBox->lineEdit()->setPlaceholderText(QStringLiteral("故乡"));
+    ui->whereCBox->setText(("所在地：不限"));
+    ui->hometownCBox->setText(("故乡：不限"));
+    ui->whereCBox->lineEdit()->setPlaceholderText(("所在地"));
+    ui->hometownCBox->lineEdit()->setPlaceholderText(("故乡"));
     QApplication::instance()->installEventFilter(this);//过滤所有事件
     connect(findGroupBtn,SIGNAL(clicked(bool)),this,SLOT(showGroupPage()));
     connect(findPersonBtn,SIGNAL(clicked(bool)),this,SLOT(showPersonPage()));
@@ -82,23 +95,24 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->hometownCBox,SIGNAL(emitHidePopup()),this,SLOT(hometownCBoxHidePopup()));
 
     connect(ui->returnLabel,SIGNAL(clicked()),this,SLOT(returnLabelClicked()));
-    //tcpsocket
-    socket=new TcpSocket(this);
-    TcpSocket::setMyqq(this->myqq);
-    QJsonObject obj;
-    obj.insert("instruct",QJsonValue("3"));
-    obj.insert("content",QJsonValue("city-data"));
-    socket->setInstruct(obj);
-    socket->connectToHost(host,port);//连接登录的服务器
-    connect(socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(connectFailed(QAbstractSocket::SocketError)));
-    connect(socket,SIGNAL(failed()),this,SLOT(deleteToSock()));
-    connect(socket,SIGNAL(getCityModel()),this,SLOT(initCityModel()));
+
+    //城市数据加载
+    initCityModel();
+    TcpSocket::setMyqq(myqq);
+
+
 
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+
+    for (AddFriendsWidget* w:listWidget) {
+        w->close();//关闭
+    }
+    listWidget.clear();
+    qDebug()<<"~MainWindow()";
 }
 
 void MainWindow::setMyQQInfo(const QJsonDocument &json)
@@ -106,16 +120,23 @@ void MainWindow::setMyQQInfo(const QJsonDocument &json)
 
     QJsonObject obj=json.object();
     if(obj.isEmpty()||!json.isObject()){
-        qDebug()<<" parameter  not passed about user's information. ";
+        qDebug()<<"adding friends process parameter  not passed about user's information. ";
         return;
     }
     myqq=obj.value("myqq").toString();
     sex=obj.value("sex").toString();
-    where=obj.value(QStringLiteral("所在地")).toString();
-    hometown=obj.value(QStringLiteral("故乡")).toString();
-    if(where.isEmpty())where=QStringLiteral("不限");
-    if(hometown.isEmpty())hometown=QStringLiteral("不限");
-    ui->textBrowser->setText(myqq+"\n"+sex+"\n"+where+"\n"+hometown);
+    where=obj.value(("所在地")).toString();
+    hometown=obj.value(("故乡")).toString();
+    if(where.isEmpty())where=("不限");
+    if(hometown.isEmpty())hometown=("不限");
+    //管道设置 用于主进程通信
+    localSocket=new QLocalSocket(this);
+    connect(localSocket,&QLocalSocket::readyRead,this,&MainWindow::readFromMainProcess);
+    connect(localSocket, QOverload<QLocalSocket::LocalSocketError>::of(&QLocalSocket::error),this,[=](QLocalSocket::LocalSocketError err){
+        cerr<<"local socket occured a error!error code is "<<err;
+    });
+    //连接本地server
+    localSocket->connectToServer("localserver"+myqq,QIODevice::ReadOnly);
 }
 
 
@@ -377,26 +398,26 @@ QComboBox::down-arrow:on { /* shift the arrow when popup is open */\
 {
     switch (code) {
     case QAbstractSocket::ConnectionRefusedError:
-        qDebug()<<QStringLiteral("连接被拒接或超时！")<<endl;
+        qDebug()<<("连接被拒接或超时！")<<endl;
         break;
     case QAbstractSocket::RemoteHostClosedError:
-        qDebug()<<QStringLiteral("远程主机已关闭！")<<endl;
+        qDebug()<<("远程主机已关闭！")<<endl;
         break;
     case QAbstractSocket::HostNotFoundError:
-        qDebug()<<QStringLiteral("主机没有发现！")<<endl;
+        qDebug()<<("主机没有发现！")<<endl;
         break;
     case QAbstractSocket::UnknownSocketError:
-        qDebug()<<QStringLiteral("未知错误！")<<endl;
+        qDebug()<<("未知错误！")<<endl;
         break;
     default:
-        qDebug()<<QStringLiteral("出现了错误！")<<endl;
+        qDebug()<<("出现了错误！")<<endl;
     }
     QMessageBox* mes=new QMessageBox(this);
     //mes->resize(800,800);
-    mes->setText(QStringLiteral("              请重新打开                 "));
-    mes->setWindowTitle(QStringLiteral("连接失败"));
+    mes->setText(("              请重新打开                 "));
+    mes->setWindowTitle(("连接失败"));
     QPushButton*btn=new QPushButton;
-    btn->setText(QStringLiteral("确认"));
+    btn->setText(("确认"));
     mes->addButton(btn,QMessageBox::AcceptRole);
     mes->exec();
     connect(mes,&QMessageBox::finished,btn,&QPushButton::deleteLater);
@@ -405,6 +426,19 @@ QComboBox::down-arrow:on { /* shift the arrow when popup is open */\
 
 void MainWindow::initCityModel()
 {
+
+    QSqlDatabase db=QSqlDatabase::addDatabase("QSQLITE","city_data");
+    db.setDatabaseName("../city.db");
+    db.setHostName("MyQQ");
+    db.setUserName("sa");
+    db.setPassword("@123456x");
+    if(db.open())
+        qDebug()<<("打开数据库成功！");
+    else {
+        qDebug()<<("打开数据库失败！");
+        return;
+    }
+    QSqlQuery query2(db);
     PlaceModel* countryModel1=new PlaceModel();
     PlaceModel* countryModel2=new PlaceModel();
     PlaceModel* provinceModel1=new PlaceModel();
@@ -413,48 +447,64 @@ void MainWindow::initCityModel()
     PlaceModel* cityModel2=new PlaceModel();
     PlaceModel* countyModel1=new PlaceModel();
     PlaceModel* countyModel2=new PlaceModel();
-    QStringList list=socket->cityData.split(";;",QString::SkipEmptyParts);
-    QStringList list1=list.at(0).split(";",QString::SkipEmptyParts);
-    for(int i=0;i<list1.length();i++){
-        QStringList listSub=list1.at(i).split(" ",QString::SkipEmptyParts);
-        if(listSub.length()==1){
-            listSub<<QStringLiteral("不限");
-        };
-        countryModel1->append(listSub.at(0).toLongLong(),listSub.at(1));
-        countryModel2->append(listSub.at(0).toLongLong(),listSub.at(1));
+
+    qDebug()<<"open:"<<db.connectionName()<<db.databaseName();
+    if(!query2.exec(" begin transaction ")){
+        qDebug()<<"begin transaction is of failure";
     }
-    QStringList list2=list.at(1).split(";",QString::SkipEmptyParts);
-    for(int i=0;i<list2.length();i++){
-        QStringList listSub=list2.at(i).split(" ",QString::SkipEmptyParts);
-        if(listSub.length()==2){
-            QStringList temp;
-            temp<<"0"<<QStringLiteral("不限")<<"0";
-            listSub=temp;
-        }
-        provinceModel1->append(listSub.at(0).toLongLong(),listSub.at(1),listSub.at(2).toLongLong());
-        provinceModel2->append(listSub.at(0).toLongLong(),listSub.at(1),listSub.at(2).toLongLong());
+    if(!query2.exec(" select*from country ")){
+        qDebug()<<"warning:city.db is not found";
     }
-    QStringList list3=list.at(2).split(";",QString::SkipEmptyParts);
-    for(int i=0;i<list3.length();i++){
-        QStringList listSub=list3.at(i).split(" ",QString::SkipEmptyParts);
-        if(listSub.length()==2){
-            QStringList temp;
-            temp<<"0"<<QStringLiteral("不限")<<"0";
-            listSub=temp;
-        }
-        cityModel1->append(listSub.at(0).toLongLong(),listSub.at(1),listSub.at(2).toLongLong());
-        cityModel2->append(listSub.at(0).toLongLong(),listSub.at(1),listSub.at(2).toLongLong());
+    query2.next();
+    while (query2.isValid()) {
+        qint32 id=query2.value("id").toLongLong();
+        QString name=query2.value("name").toString();
+        if(name.isEmpty())name=("不限");
+        countryModel1->append(id,name);
+        countryModel2->append(id,name);
+        query2.next();
     }
-    QStringList list4=list.at(3).split(";",QString::SkipEmptyParts);
-    for(int i=0;i<list4.length();i++){
-        QStringList listSub=list4.at(i).split(" ",QString::SkipEmptyParts);
-        if(listSub.length()==2){
-            QStringList temp;
-            temp<<"0"<<QStringLiteral("不限")<<"0";
-            listSub=temp;
-        }
-        countyModel1->append(listSub.at(0).toLongLong(),listSub.at(1),listSub.at(2).toLongLong());
-        countyModel2->append(listSub.at(0).toLongLong(),listSub.at(1),listSub.at(2).toLongLong());
+    if(!query2.exec(" select*from province ")){
+        qDebug()<<"warning:province table is not found";
+    }
+    query2.next();
+    while (query2.isValid()) {
+        qint32 id=query2.value("id").toLongLong();
+        QString name=query2.value("name").toString();
+        qint32 fid=query2.value("belongCountryId").toLongLong();
+        if(name.isEmpty())name=("不限");
+        provinceModel1->append(id,name,fid);
+        provinceModel2->append(id,name,fid);
+        query2.next();
+    }
+    if(!query2.exec(" select*from city ")){
+        qDebug()<<"warning:city table is not found";
+    }
+    query2.next();
+    while (query2.isValid()) {
+        qint32 id=query2.value("id").toLongLong();
+        QString name=query2.value("name").toString();
+        qint32 fid=query2.value("belongProvinceId").toLongLong();
+        if(name.isEmpty())name=("不限");
+        cityModel1->append(id,name,fid);
+        cityModel2->append(id,name,fid);
+        query2.next();
+    }
+    if(!query2.exec(" select*from county ")){
+        qDebug()<<"warning:county table is not found";
+    }
+    query2.next();
+    while (query2.isValid()) {
+        qint32 id=query2.value("id").toLongLong();
+        QString name=query2.value("name").toString();
+        qint32 fid=query2.value("belongCityId").toLongLong();
+        if(name.isEmpty())name=("不限");
+        countyModel1->append(id,name,fid);
+        countyModel2->append(id,name,fid);
+        query2.next();
+    }
+    if(!query2.exec(" end transaction ")){
+        qDebug()<<"end transaction is of failure";
     }
 
     qDebug()<<"initCityModel function is viaed";
@@ -479,7 +529,6 @@ void MainWindow::initCityModel()
     ui->hometownSub2->setStyleSheet(SubComboBox::DisabledRole);
     ui->hometownSub3->setStyleSheet(SubComboBox::DisabledRole);
     ui->hometownSub4->setStyleSheet(SubComboBox::DisabledRole);
-    deleteToSock();
 }
 
 void MainWindow::deleteToSock()
@@ -495,7 +544,8 @@ void MainWindow::getAddFriendsList()
 {
     QJsonDocument& doc=socket->jsonDoc;
     QJsonArray array=  doc.array();
-    QList<FindUserData*>list;
+    if(isSeach){
+    QList<FindUserData* >list;
     for (QJsonValue v : array) {
         QJsonObject obj=v.toObject();
         if(obj.isEmpty()){
@@ -508,7 +558,8 @@ void MainWindow::getAddFriendsList()
             file.read(img.data(),file.size());
             FindUserData*data=new FindUserData(QString("%1").arg(obj.value("myqq").toVariant().toLongLong()),obj.value("myqqName").toString(),
                                                img,obj.value("age").toString(),obj.value("sex").toString(),obj.value("location1").toString(),
-                                               obj.value("location2").toString(),obj.value("location3").toString(),obj.value("location4").toString());
+                                               obj.value("location2").toString(),obj.value("location3").toString(),obj.value("location4").toString(),
+                                               obj.value("signature").toString());
             list.append(data);
             file.close();
         }else
@@ -521,6 +572,7 @@ void MainWindow::getAddFriendsList()
     if(list.count()==20)userView->setCanContinue(true);//可以继续获取list
     else userView->setCanContinue(false);//没有东西可以继续获得
     userModel->insert(index.row(),index.column(),list);
+    list.clear();//清空list
     qDebug()<<"start setmodel"<<TcpSocket::beginId()<<userModel->sum();
     ui->userListStackWindget->setCurrentIndex(0);
     socket->disconnectFromHost();//断开连接
@@ -528,6 +580,16 @@ void MainWindow::getAddFriendsList()
     if(userModel->sum()==0){//最后判断搜索是否为空
         ui->userListStackWindget->setCurrentIndex(2);//提示什么都没有搜到
     }
+    }else{
+       if(array.size()>0){
+          QJsonObject obj=array.at(0).toObject();
+          if(!obj.isEmpty()){
+              showAddFriend(obj);
+          }
+       }
+    }
+ isSeach=true;//重置标记
+ userModel->index(1);
 }
 
 void MainWindow::continueAddFriendsList()
@@ -541,11 +603,258 @@ void MainWindow::continueAddFriendsList()
     socket->connectToHost(host,port);
 }
 
+void MainWindow::showAddFriend(const QModelIndex index)
+{
+    qDebug()<<"showAddFriend";
+    QString temp=  userModel->data(index,FindUserModel::MyqqRole).toString();
+    qint32 length=listWidget.length();
+    for (int var = 0; var < length; ++var) {
+        AddFriendsWidget*tempW=listWidget.at(var);
+        if(tempW->myqq==temp){
+            tempW->show();
+            tempW->raise();
+            tempW->activateWindow();
+            return;
+        }
+    }
+
+    AddFriendsWidget*w=new AddFriendsWidget;//自动中间位
+    listWidget.append(w);
+    w->myqq=temp;
+    temp=userModel->data(index,FindUserModel::NameRole).toString();
+    w->name=temp;
+    temp=userModel->data(index,FindUserModel::SexRole).toString();
+    w->sex=temp;
+    temp=userModel->data(index,FindUserModel::AgeRole).toString();
+    w->age=temp;
+    temp=userModel->data(index,FindUserModel::SecondLevelRegionRole).toString()+" "+userModel->data(index,FindUserModel::ThirdLevelRegionRole).toString();
+    w->location=temp;
+    QByteArray pix=userModel->data(index,FindUserModel::HeadImgRole).toByteArray();
+    w->pixData=pix;
+    temp=userModel->data(index,FindUserModel::SignatureRole).toString();
+    w->signature=temp;
+    w->show();
+    w->inint(myqq);
+    connect(w,&AddFriendsWidget::emitClosed,this,[=]()mutable{
+        qDebug()<<"close a widget";
+        qint32 length=listWidget.length();
+        for (int var = 0; var < length; ++var) {
+            AddFriendsWidget*tempW=listWidget.at(var);
+            if(tempW->myqq==w->myqq){
+               listWidget.removeAt(var);
+                break;
+            }
+        }
+        w->deleteLater();
+        w=nullptr;
+    },Qt::QueuedConnection);//队列连接 等关闭事件处理完成
+    connect(w,&AddFriendsWidget::emitVerifyInfo,this,&MainWindow::addFriend);
+    //connect(w,&AddFriendsWidget::listMainProcess,this,&MainWindow::addFriend);
+}
+//当主进程点击添加好友时获取数据打开添加界面
+void MainWindow::showAddFriend(const QJsonObject&obj){
+
+    QFile file("./images/"+QString("%1").arg(obj.value("myqq").toVariant().toLongLong())+".png");
+    if(file.open(QIODevice::ReadOnly)){
+        QByteArray img;img.resize(file.size());
+        file.read(img.data(),file.size());
+
+    QString temp= QString("%1").arg(obj.value("myqq").toVariant().toLongLong());
+    qint32 length=listWidget.length();
+    //再次检测有没有打开添加界面
+    for (int var = 0; var < length; ++var) {
+        AddFriendsWidget*tempW=listWidget.at(var);
+        if(tempW->myqq==temp){
+            tempW->show();
+            tempW->raise();
+            tempW->activateWindow();
+            return;
+        }
+    }
+    AddFriendsWidget*w=new AddFriendsWidget;//自动中间位
+    listWidget.append(w);
+    w->myqq=temp;
+    temp=obj.value("myqqName").toString();
+    w->name=temp;
+    temp=obj.value("sex").toString();
+    w->sex=temp;
+    temp=obj.value("age").toString();
+    w->age=temp;
+    temp=obj.value("location2").toString()+" "+obj.value("location3").toString();
+    w->location=temp;
+    if(img.isEmpty()){
+        std::cerr<<"seached a friend's pixmap is empty";
+    }
+    w->pixData=img;
+    temp= obj.value("signature").toString();
+    w->signature=temp;
+    w->show();
+    w->inint(myqq);
+    connect(w,&AddFriendsWidget::emitClosed,this,[=]()mutable{
+        qDebug()<<"close a widget";
+        qint32 length=listWidget.length();
+        for (int var = 0; var < length; ++var) {
+            AddFriendsWidget*tempW=listWidget.at(var);
+            if(tempW->myqq==w->myqq){
+               listWidget.removeAt(var);
+                break;
+            }
+        }
+        w->deleteLater();
+        w=nullptr;
+    },Qt::QueuedConnection);//队列连接 等关闭事件处理完成
+    connect(w,&AddFriendsWidget::emitVerifyInfo,this,&MainWindow::addFriend);
+    }
+}
+void MainWindow::openPersonalData(const QString mq)
+{
+    int index=userModel->rowOf(mq);
+    if(index==-1)return;
+    QString sig=userModel->data(userModel->index(index),FindUserModel::SignatureRole).toString();
+    QString name=userModel->data(userModel->index(index),FindUserModel::NameRole).toString();
+    QByteArray pixData=userModel->data(userModel->index(index),FindUserModel::HeadImgRole).toByteArray();
+    if(pixData.isEmpty()){
+        std::cerr<<"pixmap is empty"<<endl;
+        return;
+    }
+    QTextStream out1(stdout);
+    QJsonDocument doc;
+    QJsonObject obj;
+    obj.insert("instruct",QJsonValue("open fwin"));//指令 代表要更新分组
+    obj.insert("number",QJsonValue(mq));
+    obj.insert("signature",QJsonValue(sig));
+    //由于图片太大了，不能一次接受，需要阻塞控制，所以直接传路径
+    QPixmap pix;
+    pix.loadFromData(pixData,"png");
+    QDir td("../head_images");
+    if(!td.exists())td.mkpath("./");
+    pix.save(td.filePath(mq),"png");
+    QFileInfo fi(td.filePath(mq));
+    obj.insert("pixmap",QJsonValue(fi.absoluteFilePath()));
+    obj.insert("name",QJsonValue(name));
+    doc.setObject(obj);
+    out1<<doc.toJson();//输出到主进程
+
+}
+
+void MainWindow::addFriend(QJsonDocument doc)
+{
+
+    QJsonObject obj=doc.object();
+    if(obj.isEmpty()){
+        cerr<<"sended verify information is lacked";
+        return;
+    }
+    obj.insert("instruct",QJsonValue("12"));//12 添加好友验证备份
+    obj.insert("content",QJsonValue("verifyInfo"));
+    obj.insert("myqq",QJsonValue(myqq));//自己的
+    doc=QJsonDocument();
+    doc.setObject(obj);
+    QByteArray data=doc.toBinaryData();
+    QTcpSocket *verifySock=new QTcpSocket(this);
+    QEventLoop* loop=new QEventLoop(verifySock);
+    connect(verifySock,&QTcpSocket::connected,[=](){
+        qDebug()<<"vrify information will be dipatched";
+        verifySock->write(data);
+        qDebug()<<"a loop exec";
+        loop->exec();
+        qDebug()<<"a loop exit";
+        verifySock->close();
+        verifySock->deleteLater();
+    });
+
+    connect(verifySock,&QTcpSocket::bytesWritten,loop,&QEventLoop::quit);
+    connect(verifySock,QOverload<QAbstractSocket::SocketError>::of(&QTcpSocket::error),verifySock,[=](QAbstractSocket::SocketError code){
+        switch (code) {
+        case QAbstractSocket::ConnectionRefusedError:
+            cerr<<"连接被拒接或超时！"<<endl;
+            break;
+        case QAbstractSocket::RemoteHostClosedError:
+            cerr<<"远程主机已关闭！"<<endl;
+            break;
+        case QAbstractSocket::HostNotFoundError:
+            cerr<<"主机没有发现！"<<endl;
+            break;
+        case QAbstractSocket::UnknownSocketError:
+            cerr<<"未知错误！"<<endl;
+            break;
+        default:
+            cerr<<"出现了错误！"<<endl;
+        }
+        verifySock->deleteLater();
+    });
+    verifySock->connectToHost(host,port);
+}
+
+void MainWindow::readFromMainProcess()
+{
+    QByteArray data=localSocket->readAll();//由于数据很小，所以保守估计可以直接一套接收
+    QJsonDocument json=QJsonDocument::fromJson(data);
+    if(json.isObject()){
+        QJsonObject obj=json.object();
+        QString in=obj.value("instruct").toString();
+        QString number=obj.value("number").toString();
+        if(number.isEmpty()){
+           cerr<<"parsing a number is not normal";
+           return;
+        }
+        if(in=="add friend"){
+            int row=userModel->rowOf(number);
+           //如果列表找到则打开
+            if(row!=-1){
+                QModelIndex index=userModel->index(row);
+
+                showAddFriend(index);
+            }else{//远程爬取数据打开添加界面
+               //先检测有没有打开添加窗口列表
+                qint32 length=listWidget.length();
+                for (int var = 0; var < length; ++var) {
+                    AddFriendsWidget*tempW=listWidget.at(var);
+                    if(tempW->myqq==number){
+                        tempW->show();
+                        tempW->raise();
+                        tempW->activateWindow();
+                        return;
+                    }
+                }
+                //获取数据 查找号码
+                isSeach=false;
+                mq=number;
+                this->on_findBtn_clicked();//搜索
+            }
+        } else if(in=="delete item"){
+            int row=userModel->rowOf(number);
+           //如果列表找到则打开
+            if(row!=-1){
+                QModelIndex index=userModel->index(row);
+             emit  userModel->removeItem(index.row(),index.column());//移除信号
+            }
+           //检测添加界面列表，删除匹配项
+            row=listWidget.size();
+            for (int var = 0; var < row; ++var) {
+                AddFriendsWidget*w=listWidget.at(var);
+                if(w->myqq==number){
+                    listWidget.removeAt(var);
+                    w->deleteLater();
+                    break;
+                }
+            }
+        }
+
+    }else{
+        cerr<<"receiveing a data it's not a json object";
+    }
+
+}
+
+
+
+
 
 
 void MainWindow::on_whereSub1_activated(const QString &arg1)
 {
-    if(arg1==QStringLiteral("不限")){
+    if(arg1==("不限")){
         ui->whereSub2->setCurrentIndex(0);
         ui->whereSub2->setDisabled(true);
         ui->whereSub3->setCurrentIndex(0);
@@ -555,7 +864,7 @@ void MainWindow::on_whereSub1_activated(const QString &arg1)
         ui->whereSub2->setStyleSheet(SubComboBox::DisabledRole);
         ui->whereSub3->setStyleSheet(SubComboBox::DisabledRole);
         ui->whereSub4->setStyleSheet(SubComboBox::DisabledRole);
-        ui->whereCBox->setText(QStringLiteral("所在地：")+ui->whereSub1->currentText());
+        ui->whereCBox->setText(("所在地：")+ui->whereSub1->currentText());
         isNeedDisabled1=false;
         return;
     }
@@ -572,13 +881,13 @@ void MainWindow::on_whereSub1_activated(const QString &arg1)
     ui->whereSub4->setDisabled(true);
     ui->whereSub3->setStyleSheet(SubComboBox::DisabledRole);
     ui->whereSub4->setStyleSheet(SubComboBox::DisabledRole);
-    ui->whereCBox->setText(QStringLiteral("所在地：")+ui->whereSub1->currentText());
+    ui->whereCBox->setText(("所在地：")+ui->whereSub1->currentText());
 }
 
 
 void MainWindow::on_whereSub2_activated(const QString &arg1)
 {
-    if(arg1==QStringLiteral("不限")){
+    if(arg1==("不限")){
         ui->whereSub3->setCurrentIndex(0);
         ui->whereSub3->setDisabled(true);
         ui->whereSub4->setCurrentIndex(0);
@@ -586,7 +895,7 @@ void MainWindow::on_whereSub2_activated(const QString &arg1)
         ui->whereSub3->setStyleSheet(SubComboBox::DisabledRole);
         ui->whereSub4->setStyleSheet(SubComboBox::DisabledRole);
         isNeedDisabled1=false;
-        ui->whereCBox->setText(QStringLiteral("所在地：")+ui->whereSub1->currentText());
+        ui->whereCBox->setText(("所在地：")+ui->whereSub1->currentText());
         return;
     }
     qint64 id=ui->whereSub2->currentData(PlaceModel::IdRole).toLongLong();
@@ -605,14 +914,14 @@ void MainWindow::on_whereSub2_activated(const QString &arg1)
     ui->whereSub4->setCurrentIndex(0);
     ui->whereSub4->setDisabled(true);
     ui->whereSub4->setStyleSheet(SubComboBox::DisabledRole);
-    ui->whereCBox->setText(QStringLiteral("所在地：")+ui->whereSub1->currentText()+","+
+    ui->whereCBox->setText(("所在地：")+ui->whereSub1->currentText()+","+
                            ui->whereSub2->currentText());
 }
 
 void MainWindow::on_whereSub3_activated(const QString &arg1)
 {
-    if(arg1==QStringLiteral("不限")){
-        ui->whereCBox->setText(QStringLiteral("所在地：")+ui->whereSub1->currentText()+","+
+    if(arg1==("不限")){
+        ui->whereCBox->setText(("所在地：")+ui->whereSub1->currentText()+","+
                                ui->whereSub2->currentText());
         if(isNeedDisabled1)return;
         ui->whereSub4->setCurrentIndex(0);
@@ -620,7 +929,7 @@ void MainWindow::on_whereSub3_activated(const QString &arg1)
         ui->whereSub4->setStyleSheet(SubComboBox::DisabledRole);
         return;
     }
-    ui->whereCBox->setText(QStringLiteral("所在地：")+ui->whereSub1->currentText()+","+
+    ui->whereCBox->setText(("所在地：")+ui->whereSub1->currentText()+","+
                            ui->whereSub2->currentText()+","+ui->whereSub3->currentText());
     if(isNeedDisabled1)return;
     qint64 id=ui->whereSub3->currentData(PlaceModel::IdRole).toLongLong();
@@ -632,14 +941,14 @@ void MainWindow::on_whereSub3_activated(const QString &arg1)
 }
 void MainWindow::on_whereSub4_activated(const QString &arg1)
 {
-    ui->whereCBox->setText(QStringLiteral("所在地：")+ui->whereSub1->currentText()+","+
+    ui->whereCBox->setText(("所在地：")+ui->whereSub1->currentText()+","+
                            ui->whereSub2->currentText()+","+ui->whereSub3->currentText()+
                            ","+arg1);
 }
 
 void MainWindow::on_hometownSub1_activated(const QString &arg1)
 {
-    if(arg1==QStringLiteral("不限")){
+    if(arg1==("不限")){
         ui->hometownSub2->setCurrentIndex(0);
         ui->hometownSub2->setDisabled(true);
         ui->hometownSub3->setCurrentIndex(0);
@@ -650,7 +959,7 @@ void MainWindow::on_hometownSub1_activated(const QString &arg1)
         ui->hometownSub3->setStyleSheet(SubComboBox::DisabledRole);
         ui->hometownSub4->setStyleSheet(SubComboBox::DisabledRole);
         isNeedDisabled2=false;
-        ui->hometownCBox->setText(QStringLiteral("故乡：")+ui->hometownSub1->currentText());
+        ui->hometownCBox->setText(("故乡：")+ui->hometownSub1->currentText());
         return;
     }
     qint64 id=ui->hometownSub1->currentData(PlaceModel::IdRole).toLongLong();
@@ -666,12 +975,12 @@ void MainWindow::on_hometownSub1_activated(const QString &arg1)
     ui->hometownSub4->setDisabled(true);
     ui->hometownSub3->setStyleSheet(SubComboBox::DisabledRole);
     ui->hometownSub4->setStyleSheet(SubComboBox::DisabledRole);
-    ui->hometownCBox->setText(QStringLiteral("故乡：")+ui->hometownSub1->currentText());
+    ui->hometownCBox->setText(("故乡：")+ui->hometownSub1->currentText());
 }
 
 void MainWindow::on_hometownSub2_activated(const QString &arg1)
 {
-    if(arg1==QStringLiteral("不限")){
+    if(arg1==("不限")){
         ui->hometownSub3->setCurrentIndex(0);
         ui->hometownSub3->setDisabled(true);
         ui->hometownSub4->setCurrentIndex(0);
@@ -679,10 +988,10 @@ void MainWindow::on_hometownSub2_activated(const QString &arg1)
         ui->hometownSub3->setStyleSheet(SubComboBox::DisabledRole);
         ui->hometownSub4->setStyleSheet(SubComboBox::DisabledRole);
         isNeedDisabled2=false;
-        ui->hometownCBox->setText(QStringLiteral("故乡：")+ui->hometownSub1->currentText());
+        ui->hometownCBox->setText(("故乡：")+ui->hometownSub1->currentText());
         return;
     }
-    ui->hometownCBox->setText(QStringLiteral("故乡：")+ui->hometownSub1->currentText()+","+
+    ui->hometownCBox->setText(("故乡：")+ui->hometownSub1->currentText()+","+
                               ui->hometownSub2->currentText());
     qint64 id=ui->hometownSub2->currentData(PlaceModel::IdRole).toLongLong();
     ui->hometownSub3->filterValue(QVariant(id),PlaceModel::FidRole);
@@ -705,8 +1014,8 @@ void MainWindow::on_hometownSub2_activated(const QString &arg1)
 void MainWindow::on_hometownSub3_activated(const QString &arg1)
 {
 
-    if(arg1==QStringLiteral("不限")){
-        ui->hometownCBox->setText(QStringLiteral("故乡：")+ui->hometownSub1->currentText()+","+
+    if(arg1==("不限")){
+        ui->hometownCBox->setText(("故乡：")+ui->hometownSub1->currentText()+","+
                                   ui->hometownSub2->currentText());
         if(isNeedDisabled2)return;
         ui->hometownSub4->setCurrentIndex(0);
@@ -714,7 +1023,7 @@ void MainWindow::on_hometownSub3_activated(const QString &arg1)
         ui->hometownSub4->setStyleSheet(SubComboBox::DisabledRole);
         return;
     }
-    ui->hometownCBox->setText(QStringLiteral("故乡：")+ui->hometownSub1->currentText()+","+
+    ui->hometownCBox->setText(("故乡：")+ui->hometownSub1->currentText()+","+
                               ui->hometownSub2->currentText()+","+ui->hometownSub3->currentText());
     if(isNeedDisabled2)return;
     qint64 id=ui->hometownSub3->currentData(PlaceModel::IdRole).toLongLong();
@@ -733,7 +1042,7 @@ void MainWindow::on_hometownSub3_activated(const QString &arg1)
 
 void MainWindow::on_hometownSub4_activated(const QString &arg1)
 {
-    ui->hometownCBox->setText(QStringLiteral("故乡：")+ui->hometownSub1->currentText()+","+
+    ui->hometownCBox->setText(("故乡：")+ui->hometownSub1->currentText()+","+
                               ui->hometownSub2->currentText()+","+ui->hometownSub3->currentText()+
                               ","+arg1);
 }
@@ -755,7 +1064,7 @@ void MainWindow::on_findBtn_clicked()
         delete socket,socket=nullptr;
     }
     userModel->clear();
-    QString str=QStringLiteral("搜索：");
+    QString str=("搜索：");
     QJsonObject instruct;
     QString edit=ui->findPersonEdit->text();
     if(!edit.isEmpty()){
@@ -767,19 +1076,23 @@ void MainWindow::on_findBtn_clicked()
     instruct.insert("content",QJsonValue("find-person"));
     instruct.insert("myqq",QJsonValue(this->myqq));
     instruct.insert("begin-id",QJsonValue(TcpSocket::beginId()));
+   if(isSeach){
     instruct.insert("name",QJsonValue(edit));
+   }else{//指定为指定号码
+      instruct.insert("name",QJsonValue(mq));
+   }
     instruct.insert("online",QJsonValue(ui->liveCBox->isChecked()));
     int sid=ui->sexCBox->currentIndex();
     if(sid!=0&&sid!=-1)
-        str.append(QStringLiteral(" | ")+ui->sexCBox->currentText());
+        str.append((" | ")+ui->sexCBox->currentText());
     instruct.insert("sex",QJsonValue(ui->sexCBox->currentText()));
-    str.append(QStringLiteral(" | ")+ui->whereCBox->text());//添加保存的选择文本组合
-    str.append(QStringLiteral(" | ")+ui->hometownCBox->text());
+    str.append((" | ")+ui->whereCBox->text());//添加保存的选择文本组合
+    str.append((" | ")+ui->hometownCBox->text());
     instruct.insert("location",QJsonValue(ui->whereCBox->text().right(ui->whereCBox->text().length()-4)));
     instruct.insert("hometown",QJsonValue(ui->hometownCBox->text().right(ui->hometownCBox->text().length()-3)));
     int aid=ui->ageCBox->currentIndex();
     if(aid!=0&&aid!=-1)
-        str.append(QStringLiteral(" | ")+ui->ageCBox->currentText());
+        str.append((" | ")+ui->ageCBox->currentText());
     instruct.insert("age",QJsonValue(ui->ageCBox->currentIndex()));
     ui->findPersonInfLabel->setText(str);
     qDebug()<<instruct;
@@ -788,35 +1101,35 @@ void MainWindow::on_findBtn_clicked()
     connect(socket,QOverload<QAbstractSocket::SocketError>::of(&TcpSocket::error),[=](QAbstractSocket::SocketError code){
         switch (code) {
         case QAbstractSocket::ConnectionRefusedError:
-            qDebug()<<QStringLiteral("连接被拒接或超时！")<<endl;
+            qDebug()<<("连接被拒接或超时！")<<endl;
             break;
         case QAbstractSocket::RemoteHostClosedError:
-            qDebug()<<QStringLiteral("远程主机已关闭！")<<endl;
+            qDebug()<<("远程主机已关闭！")<<endl;
             break;
         case QAbstractSocket::HostNotFoundError:
-            qDebug()<<QStringLiteral("主机没有发现！")<<endl;
+            qDebug()<<("主机没有发现！")<<endl;
             break;
         case QAbstractSocket::UnknownSocketError:
-            qDebug()<<QStringLiteral("未知错误！")<<endl;
+            qDebug()<<("未知错误！")<<endl;
             break;
         default:
-            qDebug()<<QStringLiteral("出现了错误！")<<endl;
+            qDebug()<<("出现了错误！")<<endl;
         }
         ui->userListStackWindget->setCurrentIndex(2);//提示没有搜索到
         deleteToSock();
+         isSeach=true;//重置标记
     });
     connect(socket,&TcpSocket::failed,[=](){
+        isSeach=true;//重置标记
         ui->userListStackWindget->setCurrentIndex(2);//提示没有搜索到
         deleteToSock();//删除指针
+        TcpSocket::setBeginId("10001");//如果失败，可能是id已经大于最大 重置
     });
     connect(socket,&TcpSocket::finished,this,&MainWindow::getAddFriendsList);//连接完成查找的槽
     socket->connectToHost(host,port);//连接登录的服务器
 }
 
-void MainWindow::on_comboBox_editTextChanged(const QString &arg1)
-{
-    TcpSocket::setBeginId(arg1);
-}
+
 //同城交友按钮：搜索所在地一致的用户
 void MainWindow::on_friendBtn_clicked()
 {
@@ -915,8 +1228,8 @@ void MainWindow::handleFriendButton()
             on_whereSub4_activated(list.at(3));
         }
     }
-    QString _1=QStringLiteral("男");
-    QString _2=QStringLiteral("女");
+    QString _1=("男");
+    QString _2=("女");
     if(_1==sex){
         ui->sexCBox->setCurrentIndex(2);
     } else if(_2==sex){

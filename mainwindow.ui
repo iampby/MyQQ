@@ -371,7 +371,7 @@
         </property>
         <property name="styleSheet">
          <string notr="true">QLineEdit{
-border:1px solid rgb(0,155,219);
+border:1px solid  rgb(0,155, 219);
 border-radius:5px
 }
 </string>
@@ -680,7 +680,9 @@ image:url(:/images/up-arrow.png)
         <property name="styleSheet">
          <string notr="true">QPushButton{
 color:white;
+padding:0 0 0 0;
   background-color:rgb(0, 155,219);
+
 border:0px;
 border-radius:3px
 }
@@ -750,8 +752,21 @@ background-image:url(:/images/findPersonInit.png);
           <property name="text">
            <string/>
           </property>
+          <property name="textFormat">
+           <enum>Qt::RichText</enum>
+          </property>
           <property name="wordWrap">
            <bool>false</bool>
+          </property>
+         </widget>
+         <widget class="QTextEdit" name="textEdit">
+          <property name="geometry">
+           <rect>
+            <x>-150</x>
+            <y>-150</y>
+            <width>104</width>
+            <height>71</height>
+           </rect>
           </property>
          </widget>
         </widget>
@@ -1811,29 +1826,6 @@ image:url(:/images/up-arrow.png)
          </property>
         </widget>
        </widget>
-       <widget class="QComboBox" name="comboBox">
-        <property name="geometry">
-         <rect>
-          <x>640</x>
-          <y>90</y>
-          <width>69</width>
-          <height>22</height>
-         </rect>
-        </property>
-        <property name="editable">
-         <bool>true</bool>
-        </property>
-       </widget>
-       <widget class="QTextBrowser" name="textBrowser">
-        <property name="geometry">
-         <rect>
-          <x>510</x>
-          <y>60</y>
-          <width>81</width>
-          <height>61</height>
-         </rect>
-        </property>
-       </widget>
        <zorder>findPersonEdit</zorder>
        <zorder>liveCBox</zorder>
        <zorder>whereCBox</zorder>
@@ -1848,9 +1840,7 @@ image:url(:/images/up-arrow.png)
        <zorder>townsmanBtn</zorder>
        <zorder>cityPop1</zorder>
        <zorder>cityPop2</zorder>
-       <zorder>comboBox</zorder>
        <zorder>sexLabel</zorder>
-       <zorder>textBrowser</zorder>
       </widget>
       <widget class="QWidget" name="findGroup_">
        <widget class="QLineEdit" name="lineEdit">

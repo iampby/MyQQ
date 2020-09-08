@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include "findbtn.h"
 #include<qpainter.h>
 #include<QPaintEvent>
@@ -13,8 +16,8 @@ FindBtn::FindBtn(QWidget *parent):QPushButton(parent)
 
 void FindBtn::paintEvent(QPaintEvent *event)
 {
-
-    QPainter p(this);
+    QPainter p;
+    p.begin(this);
     QPen wPen;
     QBrush wBrush;
 
@@ -35,5 +38,6 @@ void FindBtn::paintEvent(QPaintEvent *event)
         p.setBrush(bBrush);p.setPen(bPen);
         p.drawPolygon(points,3);
     }
+    p.end();
 update();
 }

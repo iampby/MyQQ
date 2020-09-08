@@ -1,3 +1,6 @@
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 #include"tcpsocket.h"
 #include <QDir>
 #include<qimage.h>
@@ -78,6 +81,7 @@ void TcpSocket::readD()
             QJsonObject obj=json.object();
             QString content=obj.value("content").toString();
             QString in=obj.value("instruct").toString();
+           //废弃 使用了本地sqlite
             if(content=="city-data"){
                 if(in=="30"){
                     size=0;
