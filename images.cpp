@@ -5,6 +5,8 @@
 #include<qdebug.h>
 #include<qapplication.h>
 #include<qdir.h>
+#include <qpainter.h>
+#include <qbitmap.h>
 Images::Images(QObject *parent ):QObject(parent)
 {
     provider1=new QmlImageProvider;
@@ -123,9 +125,12 @@ void Images::setPixmap2(const QString &id, const QString &pix,const QString &sta
         qDebug()<<"pixmap is null";
         return;
     }
+   roundPixmap(pixmap);
     provider2->images.insert(id,pixmap);
     provider2->control.insert(id,status);
 }
+
+
 
 void Images::flushPixmap2(QString id, QString status)
 {
@@ -157,6 +162,20 @@ bool Images::removePixmap3(int pos)
  if(c==0)return false;
  else
      return true;
+}
+
+void Images::roundPixmap(QPixmap&img)
+{
+    QBitmap mask(QSize( img.width(),img.height()));
+    QPainter painter;
+    painter.begin(&mask);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+    painter.fillRect(QRect(0, 0, img.width(), img.height()), Qt::white);
+    painter.setBrush(QColor(0, 0, 0));
+    painter.drawRoundedRect(QRect(0, 0, img.width(), img.height()), 100, 100,Qt::RelativeSize);
+   img.setMask(mask);
+   painter.end();
 }
 //添加count个照片到照片墙提供器
 qint32 Images::insertPixmap3(const int &count, QVector<QString> files)

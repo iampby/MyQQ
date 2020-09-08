@@ -11,7 +11,7 @@ import "../chinese-lunar.js" as CLunar
 //日历对象
 
 
-//好友个人资料
+//好友个人资料或者陌生人资料卡
 Window {
     property alias fgIndex: fgCBox.currentIndex
     property alias last: fgCBox.last //前一个索引
@@ -683,9 +683,14 @@ Window {
                 width: headRec.width
                 height: 32
                 hoverEnabled: true
-                text: "发消息"
+                text: friendsInfoWin.fgIndex!=-1?"发消息":"添加好友"//如果为-1 ze陌生人是添加好友 不是"发消息"
                 onClicked: {
+                    if(text!="添加好友"){
                     qqMainWin.sentFriendInfo(friendsInfoWin.number) //打开对话界面
+                    }else{//传信息到辅助进程打开添加好友进程
+                        console.log("添加好友")
+                       funcc.writeStandartInputToProcess(friendsInfoWin.number)
+                    }
                 }
 
                 background: Rectangle {
@@ -926,6 +931,7 @@ Window {
                     Item {
                         width: 324
                         height: 18
+                        visible: friendsInfoWin.fgIndex!=-1//如果为-1 则没有备注
                         Image {
                             source: "qrc:/images/mainInterface/userInfoTag.png"
                         }
@@ -1029,6 +1035,7 @@ Window {
                     Item {
                         width: 324
                         height: 18
+                        visible:friendsInfoWin.fgIndex!=-1//如果为-1 则没有好友组
                         Image {
                             source: "qrc:/images/mainInterface/userInfoFG.png"
                         }

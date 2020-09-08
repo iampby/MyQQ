@@ -614,6 +614,8 @@ Rectangle {
             mainWin.requestActivate()
             funcc.exitMyQQ() //退出推送
             images.clearAllData() //清除图片数据
+            //托盘重置
+            tray.reset()
         }
     }
     Action {

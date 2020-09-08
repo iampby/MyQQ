@@ -18,7 +18,7 @@ SendSocket::SendSocket(QObject *parent)
     connect(this,&SendSocket::bytesWritten,&loop,[=](qint64 bytes){
         qDebug()<<"bytes writen size:"<<bytes;
         loop.quit();
-    });
+    },Qt::DirectConnection);
     connect(this,&SendSocket::readyRead,this,&SendSocket::readResult);
 }
 
@@ -99,10 +99,13 @@ void SendSocket::writeMessage()
     stream<<l;
     this->write(size+json.toJson());
     this->write(m_xml);
+
     //不能二次z阻塞？
     //不知道为啥 用全局变量+断开连接就立即执行函数了，感觉阻塞了，但没有数据到来
     // loop.exec();
    // loop.exec();
+    //原因：对方事件圈非直接调用 改为直接连接确保马上调用
+
 
     QTimer::singleShot(15000,this,[=](){
         if(!hasRead)
@@ -155,20 +158,20 @@ void SendSocket::readResult()
             }
             size=l;
         }
-        this->read(size);
         QByteArray data=this->read(size);
         QJsonDocument doc=QJsonDocument::fromJson(data);
         if(doc.isObject()){
+             qDebug()<<"read";
             hasRead=true;
             QJsonObject obj=doc.object();
             QString result=obj.value("result").toString();
-            if(result=="true"){
-                emit finished(0,"message sent successfully");
+            if(result=="false"){
+                emit finished(-3,"message sending failure  may be cause by data loss");
                 size=0;
                 return;
            //连接到服务器
             }else {
-                emit finished(-3,"message sending failure  may be cause by data loss");
+                emit finished(0,"message sent successfully");
                 size=0;
                 return;
             }

@@ -452,9 +452,11 @@ void BigFileSocket::readD()
                         emit result(-1);
                     return;
                 }
+                //在线监测
             }else if(in=="170"){
                 carrier=data;
                 emit finished();
+                return;
             }
         }
         switch (m_write) {
@@ -542,7 +544,7 @@ void BigFileSocket::resultSlot(int code, const QString& folder, const QString& t
             try{
                 QString prefix=key.right(key.length()-key.lastIndexOf(".")-1);//文件后缀/\.(.*)/
                 qDebug()<<"file prefix is "<<prefix;
-                if(prefix=="png"){//头像保存
+                if(prefix=="png"||key.lastIndexOf(".")==-1){//头像保存 如果没有后缀则为默认为图片
                     if(!writeImg(data,folder+key,type.toUtf8().data()))throw false;
                 }else if(prefix=="db"){//保存数据库文件
                     if(!writeDB(data,folder,key))throw false;

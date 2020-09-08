@@ -318,7 +318,7 @@ void FriendModel::insert(int row, FriendData*value)
     endInsertRows();
 }
 
-FriendData *FriendModel::takeItem(const int index)
+FriendData* FriendModel::getItem(const int index)
 {
     try{
         if(index<0||index>=rowCount())
@@ -326,10 +326,8 @@ FriendData *FriendModel::takeItem(const int index)
     }catch(int&code){
         qDebug()<<"index is more than range of array";
     }
-    FriendData* item=m_dataList.value(index);
-    beginRemoveRows(this->createIndex(index,0),index,index);
-    m_dataList.removeAt(index);
-    endRemoveRows();
+    FriendData* &item=m_dataList[index];
+
     return item;
 }
 

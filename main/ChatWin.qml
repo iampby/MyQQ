@@ -183,7 +183,7 @@ ApplicationWindow {
         console.log("addMessage(html)")
         model.append({
                          "r_pos": 0,
-                         "r_img":"image://friends/"+ obj.headImg,
+                         "r_img": obj.headImg,
                          "r_text": html,
                          "r_time": time
                      })
@@ -428,16 +428,18 @@ ApplicationWindow {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 console.log("查看资料")
-                                var data = {}
-                                var number = obj.number
-                                if (parseInt(number) < 100000) {
-                                    console.log("warning:number is not normal")
-                                    return
-                                }
-                                number = number.substring(0, number.length - 1)
-                                if (number == qqMainWin.myqq) {
+                                //右边代表是自己
+                                if (r_pos == 1) {
                                     actions.openAlterUserInfoAct.trigger()
                                 } else {
+                                    let data = {}
+                                    let number = chatWin.obj.number //赋值角色号码
+                                    if (parseInt(number) < 100000) {
+                                        console.log("warning:number is not normal")
+                                        return
+                                    }
+                                    number = number.substring(0,
+                                                              number.length - 1)
                                     data.number = number
                                     try {
                                         let fsm = qqMainWin.friendsModel
@@ -966,7 +968,8 @@ ApplicationWindow {
                                                    chatWin) //发送消息
                             //自己则更新本地记录
                             else {
-                             chatWin.ptext= funcc.saveSentFLog( number, content)
+                                chatWin.ptext = funcc.saveSentFLog(number,
+                                                                   content)
                             }
 
                             //更新消息列表

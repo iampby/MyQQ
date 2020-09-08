@@ -287,6 +287,10 @@ Window {
                             width: 52
                             height: 52
                             clip: true
+                           onClicked: {
+
+                           }
+
                             onHoveredChanged: {
                                 if (hovered) {
                                     crossBtn.visible = true
@@ -752,7 +756,7 @@ Window {
             }
         }
     }
-    //部件
+    //部件 添加分组与同意添加功能
     Component {
         id: newWin
         Window {
@@ -1060,7 +1064,13 @@ Window {
                         y: (parent.height - height) / 2
                         text: "确定"
                         onClicked: {
-                            //if()
+                            var index = groupCBox.currentIndex
+                            if (index == -1) {
+                                console.log("divided friend groups index is negative")
+                                return
+                            }
+                            index += 1
+
                             var obj = {}
                             obj.groupName = groupCBox.currentText
                             obj.myqq = qqMainWin.myqq
@@ -1071,7 +1081,6 @@ Window {
                             var items = lview.contentItem.children
                             var length = listModel.count
                             funcc.handleFVerify(obj) //推送远程
-
                             for (var i = 0; i < length; ++i) {
                                 var item = items[i]
                                 if (item.number == cwin.number) {
@@ -1079,6 +1088,7 @@ Window {
                                     break
                                 }
                             }
+
                             close()
                         }
 

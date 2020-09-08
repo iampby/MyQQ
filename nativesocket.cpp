@@ -18,7 +18,7 @@ NativeSocket::NativeSocket(QObject *parent)
     size=0;number=QString();ok=true;
     IT=NoAnything;
     connect(this,&NativeSocket::readyRead,this,&NativeSocket::readD);
-    connect(this,&NativeSocket::bytesWritten,&loop,&QEventLoop::quit);
+    connect(this,&NativeSocket::bytesWritten,&loop,&QEventLoop::quit,Qt::DirectConnection);//注意事件圈退出 必须直接连接以确保马上退出
 }
 
 NativeSocket::~NativeSocket()
@@ -237,11 +237,13 @@ number text not null\
 void NativeSocket::readD()
 {
     //检查中断
+
     if(this->thread()->isInterruptionRequested()){
         this->thread()->exit(0);
         this->thread()->quit();
         return;
     }
+
     while (bytesAvailable()>0&&bytesAvailable()>=size){
         if(size==0){
             QByteArray data=this->read(1);
@@ -338,11 +340,14 @@ void NativeSocket::readD()
             IT=NoAnything;
             break;
         case FMessage:
-            bytes=data;//在数据接受时最好不要用接受的临时数据 不知道为啥断开才执行函数
+            //原因：事件圈非直接调用 改为直接连接确保马上调用
+            bytes.append(data);//在数据接受时最好不要用接受的临时数据 不知道为啥断开才执行函数
             getFMessage(bytes);
-            disconnectFromHost();//布置到为啥 一致等待
+
+          //  disconnectFromHost();//布置到为啥 一致等待 这里不能关闭 一关闭就认为发送失败 就发送服务端 而且关闭了也不会立即执行
             size=0;
             IT=NoAnything;
+
             break;
         default:
             break;

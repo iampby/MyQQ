@@ -15,7 +15,7 @@
 UpdateTimer::UpdateTimer(QObject *parent)
     :QObject(parent)
 {
-    size=0;r_type=NoType;number=QString();isReceiving=false;
+    size=0;r_type=NoType;number=QString();isReceiving=false;grade=-1;ads="0";
     //父类对象管理子类对象的内存
     t=new QThread(this);
     timer=new QTimer(this);
@@ -27,7 +27,7 @@ UpdateTimer::UpdateTimer(QObject *parent)
     connect(tcpsocket,&QTcpSocket::bytesWritten,loop,&QEventLoop::quit);
     connect(tcpsocket,&QTcpSocket::connected,this,&UpdateTimer::writeInstruct);
     connect(tcpsocket,&QTcpSocket::readyRead,this,&UpdateTimer::readD);
-   //连接失败
+    //连接失败
     connect(tcpsocket,QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),this,[=](QAbstractSocket::SocketError code){
         switch (code) {
         case QAbstractSocket::ConnectionRefusedError:
@@ -87,8 +87,8 @@ void UpdateTimer::stop()
     timer->stop();
     if(t->isRunning()){
         t->requestInterruption();
-       t->exit();
-       t->quit();
+        t->exit();
+        t->quit();
         t->wait();
     }
     isReceiving=false;
@@ -125,12 +125,12 @@ void UpdateTimer::setPort(const quint16 &arg)
 void UpdateTimer::immediateGet()
 {
     if(isReceiving){//如果上一次的没完就直接返回
-     return;
+        return;
     }
     isReceiving=true;
-     size=0;
-     number="";
-     startTcpScoket();
+    size=0;
+    number="";
+    startTcpScoket();
 }
 
 void UpdateTimer::splitSignatureAndName(QByteArray &data)
@@ -188,13 +188,24 @@ void UpdateTimer::handleStatus(const QByteArray &bytes)
     qDebug()<<"in the proccess of  status data";
     QJsonDocument json=QJsonDocument::fromJson(bytes);
     if(json.isObject()){
-     QJsonObject obj=json.object();
-     if(obj.isEmpty()){
-         qDebug()<<"status object is empty";
-         return;
-     }
-     statusMap=obj.toVariantMap();
+        QJsonObject obj=json.object();
+        if(obj.isEmpty()){
+            qDebug()<<"status object is empty";
+            return;
+        }
+        statusMap=obj.toVariantMap();
     }
+}
+
+void UpdateTimer::handleFGrade(const QByteArray &bytes)
+{
+    QJsonDocument json=QJsonDocument::fromJson(bytes);
+    QJsonObject obj=json.object();
+    if(obj.isEmpty()){
+        qDebug()<<"warning:got a friends'grade data is empty";
+        return;
+    }
+    fgrade=obj.toVariantMap();
 }
 
 void UpdateTimer::writeInstruct()
@@ -256,6 +267,7 @@ void UpdateTimer::readD()
                 number=obj.value("number").toString();
                 r_type=HeadImage;
                 continue;
+                //更新个性签名和名字
             }else if(content=="signatureAndName"){
                 qDebug()<<"signatureAndName:";
                 size=obj.value("size").toInt();
@@ -269,7 +281,29 @@ void UpdateTimer::readD()
                 if(size==0)qDebug()<<"warning:toInt() is 0";
                 r_type=Status;
                 continue;
-            }else if(content=="end"){
+            } else if(content=="mygrade"){
+                r_type=NoType;
+                bool isNeedUpdate=obj.value("isNeedUpdate").toBool();
+                 ads=obj.value("activeDays").toString();
+                grade=-1;
+                if(isNeedUpdate){
+                   grade=obj.value("grade").toInt(-1);
+                    if(grade==-1){
+                        qDebug()<<"the grade is not normal";
+                        continue;
+                    }
+                }
+
+            } else if(content=="friendsgrade"){
+               r_type=FGrade;
+                size=obj.value("size").toInt(-1);
+                if(size==-1){
+                    qDebug()<<"got a file size is equal to negative";
+                   r_type=  NoType;
+                   continue;
+                }
+            }
+            else if(content=="end"){
                 QString ok=obj.value("result").toString();
                 if(ok=="true"){
                     qDebug()<<"finishing updating";
@@ -298,6 +332,12 @@ void UpdateTimer::readD()
             break;
         case Status:
             handleStatus(data);
+            size=0;
+            number="";
+            r_type=NoType;
+            break;
+        case FGrade:
+            handleFGrade(data);
             size=0;
             number="";
             r_type=NoType;

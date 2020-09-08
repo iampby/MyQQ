@@ -76,7 +76,7 @@ public:
 
     Q_INVOKABLE void setMyCursor(const int &direct, QWindow*w)const;//设置鼠标类型 用于窗口拉伸
     Q_INVOKABLE void openTempMesWin()const;//打开一个升级提示框
-    Q_INVOKABLE void addHeadWidget(QWindow *w, const int&x, const int&y, QPixmap pixmap, const QString&myqq, const bool isgot)const;//更改头像框打开时添加一个QWidget控件到qml控件w
+    Q_INVOKABLE void addHeadWidget(QWindow *w, const int&x, const int&y, QPixmap pixmap, const QString&myqq, const bool isgot);//更改头像框打开时添加一个QWidget控件到qml控件w
     Q_INVOKABLE void openFile(QString filename);//打开更改头像界面
     Q_INVOKABLE void closeWidget();//发送信号删除更改头像视图的widget控件
     Q_INVOKABLE void getHistoryHeadImg(const QString&myqq) const;//获取历史头像 this常量调用
@@ -163,11 +163,12 @@ Q_SIGNALS://使用第三方源码解析时相当有用 这里用来给qml传递信号比较好
     void netChanged(const bool& flags);//断开或连接网络
     void crawWeatherUrlFinished();
     void updateFriendsModel(const QString&value,const qint32& role,const QString&number)const;//刷新好友模型数据
+    void updateMyGrade(int grade,QString ads)const;//更新我的等级及活跃度
     void updateTotalFModel();//刷新整个好友模型信号
     void getScreenPximap(QPixmap pix);//传图片到聊天界面
     void getAddress(QString ip=QString(),QString port=QString(),QString status=QString("0"));//传地址到聊天界面
     void friendMessage(QString number,QString html,QString time);// 一个好友消息在线发送 参数为消息列表(时间;;消息列表提示) 号码 和html消息内容
-
+  void writeStandartInputToProcess(QString number);//写入标准输入以通知辅助进程弹出打开 添加 好友界面
 Q_SIGNALS:
     void emitHandleVerifyAndInfoList();//处理获取的未接收 消息 列表和验证消息
     void emitCloseMyProcess();//随qqmainwin同死
@@ -182,6 +183,7 @@ Q_SIGNALS:
     void emitFVeify(QVariantMap obj);//传好友验证到lqml
     void emitFriend(QVariantMap obj);//传好友到lqml
     void emitOffline(QVariantMap obj);//发送信号给 qqmainwin 进行下线框弹出
+    void emitDeletionExternalItemOf(QString number);//检测是否在辅助进程中有number号码的项如打开的添加好友项 有则清除
 signals:
     void tempMidSig();
 private slots:

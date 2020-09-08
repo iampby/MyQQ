@@ -3,6 +3,7 @@
 #endif
 #include "qmlimageprovider.h"
 #include <QRgb>
+#include <qbitmap.h>
 #include<qdebug.h>
 
 QmlImageProvider::QmlImageProvider()
@@ -52,6 +53,7 @@ QString tid=id;
 void QmlImageProvider::convertToGray(QPixmap &pix)
 {
     qDebug()<<"colorful image convert to gray image";
+    QBitmap map= pix.mask();
     QImage img=pix.toImage();
     int h=img.height(),w=img.width();
     int gray=0;
@@ -64,5 +66,6 @@ void QmlImageProvider::convertToGray(QPixmap &pix)
         }
     }
     pix=QPixmap::fromImage(img);
+    pix.setMask(map);//жиЩшекеж
 }
 

@@ -6,19 +6,19 @@
 
 class FriendData:public QObject
 {
-       Q_OBJECT
+    Q_OBJECT
 public:
     FriendData(QObject *parent = nullptr);
     ~FriendData();
-  Q_INVOKABLE  QString myqq()const;//qml使用
-    QString name()const;
-    QString signature()const;
-    QString imgPath()const;
-    QString tag()const;
-    QString grade()const;
-    QString status()const;
-    QString infoSet()const;
-    QString statusSet()const;
+    Q_INVOKABLE  QString myqq()const;//qml使用
+    Q_INVOKABLE  QString name()const;
+    Q_INVOKABLE  QString signature()const;
+    Q_INVOKABLE  QString imgPath()const;
+    Q_INVOKABLE  QString tag()const;
+    Q_INVOKABLE  QString grade()const;
+    Q_INVOKABLE   QString status()const;
+    Q_INVOKABLE  QString infoSet()const;
+    Q_INVOKABLE  QString statusSet()const;
     void setMyqq(const QString&);
     void setName(const QString&);
     void setSignature(const QString&);
@@ -65,12 +65,12 @@ public:
     QHash<int,QByteArray>roleNames()const;
     Q_INVOKABLE QString data(const int &, int role=0 ) const;
     QVariant data(const QModelIndex &index, int role) const;//纯虚函数必须实现
-   Q_INVOKABLE int rowOf(const QVariant&var , int role=MyQQRole) const;//返回角色名的值所在行
+    Q_INVOKABLE int rowOf(const QVariant&var , int role=MyQQRole) const;//返回角色名的值所在行
     //修改数据
     Q_INVOKABLE void sort();//排序
     Q_INVOKABLE  void deletion();//谨慎使用，删除内存并永不使用对象
     void insert(int row, FriendData *value);
-    Q_INVOKABLE FriendData* takeItem(const int index);//返回删除项 不释放内存
+    Q_INVOKABLE FriendData* getItem(const int index);//返回删除项 不释放内存
     Q_INVOKABLE  void remove(const int& row,const int&count=1);
     Q_INVOKABLE  void setData(const int &row,const QString& value, int role=MyQQRole);
     Q_INVOKABLE  void append(FriendData*item);//末尾添加

@@ -58,10 +58,8 @@ Window {
         onUpdateCover: {
             leftImg.source = ""
             try {
-                leftImg.source = "file:../user/" + mainWin.myqq + "/photoWall/"
-                        + mainWin.myqq + "/cover"
-                funcc.updateCover("file:../user/" + mainWin.myqq + "/photoWall/"
-                                  + mainWin.myqq + "/cover")
+                leftImg.source = "file:../user/" + mainWin.myqq + "/cover"
+                funcc.updateCover("file:../user/" + mainWin.myqq + "/cover")
             } catch (e) {
                 console.log(e.message)
             }

@@ -125,50 +125,29 @@ void FriendGroupModel::setData(const int &i, const QVariant &value, int role)
 {
     if(m_dataList.size()<=i||i<0)
         return;
-    Data newData;
-    Data oldData=m_dataList.at(i);
+    Data& newData=m_dataList[i];
     switch (role) {
     case GroupRole:
-        newData.setCount(oldData.count());
-        newData.setOnline(oldData.online());
-        newData.setSet(oldData.set());
-        newData.setVisible(oldData.visible());
         newData.setGroupName(value.toString());
         emit groupListChanged();
         break;
     case OnlineRole:
-        newData.setCount(oldData.count());
-        newData.setGroupName(oldData.groupName());
-        newData.setSet(oldData.set());
-        newData.setVisible(oldData.visible());
         newData.setOnline(value.toString());
         break;
     case CountRole:
-        newData.setGroupName(oldData.groupName());
-        newData.setOnline(oldData.online());
-        newData.setSet(oldData.set());
-         newData.setVisible(oldData.visible());
         newData.setCount(value.toString());
         break;
     case SetRole:
-        newData.setCount(oldData.count());
-        newData.setOnline(oldData.online());
-        newData.setGroupName(oldData.groupName());
-        newData.setVisible(oldData.visible());
         newData.setSet(value.toString());
         break;
     case Visible:
-        newData.setCount(oldData.count());
-        newData.setOnline(oldData.online());
-        newData.setGroupName(oldData.groupName());
-        newData.setSet(oldData.set());
         newData.setVisible(value.toBool());
         qDebug()<<"a friend group had changed to "<<value.toBool()<<" on visible ";
         break;
     default:
         return;
     }
-    m_dataList.replace(i,newData);
+   // m_dataList.replace(i,newData);//有时会导致视图自动释放指针内存 不知道为啥
     dataChanged(createIndex(i,0),createIndex(i,0));
 }
 

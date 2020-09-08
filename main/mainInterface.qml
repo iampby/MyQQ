@@ -87,7 +87,11 @@ ApplicationWindow {
     signal runGetSetInfoFunction(var obj)
     //添加好友组到末尾
     signal addFGroup(string value)
-    //关闭函数
+    //当接收辅助进程打开陌生人资料
+    //接收辅助进程信号，打开陌生人资料界面
+    signal openFWin(var obj)
+
+    //退出程序信号
     signal aboutToQuit
     //打开信息对话框
     signal clickedInfo(var id)
@@ -178,7 +182,7 @@ ApplicationWindow {
             isinit = false //如果不触发第一次变化则设置为false
         activeDays = obj["days"]
         grade = obj["grade"]
-        grade = 300
+        //grade = 300
         status = "1" //obj["status"]
         where = obj["所在地"]
         townmans = obj["故乡"]
@@ -370,6 +374,18 @@ ApplicationWindow {
         var m = friendsModel[index]
         m.setData(m.rowOf(number), tag, 4)
     }
+    //打开陌生人资料界面
+    onOpenFWin: {
+        console.log("onOpenFWin:")
+        try {
+            obj.fgIndex = -1
+            obj.tag = "" //陌生人没有备注
+        } catch (e) {
+            console.log("warning:", e.message)
+        }
+        openFriendDataWin(obj)
+    }
+
 
     //target func
     Connections {
@@ -445,7 +461,7 @@ ApplicationWindow {
                 var row = m.rowOf(number)
                 if (row !== -1) {
                     console.log("start update:MyQQ is", number)
-                    // if (role === 3)
+                    //if (role === 3)
                     //  m.setData(row, "", role) //图片刷新
                     //不刷新 让后面状态处理整个模型换掉刷新才能正常显示灰度图
                     m.setData(row, value, role)
@@ -467,6 +483,13 @@ ApplicationWindow {
                     m.sort() //排序
                     flushFImage(i) //换掉整个模型
                 }
+            }
+            //把好友小便条刷新一下
+            if (loaderForFriend.status == Loader.Ready) {
+                var item = loaderForFriend.item
+                var img = item.img
+                item.img = ""
+                item.img = img
             }
         }
 
@@ -536,12 +559,18 @@ ApplicationWindow {
             }
             infoModel.sort() //时间大到小排序
             if (hasInfo) {
-                tray.iconSource = "qrc:/images/bellinfo.png"
-                tray.midSource = "qrc:/images/bellinfo.png"
-                tray.tooltip = "有新消息到来"
-                timer1s.start()
-                tray.hasInfo = true //有信息标记
-                //funcc.emitFVeify()//信号提醒托盘有新消息到来
+                try{
+                    //头像闪烁
+                    let himg=infoModel.get(0).r_imgPath
+                    tray.iconSource = himg
+                    tray.midSource = himg
+                    tray.tooltip = "有新消息到来"
+                    timer1s.restart()
+                    tray.hasInfo = true //有信息标记
+                    //funcc.emitFVeify()//信号提醒托盘有新消息到来
+                }catch(e){
+                    console.log("error "+e)
+                }
             }
             //对所有好友排序
             funcc.updateTotalFModel()
@@ -552,7 +581,7 @@ ApplicationWindow {
             var length = infoModel.count
             var existis = false
             for (var i = 0; i < length; ++i) {
-                //如果为验证信息则 number标记为-1
+                //验证信息则 number标记为-1
                 if (infoModel.get(i).r_number == -1) {
                     existis = true
                     infoModel.set(i, {
@@ -605,8 +634,15 @@ ApplicationWindow {
                     viewFriend.model = null
                     friendDelegateCount = 0
                     viewFriend.model = friendGroupModel
-
+                    //如果好友辅助添加进程打开，则从界面中刷掉已添加的好友项
+                    funcc.emitDeletionExternalItemOf(number)
                     //friendGroupModel.update(i) //更新好友列表
+                    //如果有打开的陌生人资料界面 刷新打开的资料界面
+                    let tw=qqMainWin.mapInfo.get(number+"1")
+                    if(tw){
+                        tw.fgIndex=i
+                        tw.last=i
+                    }
                     break
                 }
             }
@@ -630,7 +666,7 @@ ApplicationWindow {
                 if (time.length < 2)
                     throw "message is lacked"
                 var name
-                for (let i in friendsModel) {
+                for (var i in friendsModel) {
                     let m = friendsModel[i]
                     i = m.rowOf(number)
                     if (i != -1) {
@@ -639,26 +675,67 @@ ApplicationWindow {
                             break
                         }
                         name = m.data(i, 1) //昵称
+                        break
                     }
                 }
-
-                infoModel.insert(0, {
-                                     "r_imgPath": "image://friends/" + number + "1notgray",
-                                     "r_title"//彩色标记
-                                     : name,
-                                     "r_tip": time[1],
-                                     "r_time": time[0],
-                                     "r_number": number + "1"
-                                 })
+                var existis = false
+                var length=infoModel.count
+                var himg=  "image://friends/" + number + "1notgray"
+                for ( i = 0; i < length; ++i) {
+                    //验证信息则 number标记为-1
+                    if (infoModel.get(i).r_number == number+"1") {
+                        existis = true
+                        infoModel.set(i, {
+                                          "r_imgPath": himg,
+                                          "r_title"//彩色标记
+                                          : name,
+                                          "r_tip": time[1],
+                                          "r_time": time[0],
+                                          "r_number": number + "1"
+                                      })
+                        infoModel.move(i, 0, 1)
+                    }
+                }
+                if(!existis)
+                    infoModel.insert(0, {
+                                         "r_imgPath": himg,
+                                         "r_title"//彩色标记
+                                         : name,
+                                         "r_tip": time[1],
+                                         "r_time": time[0],
+                                         "r_number": number + "1"
+                                     })
                 var fw = mapChat.get(number + "1")
-                if (fw == undefined)
+                if (fw == undefined){
+                    //托盘闪烁
+                    //头像闪烁
+                    let himg=infoModel.get(0).r_imgPath
+                    tray.iconSource = himg
+                    tray.midSource = himg
+                    tray.tooltip = "有新消息到来"
+                    timer1s.restart()
+                    tray.hasInfo = true //有信息标记
                     throw "friend win is close"
+                }
                 fw.addMessage(html, time[0])
             } catch (e) {
                 if (typeof e == "string")
                     console.log("warning:", e)
-                console.log("receiveing message occured a error:", e.message)
+                else console.log("receiveing message occured a error:", e.message)
             }
+        }
+        //自己更新等级及活跃度
+        onUpdateMyGrade: {
+            if (grade == -1) {
+                console.log("my grade is not changed")
+            } else {
+                if (grade <= qqMainWin.grade) {
+                    console.log("warning:now grade is changed to  smaller")
+                } else {
+                    qqMainWin.grade = grade
+                }
+            }
+            qqMainWin.activeDays = ads
         }
     }
     //mainWin
@@ -753,7 +830,7 @@ ApplicationWindow {
         }
         //验证界面
         if (loaderForVerify.status == Loader.Ready) {
-            loaderForVerify.item = ""
+            loaderForVerify.source = ""
         }
         //释放资料列表
         //释放聊天界面
@@ -772,7 +849,9 @@ ApplicationWindow {
     }
     //移动位于index的好友from 分组 before to after
     function moveFriend(before, after, index) {
-        if (before == after)
+        //排除极端情况
+        if (before == after || index === undefined || before === undefined
+                || after === undefined)
             return false
         //不移动
         if (before < 0 || after < 0 || index < 0) {
@@ -781,25 +860,34 @@ ApplicationWindow {
         }
         console.log("moved Friend with", index, " to group from ", before,
                     " to ", after, " position")
-        var bm = friendsModel[before]
-        var am = friendsModel[after]
-        var item = bm.takeItem(index)
-        var number = item.myqq()
-        am.append(item)
-        //更新
-        bm.update(before, 10000)
-        am.sort() //重排序
-        var items = viewFriend.contentItem.children
-        //对于qwidget的嵌套模型 重赋值来刷新代理
-        items[before].friend.model = null
-        items[before].friend.model = friendsModel[before]
-        items[after].friend.model = null
-        items[after].friend.model = friendsModel[after]
-        friendGroupModel.update(before, after) //更新外层代理项
-        //更新远程
-        funcc.moveFriend(before, after, number)
-        //更新 组位置
-        qqMainWin.fgIndex = after
+        try {
+            var bm = friendsModel[before]
+            var am = friendsModel[after]
+            //这里不能从模型取出对象然后换模型 会随后一段时间发生数据对象自动析构
+            var item = bm.getItem(index)
+            var number = item.myqq()
+            am.append(item.myqq(), item.name(), item.signature(),
+                      item.imgPath(), item.tag(), item.grade(), item.status(),
+                      item.infoSet(), item.statusSet())
+            bm.remove(index) //删除
+            //更新
+            bm.update(before, 10000)
+            am.sort() //重排序
+            var items = viewFriend.contentItem.children
+            //对于qwidget的嵌套模型 重赋值来刷新代理
+            items[before].friend.model = null
+            items[before].friend.model = friendsModel[before]
+            items[after].friend.model = null
+            items[after].friend.model = friendsModel[after]
+            friendGroupModel.update(before, after) //更新外层代理项
+            //更新远程
+            funcc.moveFriend(before, after, number)
+            //更新 组位置
+            qqMainWin.fgIndex = after
+        } catch (e) {
+            console.log("error! " + e)
+        }
+
         return number
     }
     //打开好友聊天界面 参数：号码
@@ -1941,6 +2029,7 @@ ApplicationWindow {
                             var item = items[i]
                             item.listGroup.rotat = 0
                             friendGroupModel.setData(i, false, 4)
+
                             item.isChecked = false
                         }
                     }
@@ -2234,10 +2323,9 @@ ApplicationWindow {
                             ListView {
                                 id: listFriend
                                 anchors.top: listGroup.bottom
-                                visible: r_visible
-
+                                visible: r_visible //可视化随模型数据变化
                                 onVisibleChanged: {
-                                    console.log("visible changed:", visible)
+                                    console.log("listFriend visible= ", visible)
                                     if (visible)
                                         parent.height += height
                                     else
@@ -3307,11 +3395,26 @@ ApplicationWindow {
                                            offx * offx + offy * offy) < 3))
                             //忽略小弧度位移
                             if (fwin.isDarg && b) {
+
                                 //处理移动事件
                                 if (cursorShape != Qt.ForbiddenCursor) {
                                     if (index !== fwin.index && index > 0) {
-                                        moveFriend(fwin.fgIndex, index,
-                                                   fwin.fIndex0)
+                                        let b = moveFriend(fwin.fgIndex, index,
+                                                           fwin.fIndex)
+                                        //更新资料分组
+                                        if (typeof b == "string") {
+                                            try {
+                                                let item = qqMainWin.mapInfo.get(
+                                                        b)
+                                                if (item != undefined) {
+                                                    item.fgIndex = index //更新资料索引
+                                                    item.last = index
+                                                }
+                                            } catch (e) {
+                                                console.log("warning:",
+                                                            e.message)
+                                            }
+                                        }
                                     }
                                 }
                                 cursorShape = Qt.ArrowCursor

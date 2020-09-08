@@ -23,12 +23,15 @@
 #include <QQuickItem>
 #include <qlabel.h>
 #include <QBuffer>
+#include<qlocalserver.h>
+#include<qlocalsocket.h>
 #include<qmessagebox.h>
 #include <qjsonarray.h>
 #include<qmath.h>
 #include<thread>
 #include<sstream>
 #include<qsqlerror.h>
+#include <qqmlfile.h>
 //funcc类
 FuncC::FuncC(QObject *parent):QObject(parent)
 {
@@ -601,6 +604,21 @@ void FuncC::updateHandle(const bool &ok)
             }
             updateTimer->statusMap.clear();
         }
+        //更新好友等级
+        if(!updateTimer->fgrade.isEmpty()){
+            QVariantMap::const_iterator i=updateTimer->fgrade.cbegin();
+            QVariantMap::const_iterator end=updateTimer->fgrade.cend();
+            while(i!=end){
+                QString number=i.key();
+                QString grade=QString("%1").arg(i.value().toInt());
+                emit updateFriendsModel(grade,FriendModel::GradeRole,number);//更新一个好友等级
+                ++i;
+            }
+        }
+        //更新我的活跃度和等级
+        emit updateMyGrade(updateTimer->grade,updateTimer->ads);
+        //重置等级
+        updateTimer->grade=-1;updateTimer->ads="0";
         //由于正常刷新灰度图不能正常刷新 发送信号换掉整个模型
         emit updateTotalFModel();
     }else{
@@ -762,7 +780,7 @@ void FuncC::openTempMesWin() const
     tipWin->show();
 }
 
-void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,const QString&myqq,const bool isgot)const
+void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,const QString&myqq,const bool isgot)
 {
     HeadImgWidget*widget=new HeadImgWidget;
     widget->setWindowFlag(Qt::FramelessWindowHint,true);//必须去除标题栏，设置parent不会自动去除标题
@@ -789,8 +807,10 @@ void FuncC::addHeadWidget(QWindow *w,const int&x,const int&y,QPixmap pixmap,cons
         });//ok处理
         //刷新好友模型id值
         connect(widget,&HeadImgWidget::updateMyself,this,[=](const QString&number){
-            qDebug()<<"emit emitUpdateFriendsModel(id)";
+            qDebug()<<"emit updateFriendsModel(id)";
             emit updateFriendsModel("image://friends/"+number+"1",FriendModel::ImgPathRole,number);
+            //由于正常刷新灰度图不能正常刷新  这里为了方便配合刷新灰度图方法 发送信号换掉整个模型来刷新图片
+            emit updateTotalFModel();
         });
         //更新远程头像
         connect(widget,&HeadImgWidget::updateRemoteHeadImg,this,[=](const QPixmap&pix){
@@ -951,7 +971,7 @@ void FuncC::updateCover(QString qmlFilePath)
         QBuffer buffer;
         buffer.open(QIODevice::WriteOnly);
         QPixmap pix;
-        pix.load(qmlFilePath);
+        pix.load(QQmlFile::urlToLocalFileOrQrc(qmlFilePath));//qml路径转为本地路径
         if(pix.isNull()){
             qDebug()<<"warning:cover-image is null";
         }
@@ -1526,12 +1546,14 @@ void FuncC::handleFVerify(QVariantMap obj)
     //删除线程
     connect(thread,&QThread::finished,thread,&QThread::deleteLater);
     connect(fVerifySock,&BigFileSocket::finished,thread,&QThread::quit);//超时放弃
+
     //获取文件结果收尾处理
     connect(fVerifySock,&BigFileSocket::writtenInstruction, fVerifySock,[=](){
         thread->exit(0);
         thread->quit();
         qDebug()<<"handling friend verify thread had exited";
     });
+
 }
 
 void FuncC::updateFGroup(QVariantMap obj)
@@ -1670,12 +1692,21 @@ void FuncC::getFIP(QString number)
     getFIPSock->setTimeout(10000);//超时10s
     QThread*thread=new QThread(this);
     getFIPSock->moveToThread(thread);
-    connect(thread,&QThread::finished,thread,&QThread::deleteLater);//删除线程
+    //注意：移动线程的对象必须在创建线程外删除 或等待线程事件结束后删除 比如quit线程后
+    connect(thread,&QThread::finished,getFIPSock,[=](){
+        getFIPSock->moveToThread(qApp->thread());//移动到gui线程
+        getFIPSock->deleteLater();//利用槽函数安全删除线程
+        thread->deleteLater();
+    });//删除线程
     thread->start();
     emit getFIPSock->start();//转移到新线程去post host
     connect(getFIPSock,&BigFileSocket::finished,getFIPSock,[=](){
-        qDebug()<<"test opposite status  finish or timeout";
-        QJsonDocument tempDoc=QJsonDocument::fromJson(getFIPSock->carrier);
+        qDebug()<<"test opposite status  finish or timeout"<<getFIPSock->carrier;
+        QJsonParseError  err;
+        QJsonDocument tempDoc=QJsonDocument::fromJson(getFIPSock->carrier,&err);
+        if(err.error!=QJsonParseError::NoError){
+            qDebug()<<"error:"<<err.errorString();
+        }
         if(tempDoc.isObject()){
             QJsonObject info=tempDoc.object();
             QString  status=info.value("status").toString();
@@ -1686,8 +1717,6 @@ void FuncC::getFIP(QString number)
                     QString port=QString("%1").arg(info.value("port").toVariant().toUInt());
                     emit getAddress(ip,port,status);
                     //超时放弃或完成结束线程
-                    getFIPSock->moveToThread(thread->thread());//移动到主线程
-                    getFIPSock->deleteLater();//子线程删除
                     thread->exit(0);
                     thread->quit();
                     thread->wait();
@@ -1699,8 +1728,6 @@ void FuncC::getFIP(QString number)
         }
         emit getAddress();
         //超时放弃或完成结束线程
-        getFIPSock->moveToThread(thread->thread());//移动到主线程
-        getFIPSock->deleteLater();//子线程删除
         thread->exit(0);
         thread->quit();
         thread->wait();
@@ -1727,7 +1754,6 @@ void FuncC::sendFMessage(QString ip, QString port, QString number,QString html,Q
     sendSock->setMessage(sendData);
     sendSock->setTimeout(20000);//超时20s
     sendSock->setNumber(m_myQQ,number);//  我方号码 用于查找对象 ,对方号码 用于接收判断号码是否正确
-    //不建议线程写在类内 ，不知道为什么总是线程毁灭时运行,无法及时退出删除，deletelater根本调用不了析构函数，可能是丢失事件圈无法响应
     QThread*thread=new QThread(this);
     sendSock->moveToThread(thread);
 
@@ -1769,8 +1795,8 @@ void FuncC::sendFMessage(QString ip, QString port, QString number,QString html,Q
             emit twoSendSock->start();//转移到新线程去post host
             connect(twoThread,&QThread::finished,twoSendSock,[=](){
                 twoSendSock->moveToThread(qApp->thread());
-                twoSendSock->deleteLater();
                 twoThread->deleteLater();
+                twoSendSock->deleteLater();
                 thread->exit(0);
                 thread->quit();
                 thread->wait();
@@ -2017,8 +2043,8 @@ void FuncC::loadFChatLog(QQuickWindow *qmlWin, QString number)
                         //消息接受 注意线程在gui线程 不能为子线程 因为有qml ui 发送参数 h't'm'l内容 发送时间 发送方号码
                         // qmlwin第一个对象是qobject，直接强转即可，无需动态转换
                         //gui操作比需在gui线程 注意线程
-                       QMetaObject::invokeMethod((QObject*)qmlWin,"loadLog",Qt::DirectConnection,Q_ARG(QString,html),Q_ARG(QString,time),Q_ARG(QString,mq));
-                   }
+                        QMetaObject::invokeMethod((QObject*)qmlWin,"loadLog",Qt::DirectConnection,Q_ARG(QString,html),Q_ARG(QString,time),Q_ARG(QString,mq));
+                    }
                     db.close();//记得关闭 好删除文件
                     //退出线程
                     thread->exit(0);
@@ -2044,8 +2070,8 @@ void FuncC::loadFChatLog(QQuickWindow *qmlWin, QString number)
     connect(thread,&QThread::destroyed,this,[=](){
         qDebug()<<"~QThread()";
     });
-    connect(thread,&QThread::finished,thread,[=](){
-        thread->moveToThread(qApp->thread());//移动到gui线程
+    connect(thread,&QThread::finished,thread,[=]()mutable{
+        thread->moveToThread(this->thread());//移动到gui线程
         thread->deleteLater();//利用槽函数实现线程转移，安全毁灭线程
     });
     connect(qApp,&QApplication::aboutToQuit,thread,[=](){
@@ -2084,7 +2110,7 @@ void FuncC::saveSentFLog(QString number,QString bytes)
     bool ok=  query.exec(QString(" SELECT count(*) FROM sqlite_master WHERE type='table' AND name ='_%1info' ").arg(number));
     if(!ok){
         qDebug()<<"count of table query is of failure ";
-         db.close();//记得关闭 好删除文件
+        db.close();//记得关闭 好删除文件
         return ;
     }
     query.next();
@@ -2100,7 +2126,7 @@ void FuncC::saveSentFLog(QString number,QString bytes)
                                 )").arg(number));
                        if(!ok){
                            qDebug()<<"create a table is of failure";
-                            db.close();//记得关闭 好删除文件
+                           db.close();//记得关闭 好删除文件
                            return ;
                        }
     }
@@ -2157,7 +2183,7 @@ void FuncC::saveSentFLog(QString number,QString bytes)
     ok= query.exec(QString(" select count(*) from _%1info ").arg(number));
     if(!ok){
         qDebug()<<"query.exec(QString(\" select count(*) from _%1info \").arg(myqq)) is of failure";
-         db.close();//记得关闭 好删除文件
+        db.close();//记得关闭 好删除文件
         return ;
     }
     try{
@@ -2167,20 +2193,20 @@ void FuncC::saveSentFLog(QString number,QString bytes)
         ok= query.exec(QString(" update _%1info set adhesion=%2 where id=%3 ").arg(number).arg(false).arg(count));
         if(!ok){
             qDebug()<<" update _%1info set adhesion=%2  failure";
-             db.close();//记得关闭 好删除文件
+            db.close();//记得关闭 好删除文件
             return ;
         }
     }catch(_exception&e){
         qDebug()<<"a exception:"<<"type is "<<e.type<<"name is"<<e.name;
-         db.close();//记得关闭 好删除文件
+        db.close();//记得关闭 好删除文件
         return;
     }catch(...){
         qDebug()<<"a unknow excpetion";
-         db.close();//记得关闭 好删除文件
+        db.close();//记得关闭 好删除文件
         return;
     }
-     db.close();//记得关闭 好删除文件
-     return;
+    db.close();//记得关闭 好删除文件
+    return;
 }
 
 QString FuncC::saveSentFLog(QString bytes)
@@ -2204,7 +2230,7 @@ void FuncC::startAddFriendsProcess(QQuickWindow*arg,QMap<QString, QVariant>obj,Q
 
     qDebug()<<"add friends win process started->";
     QObject*parent=dynamic_cast<QObject*>(arg);
-
+ if(addFriendsProcessCount()==0){//控制只有一个进程
     QProcess *myProcess = new QProcess(parent);
     connect(myProcess,&QProcess::readyReadStandardOutput,myProcess,[=](){
         QByteArray data=myProcess->readAllStandardOutput();
@@ -2212,8 +2238,9 @@ void FuncC::startAddFriendsProcess(QQuickWindow*arg,QMap<QString, QVariant>obj,Q
         data=QString::fromLocal8Bit(data).toUtf8();
         QJsonDocument tempDoc=QJsonDocument::fromJson(data,&err);
         if(err.error!=QJsonParseError::NoError){
-            qDebug()<<"error description:"<<err.errorString();
+            qDebug()<<"error description:"<<err.errorString()<<endl<<data.data();
             qDebug()<<"a error:parse json from  myprocess is of failure,then closing myprocess";
+
             myProcess->kill();
             myProcess->waitForFinished();
             return;
@@ -2227,7 +2254,24 @@ void FuncC::startAddFriendsProcess(QQuickWindow*arg,QMap<QString, QVariant>obj,Q
 
                 QMetaObject::invokeMethod(arg,"addFGroup",Qt::DirectConnection,Q_ARG(QString,group));
                 addRemoteFriendGroup(tempDoc);
+            }else if(instruct=="open fwin"){
+                try{
+                    qDebug()<<"打开资料界面";
+                    QVariantMap map;
+                    QString number=obj.value("number").toString();
+                    map.insert("number",QVariant(number));
+                    QString pix=obj.value("pixmap").toString();
+                    images->setPixmap2(number+"1",pix,"1");
+                    map.insert("headImg","image://friends/"+number+"1");
+                    map.insert("name",obj.value("name").toString());
+                    map.insert("signature",obj.value("signature").toString());
+                    QMetaObject::invokeMethod(arg,"openFWin",Qt::DirectConnection,Q_ARG(QVariant,QVariant::fromValue(map)));
+                }catch(QString&estr){
+                    qDebug()<<"warning:"<<estr;
+                }
             }
+        }else{
+            qDebug()<<"process output:"<<data;
         }
     });
 
@@ -2252,7 +2296,7 @@ void FuncC::startAddFriendsProcess(QQuickWindow*arg,QMap<QString, QVariant>obj,Q
         if(myProcess)
             delete myProcess,myProcess=nullptr;
     });
-    if(addFriendsProcessCount()==0){
+
         addSMm.setKey("addFriendgroups"+m_myQQ);//添加好友用，一旦更新组，就更新内存 key唯一标识 进程唯一
         qDebug()<<"myprocess key is "<<addSMm.key();
         addSMm.create(1024);
@@ -2265,9 +2309,48 @@ void FuncC::startAddFriendsProcess(QQuickWindow*arg,QMap<QString, QVariant>obj,Q
         QByteArray sdata=sdoc.toJson();
         qDebug()<<sdata.data();
         memccpy(addSMm.data(),sdata.data(),'\0',1024);//数据不超过1024字节 最多15个分组
+        //由于windows上不能利用进程输入通道i和子线程通信，所以
+        //建立本地的qlocalserver用来监听子进程
+        QLocalServer*localServer=new QLocalServer(myProcess);
+       localServer->listen("localserver"+m_myQQ);
+       //创建qlocalsocket通信
+       connect(localServer,&QLocalServer::newConnection,localServer,[=](){
+           QLocalSocket *localSocket=localServer->nextPendingConnection();
+           //打开添加窗口动作
+           connect(this,&FuncC::writeStandartInputToProcess,localSocket,[=](QString number){
+               QJsonDocument doc;
+               QJsonObject obj;
+               qDebug()<<"writeStandartInputToProcess:";
+               obj.insert("instruct",QJsonValue("add friend"));
+               obj.insert("number",QJsonValue(number));
+               doc.setObject(obj);
+            localSocket->write(doc.toJson());//写入本地管道或者域套接字
+            qDebug()<<doc.toJson().data();
+           });
+           //检测删除指定号码项
+           connect(this,&FuncC::emitDeletionExternalItemOf,localSocket,[=](QString number){
+               QJsonDocument doc;
+               QJsonObject obj;
+               qDebug()<<"emitDeletionExternalItemOf:";
+               obj.insert("instruct",QJsonValue("delete item"));
+               obj.insert("number",QJsonValue(number));
+               doc.setObject(obj);
+            localSocket->write(doc.toJson());//写入本地管道或者域套接字
+            qDebug()<<doc.toJson().data();
+           });
+       });
+
+       connect(myProcess,&QProcess::destroyed,myProcess,[=](){
+       localServer->close();
+       QLocalServer::removeServer("localserver"+m_myQQ);
+      //删除辅助进程的头像文件
+       QDir dir("../head_images");
+       if(dir.exists())dir.removeRecursively();
+       });//随进程毁灭而毁灭
         QJsonDocument doc(QJsonObject::fromVariantMap(obj));
         QStringList list;
         list<<doc.toJson();
+        //等管道打开后开启进程
         myProcess->start( ("../MyQQExternal/addFriendsWin"),list);
     }
 }
@@ -2290,6 +2373,8 @@ void FuncC::updateAuxiliaryProcessFGoup(QList<QVariant>arr)
         memccpy(addSMm.data(),sdata.data(),'\0',1024);//数据不超过1024字节 最多15个分组
     }
 }
+
+
 
 void FuncC::analysisWh(QString totalGeoAddr)
 {
