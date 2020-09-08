@@ -37,13 +37,20 @@ WriteThread::WriteThread(qintptr socketDescriptor, qint64 count,  QObject *paren
 WriteThread::~WriteThread()
 {
     qDebug()<<"~WriteThread()";
+    foreach (QString str, dbPool) {
+        {
+        QSqlDatabase::database(str,false);
+        }
+        QSqlDatabase::removeDatabase(str);
+    }
 }
 
-QSqlQuery WriteThread::openDB(bool &ok) const
+QSqlQuery WriteThread::openDB(bool &ok)
 {
     //用精确到秒的时间和100个值范围的count计数来控制1秒内可以打开的数据库连接，即100个
-    QSqlDatabase db=QSqlDatabase::addDatabase("QODBC",QDateTime::currentDateTime().toString("yy-M-d h:m:s")+QString("%1").arg(count));
-
+    QString cn=QDateTime::currentDateTime().toString("yy-M-d h:m:s")+QString("%1").arg(count);
+    QSqlDatabase db=QSqlDatabase::addDatabase("QODBC",cn);
+dbPool.append(cn);//入池
     QString connectString = (
                 "DRIVER={sql server};"
                 "SERVER=127.0.0.1;"
@@ -59,10 +66,9 @@ QSqlQuery WriteThread::openDB(bool &ok) const
         ok=false;
         return QSqlQuery();
     }
-    qDebug()<<"login"<<db.connectionName()<<db.databaseName();
-    QSqlQuery query(" use myqq ",db);
+    qDebug()<<"login"<<db.connectionName();
     ok=true;
-
+QSqlQuery query("use MyQQ",db);
     return query;
 }
 
@@ -75,11 +81,13 @@ bool WriteThread::userExit()
     query.prepare(" update userInfo set isConnected=? ,userState=?  WHERE myqq=? ");
     query.addBindValue(QVariant(false));
     query.addBindValue(QVariant(status));
-    query.addBindValue(QVariant(myqq));
+    query.addBindValue(QVariant(myqq.toLongLong()));
     if(query.exec()){
         qDebug() <<"update user' status is successful";
+
         return exitStatusHandle(status);
     }
+
     return false;
 }
 
@@ -197,12 +205,12 @@ label:
 bool WriteThread::updateSignature(QByteArray &bytes)
 {
     bool ok;
-    QSqlQuery query=openDB(ok);
+     QSqlQuery query=openDB(ok);
     if(!ok)return ok;//打开失败返回
     query.prepare(" update userInfo set personalizedSignature=?  where myqq=? ");
     QString sig=QString::fromUtf8(bytes);
     query.addBindValue(QVariant(sig.isEmpty()?"":sig));
-    query.addBindValue(QVariant(myqq));
+    query.addBindValue(QVariant(myqq.toLongLong()));
     ok= query.exec();
     if(ok){
         qDebug()<<"query.exec() successfully"  ;
@@ -210,6 +218,7 @@ bool WriteThread::updateSignature(QByteArray &bytes)
         qDebug()<<"query.exec() unsuccessfully";
         return ok;
     }
+
     return updateSignatureHandle(sig);
 }
 //保存资料封面
@@ -366,9 +375,11 @@ bool WriteThread::updateUserInfo(QByteArray &bytes)
         QString education=obj.value("education").toString();
         if(education.isNull())education="";
         bool ok;
-        QSqlQuery query=openDB(ok);
-        if(!ok)return ok;
+         QSqlQuery query=openDB(ok);
+        if(!ok){
 
+            return ok;
+        }
         query.prepare(" exec updateUserInformation ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? ");
         query.addBindValue(QVariant(name));
         query.addBindValue(QVariant(sex));
@@ -387,7 +398,7 @@ bool WriteThread::updateUserInfo(QByteArray &bytes)
         query.addBindValue(QVariant(personalStatement));
         query.addBindValue(QVariant(phone.toLongLong()));
         query.addBindValue(QVariant(education));
-        query.addBindValue(QVariant(myqq));
+        query.addBindValue(QVariant(myqq.toLongLong()));
         ok= query.exec();
         if(ok){
             qDebug()<<"query.exec() successfully"  ;
@@ -395,6 +406,7 @@ bool WriteThread::updateUserInfo(QByteArray &bytes)
         }else  {
             qDebug()<<"query.exec() unsuccessfully";
         }
+
         return ok;
     }else{
         qDebug()<<"it's not object";
@@ -614,8 +626,8 @@ bool WriteThread::dmrFriend(QByteArray &bytes)
                 return false;
             }
             QDomNodeList listb=bnode.childNodes();
-            if(list.at(0).nodeValue()=="none"){
-                qDebug()<<"warning:node is not found friends";
+            if(listb.at(0).firstChild().nodeValue()=="none"){
+                qDebug()<<"warning:node value is not found friends";
                 return false;
             }
             int length=listb.size();
@@ -624,13 +636,17 @@ bool WriteThread::dmrFriend(QByteArray &bytes)
                 QString str=temp.toElement().attribute("myqq");
                 if(str==number){
                     qDebug()<<"found the friend with number "<<number;
-                    temp= bnode.removeChild(temp);
+                    if(length==1){
+                        QDomText none=domDoc.createTextNode("none");
+                        temp=bnode.replaceChild(none,temp);
+                    }else
+                        temp= bnode.removeChild(temp);
                     if(temp.isNull()){
                         qDebug()<<"bnode.removeChild(temp).isNull()";
                         return false;
                     }
                     QDomNode tfnode=anode.firstChild();
-                    if(tfnode.toElement().nodeValue()=="none"){
+                    if(tfnode.nodeValue()=="none"){
                         temp= anode.replaceChild(temp,tfnode);
                     }else{
                         temp= anode.appendChild(temp);
@@ -687,14 +703,15 @@ bool WriteThread::dmrFriend(QByteArray &bytes)
                     tf.close();
                     fgele=tdoc.documentElement();
                     fgele=fgele.firstChildElement("friendGroup");
-                    list=fgele.childNodes();
+                    list=fgele.childNodes();//组集
                     length=list.size();
                     for(int i=0;i<length;++i){
                         QDomElement ele=list.item(i).toElement();
                         if(ele.hasChildNodes()){
-                            QDomElement friendEle=ele.firstChild().toElement();
+                            QDomElement friendEle=ele.firstChild().toElement();//单个好友元素
                             while(!friendEle.isNull()){
                                 QString mq=friendEle.attribute("myqq");
+                                qDebug()<<"mq="<<mq<<myqq;
                                 if(!mq.isEmpty()){
                                     //删除主动方节点
                                     if(mq==myqq){
@@ -812,7 +829,9 @@ bool WriteThread::fMessageSave(QByteArray &bytes)
     std::stringstream sin;
     sin << id;
     tid=QString::fromStdString(sin.str());
-    QSqlDatabase db=QSqlDatabase::addDatabase("QSQLITE",tid+myqq);
+    QString cn=tid+myqq+QString("%1").arg(QDateTime::currentDateTime().toTime_t());
+    QSqlDatabase db=QSqlDatabase::addDatabase("QSQLITE",cn);
+    dbPool.append(cn);//入池
     db.setDatabaseName(dir.absoluteFilePath( QString("_%1.db").arg(myqq)));
     db.setHostName("MyQQ");
     db.setUserName("sa");
@@ -827,7 +846,7 @@ bool WriteThread::fMessageSave(QByteArray &bytes)
     bool ok=  query.exec(QString(" SELECT count(*) FROM sqlite_master WHERE type='table' AND name ='_%1info' ").arg(myqq));
     if(!ok){
         qDebug()<<"count of table query is of failure ";
-         db.close();//记得关闭 好删除文件
+
         return false;
     }
     query.next();
@@ -843,7 +862,7 @@ bool WriteThread::fMessageSave(QByteArray &bytes)
                                 )").arg(myqq));
                        if(!ok){
                            qDebug()<<"create a table is of failure";
-                            db.close();//记得关闭 好删除文件
+
                            return false;
                        }
     }
@@ -868,7 +887,7 @@ bool WriteThread::fMessageSave(QByteArray &bytes)
                             query.addBindValue(QVariant(time));
                             query.addBindValue(QVariant(type));
                             query.addBindValue(QVariant(true));
-                            query.addBindValue(QVariant(myqq));
+                            query.addBindValue(QVariant(myqq.toLongLong()));
                             ok=query.exec();
                             if(!ok){
                                 qDebug()<<"type:text;query.exec(\" insert into _%1info(data,datetime,type,adhesion) values(?,?,?,?) \")=false";
@@ -881,7 +900,7 @@ bool WriteThread::fMessageSave(QByteArray &bytes)
                             query.addBindValue(QVariant(time));
                             query.addBindValue(QVariant(type));
                             query.addBindValue(QVariant(true));
-                            query.addBindValue(QVariant(myqq));
+                            query.addBindValue(QVariant(myqq.toLongLong()));
                             ok=query.exec();
                             if(!ok){
                                 qDebug()<<"type:pixmap; query.exec(\" insert into _%1info(data,datetime,type,adhesion) values(?,?,?,?) \")=false";
@@ -900,7 +919,7 @@ bool WriteThread::fMessageSave(QByteArray &bytes)
     ok= query.exec(QString(" select count(*) from _%1info ").arg(myqq));
     if(!ok){
         qDebug()<<"query.exec(QString(\" select count(*) from _%1info \").arg(myqq)) is of failure";
-         db.close();//记得关闭 好删除文件
+
         return false;
     }
     try{
@@ -910,19 +929,19 @@ bool WriteThread::fMessageSave(QByteArray &bytes)
         ok= query.exec(QString(" update _%1info set adhesion=%2 where id=%3 ").arg(myqq).arg(false).arg(count));
         if(!ok){
             qDebug()<<" update _%1info set adhesion=%2  failure";
-             db.close();//记得关闭 好删除文件
+
             return false;
         }
     }catch(_exception&e){
         qDebug()<<"a exception:"<<"type is "<<e.type<<"name is"<<e.name;
-         db.close();//记得关闭 好删除文件
+
         return false;
     }catch(...){
         qDebug()<<"a unknow excpetion";
-         db.close();//记得关闭 好删除文件
+
         return false;
     }
-     db.close();//记得关闭 好删除文件
+
     return true;
 }
 
@@ -1301,8 +1320,9 @@ bool WriteThread::exitStatusHandle(QString&status)
                                 }
                             }
                             bool ok=true;
-
-                            QSqlDatabase db1=QSqlDatabase::addDatabase("QSQLITE",tid+mq);
+                            QString cn1=tid+mq+QString("%1").arg(QDateTime::currentDateTime().toTime_t());
+                            QSqlDatabase db1=QSqlDatabase::addDatabase("QSQLITE",cn1);
+                            dbPool.append(cn1);//入池
                             db1.setDatabaseName(QString("../userData/%1/friendsInfo/chat/_%2.db").arg(mq).arg(myqq));
                             db1.setHostName("MyQQ");
                             db1.setUserName("sa");
@@ -1317,7 +1337,7 @@ bool WriteThread::exitStatusHandle(QString&status)
                             ok=  query1.exec(QString(" SELECT count(*) FROM sqlite_master WHERE type='table' AND name ='_%1status' ").arg(myqq));
                             if(!ok){
                                 qDebug()<<"count of table query is of failure ";
-                                db1.close();//记得关闭 好删除文件
+
                                 return false;
                             }
                             query1.next();
@@ -1353,7 +1373,7 @@ bool WriteThread::exitStatusHandle(QString&status)
                                     continue;
                                 }
                             }
-                            db1.close();//记得关闭 好删除文件
+
                             setXmlStatus(myqq,mq,status);//修改对应文件状态
                         }
                     }
@@ -1601,7 +1621,7 @@ void WriteThread::readD()
                         }
                         FT=FMessageXml;
                         size=1;
-                       continue;
+                        continue;
                     }
                 }
             }

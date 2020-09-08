@@ -6,7 +6,6 @@
 #include<qtcpsocket.h>
 #include<qjsonobject.h>
 #include<qjsondocument.h>
-#include <qsqlquery.h>
 #include <qdir.h>
 #include <qdatetime.h>
 #include<QXmlStreamReader>
@@ -44,6 +43,16 @@ LoginThread::LoginThread(qintptr socketDescriptor, qint64 count, QObject *parent
 LoginThread::~LoginThread()
 {
     qDebug()<<"~LoginThread()";
+    foreach (QString str, dbPool) {
+        {
+        QSqlDatabase db= QSqlDatabase::database(str,false);
+        if(db.isOpen())db.close();
+        }
+       if(QSqlDatabase::contains(str))
+        QSqlDatabase::removeDatabase(str);
+    }
+    dbPool.clear();
+     qDebug()<<" dbPool.clear()";
 }
 
 
@@ -199,13 +208,15 @@ void LoginThread::statusChanged(QString status,QString&myqq)
                                 }
                             }
                             bool ok=true;
-                            QSqlDatabase db1=QSqlDatabase::addDatabase("QSQLITE",tid+mq);
+                            QString cn1=tid+mq+QString("%1").arg( QDateTime::currentDateTime().toTime_t());
+                            QSqlDatabase db1=QSqlDatabase::addDatabase("QSQLITE",cn1);
+                            dbPool.append(cn1);
                             db1.setDatabaseName(QString("../userData/%1/friendsInfo/chat/_%2.db").arg(mq).arg(myqq));
                             db1.setHostName("MyQQ");
                             db1.setUserName("sa");
                             db1.setPassword("@123456x");
                             if(db1.open())
-                                qDebug()<<("打开sqliite数据库成功！");
+                                qDebug()<<("打开sqliite数据库成功！连接名是")<<db1.connectionName();
                             else {
                                 qDebug()<<("打开sqliite数据库失败！名字:")<<(db1.databaseName());
                                 return;
@@ -214,7 +225,6 @@ void LoginThread::statusChanged(QString status,QString&myqq)
                             ok=  query1.exec(QString(" SELECT count(*) FROM sqlite_master WHERE type='table' AND name ='_%1status' ").arg(myqq));
                             if(!ok){
                                 qDebug()<<"count of table query is of failure ";
-                                db1.close();//记得关闭 好删除文件
                                 return;
                             }
                             query1.next();
@@ -250,7 +260,6 @@ void LoginThread::statusChanged(QString status,QString&myqq)
                                 }
                             }
                             //改变好友xml状态记录
-                             db1.close();//记得关闭 好删除文件
                             setXmlStatus(myqq,mq,status);
                         }
                     }
@@ -371,6 +380,79 @@ void LoginThread::offlineOtherHost(QString &ip, QString &host, QString &oldIP, q
     offlineSock->connectToHost(oldIP,oldPort);
 }
 
+void LoginThread::onlineDispatchedIP(QJsonObject&writeObj,  QString &number, const QString&ip, const quint16&port,  QString&status)
+{
+    QTcpSocket*testSock=new QTcpSocket(this);
+    //连接
+    connect(testSock,&QTcpSocket::connected,testSock,[=]()mutable{
+        qDebug()<<"connection to opposite";
+        QJsonDocument writeJson;
+        writeObj.insert("result",QJsonValue("true"));
+        writeObj.insert("online",QJsonValue(true));
+        writeObj.insert("status",QJsonValue(status));
+        writeJson.setObject(writeObj);
+        QByteArray size;
+        QDataStream s(&size,QIODevice::WriteOnly);
+        s.setVersion(QDataStream::Qt_4_0);
+        quint8 l=writeJson.toJson().size();
+        s<<l;
+        tcpsocket->write(size+writeJson.toJson());
+        loop.exec();
+        emit finished();
+    });
+    //连不上更新状态
+    connect(testSock,QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),[=]()mutable{
+        QJsonDocument writeJson;
+        qDebug()<< "not connection to opposite";
+        writeObj.insert("result",QJsonValue("true"));
+        writeObj.insert("online",QJsonValue(false));
+        writeObj.insert("status",QJsonValue("0"));
+        writeJson.setObject(writeObj);
+        QByteArray size;
+        QDataStream s(&size,QIODevice::WriteOnly);
+        s.setVersion(QDataStream::Qt_4_0);
+        quint8 l=writeJson.toJson().size();
+        s<<l;
+        tcpsocket->write(size+writeJson.toJson());
+        loop.exec();
+        if(status!="0"){
+            QString cn=QString("%1").arg( QDateTime::currentDateTime().toTime_t())+QString("%1").arg(count);
+            QSqlDatabase db=QSqlDatabase::addDatabase("QODBC",cn);
+         dbPool.append(cn);
+            QString connectString = (
+                        "DRIVER={sql server};"
+                        "SERVER=127.0.0.1;"
+                        "DATABASENAME:qtmanager;"
+                        "PORT:1433;"
+                        "UID=sa;"
+                        "PWD=123456x;");
+            db.setDatabaseName(connectString);
+            qDebug()<<"curtime"<<QTime::currentTime();
+            if(db.open())
+                qDebug()<<("打开数据库成功！");
+            else {
+                qDebug()<<("打开数据库失败！")<<db.lastError();
+                emit finished();//由于同时打开数据库过多或者其他原因结束
+                return;
+            }
+
+            qDebug()<<"login"<<db.connectionName();
+            QSqlQuery query(" use myqq ",db);
+           bool ok=  query.exec(QString(" update userInfo set isConnected=0,userStatus='0'  where myqq=%1 ").arg(number.toLongLong()));
+            if(!ok){
+                qDebug()<<"the query is of failure for updating status";
+
+            }else{
+                statusChanged(QString("0"),number);
+            }
+        }
+        emit finished();
+    });
+    testSock->connectToHost(ip,port);
+}
+
+
+
 
 
 void LoginThread::timer()
@@ -390,8 +472,9 @@ void LoginThread::readD()
 {
     qDebug()<<"login executing thread is "<<this->thread()->currentThread();
     //用精确到秒的时间和100个值范围的count计数来控制1秒内可以打开的数据库连接，即100个
-    QSqlDatabase db=QSqlDatabase::addDatabase("QODBC",QString("%1").arg( QDateTime::currentDateTime().toTime_t())+QString("%1").arg(count));
-
+    QString cn=QString("%1").arg( QDateTime::currentDateTime().toTime_t())+QString("%1").arg(count);
+    QSqlDatabase db=QSqlDatabase::addDatabase("QODBC",cn);
+ dbPool.append(cn);
     QString connectString = (
                 "DRIVER={sql server};"
                 "SERVER=127.0.0.1;"
@@ -409,7 +492,7 @@ void LoginThread::readD()
         return;
     }
 
-    qDebug()<<"login"<<db.connectionName()<<db.databaseName();
+    qDebug()<<"login"<<db.connectionName();
     QSqlQuery query(" use myqq ",db);
 
     QJsonDocument readJson=QJsonDocument::fromBinaryData(tcpsocket->readAll());
@@ -731,13 +814,15 @@ void LoginThread::readD()
                                 for(qint32 i=0;i<length;++i){
                                     QString name=list.at(i);
                                     qDebug()<<"finding database name:"<<name;
-                                    QSqlDatabase db1=QSqlDatabase::addDatabase("QSQLITE",tid+myqq+QString("%1").arg(i));
+                                    QString cn1=tid+myqq+QString("%1").arg(i)+QString("%1").arg(QDateTime::currentDateTime().toTime_t());
+                                     dbPool.append(cn1);
+                                    QSqlDatabase db1=QSqlDatabase::addDatabase("QSQLITE",cn1);
                                     db1.setDatabaseName(dir.filePath(name));
                                     db1.setHostName("MyQQ");
                                     db1.setUserName("sa");
                                     db1.setPassword("@123456x");
                                     if(db1.open())
-                                        qDebug()<<("打开sqliite数据库成功！");
+                                        qDebug()<<("打开sqliite数据库成功！连接名是：")<<db1.connectionName();
                                     else {
                                         qDebug()<<("打开sqliite数据库失败！名字:")<<(db1.databaseName());
                                         continue;
@@ -746,7 +831,6 @@ void LoginThread::readD()
                                     ok=  query1.exec(QString(" SELECT count(*) FROM sqlite_master WHERE type='table' AND name ='_%1status' ").arg(name.left(name.length()-3)));
                                     if(!ok){
                                         qDebug()<<"count of table query is of failure ";
-                                        db1.close();//记得关闭 好删除文件
                                         return;
                                     }
                                     query1.next();
@@ -759,7 +843,6 @@ void LoginThread::readD()
                                     QFile file(dir.filePath(name));
                                     if(!file.open(QIODevice::ReadOnly)){
                                         qDebug()<<"opened file is of failure";
-                                        db1.close();//记得关闭 好删除文件
                                         return;
                                     }
                                     QByteArray data=file.readAll();
@@ -781,9 +864,9 @@ void LoginThread::readD()
                                     loop.exec();
                                     //
                                     query1.clear();
-                                    db1.close();//必须关闭数据库文件占用  才能删除
+                                    db1.close();//好删除文件
                                     file.close();
-                                   qDebug()<<"delete result"<< file.fileName()<<file.remove();//不保存消息记录
+                                    qDebug()<<"delete result"<< file.fileName()<<file.remove();//不保存消息记录
                                 }
                             }
                             //传最新的验证消息
@@ -824,13 +907,13 @@ void LoginThread::readD()
                                                 tcpsocket->write(sdata);
                                                 loop.exec();
                                                 vfile.close();
-                                               // vfile.remove();//不保存消息记录
+                                                // vfile.remove();//不保存消息记录
                                             }else{
                                                 qDebug()<<"a friend adding verify file is of failure for opening";
                                                 throw "opened file failure";
                                             }
                                         }
-                                        }
+                                    }
                                 }catch(_exception&e){
                                     qDebug()<<"exception:type "<<e.type<<",name "<<e.name;
                                 }
@@ -848,7 +931,6 @@ void LoginThread::readD()
                             stream2<<s2;
                             tcpsocket->write(size2+writeJson.toJson());
                             loop.exec();
-
                             return;
                         }
                     }
@@ -972,180 +1054,288 @@ void LoginThread::readD()
                                     friendList.append(reader.attributes().value("myqq").toLongLong());
                                 }
                             }
-                            friendInfo.close();
-                            qint64 beginId=obj.value("begin-id").toString().toLongLong();
                             QString containName=obj.value("name").toString();
-                            QString  location=obj.value("location").toString();
-                            QString  hometown=obj.value("hometown").toString();
-                            QString sex=obj.value("sex").toString();
-                            if(sex==("不限"))
-                                sex="";
-                            int age=obj.value("age").toInt();
-                            QDate beginDate,endDate;
-                            switch (age) {
-                            default://0或-1
-                                beginDate=QDate(1,1,1);
-                                endDate=QDate(9999,1,1);
-                                break;
-                            case 1:
-                                beginDate=QDate::currentDate().addYears(-23);
-                                endDate=QDate::currentDate().addYears(-18);
-                                break;
-                            case 2:
-                                beginDate=QDate::currentDate().addYears(-27);
-                                endDate=QDate::currentDate().addYears(-23);
-                                break;
-                            case 3:
-                                beginDate=QDate::currentDate().addYears(-36);
-                                endDate=QDate::currentDate().addYears(-27);
-                                break;
-                            case 4:
-                                beginDate=QDate(1,1,1);
-                                endDate=QDate::currentDate().addYears(-36);
-                                break;
-                            }
-                            bool online=obj.value("online").toBool();
-                            QStringList list1=location.split(",",QString::SkipEmptyParts);
-                            QStringList list2=hometown.split(",",QString::SkipEmptyParts);
+                            qint64 beginId=obj.value("begin-id").toString().toLongLong();
+                            //如果不全为数字或第一个数字为0则获取好友列表否则获取指定号码
+                            if(!containName.data()->isDigit()||containName.at(0)=="0"){
+                                friendInfo.close();
+                                QString  location=obj.value("location").toString();
+                                QString  hometown=obj.value("hometown").toString();
+                                QString sex=obj.value("sex").toString();
+                                if(sex==("不限"))
+                                    sex="";
+                                int age=obj.value("age").toInt();
+                                QDate beginDate,endDate;
+                                switch (age) {
+                                default://0或-1
+                                    beginDate=QDate(1,1,1);
+                                    endDate=QDate(9999,1,1);
+                                    break;
+                                case 1:
+                                    beginDate=QDate::currentDate().addYears(-23);
+                                    endDate=QDate::currentDate().addYears(-18);
+                                    break;
+                                case 2:
+                                    beginDate=QDate::currentDate().addYears(-27);
+                                    endDate=QDate::currentDate().addYears(-23);
+                                    break;
+                                case 3:
+                                    beginDate=QDate::currentDate().addYears(-36);
+                                    endDate=QDate::currentDate().addYears(-27);
+                                    break;
+                                case 4:
+                                    beginDate=QDate(1,1,1);
+                                    endDate=QDate::currentDate().addYears(-36);
+                                    break;
+                                }
+                                bool online=obj.value("online").toBool();
+                                QStringList list1=location.split(",",QString::SkipEmptyParts);
+                                QStringList list2=hometown.split(",",QString::SkipEmptyParts);
 
-                            QVector<QJsonObject> list;//用户列表
-                            query.prepare(" exec findFriends_pro :begin_id,:containName,:sex,:begin_date,"
-                                          ":end_date,:isConnected,:location1,:location2,:location3,:location4,"
-                                          ":hometown1,:hometown2,:hometown3,:hometown4 ");
-                            query.addBindValue(QVariant(beginId));
-                            query.addBindValue(QVariant(containName));
-                            query.addBindValue(QVariant(sex));
-                            query.addBindValue(QVariant(beginDate.toString("yyyy-MM-dd")));
-                            query.addBindValue(QVariant(endDate.toString("yyyy-MM-dd")));
-                            query.addBindValue(QVariant(online));
-                            query.addBindValue(QVariant(list1.at(0)==("不限")?"":list1.at(0)));
-                            query.addBindValue(QVariant(list1.size()>1?list1.at(1):""));
-                            query.addBindValue(QVariant(list1.size()>2?list1.at(2):""));
-                            query.addBindValue(QVariant(list1.size()>3?list1.at(3):""));
-                            query.addBindValue(QVariant(list2.at(0)==("不限")?"":list2.at(0)));
-                            query.addBindValue(QVariant(list2.size()>1?list2.at(1):""));
-                            query.addBindValue(QVariant(list2.size()>2?list2.at(2):""));
-                            query.addBindValue(QVariant(list2.size()>3?list2.at(3):""));
-                            qint32 count=0;
-                            qint32 sum=0;
-                            while(true){//循环获得记录，如果可以，必须要足20个
-                                /*
+                                QVector<QJsonObject> list;//用户列表
+                                query.prepare(" exec findFriends_pro :begin_id,:containName,:sex,:begin_date,"
+                                              ":end_date,:isConnected,:location1,:location2,:location3,:location4,"
+                                              ":hometown1,:hometown2,:hometown3,:hometown4,:isNumber ");
+                                query.addBindValue(QVariant(beginId));
+                                query.addBindValue(QVariant(containName));
+                                query.addBindValue(QVariant(sex));
+                                query.addBindValue(QVariant(beginDate.toString("yyyy-MM-dd")));
+                                query.addBindValue(QVariant(endDate.toString("yyyy-MM-dd")));
+                                query.addBindValue(QVariant(online));
+                                query.addBindValue(QVariant(list1.at(0)==("不限")?"":list1.at(0)));
+                                query.addBindValue(QVariant(list1.size()>1?list1.at(1):""));
+                                query.addBindValue(QVariant(list1.size()>2?list1.at(2):""));
+                                query.addBindValue(QVariant(list1.size()>3?list1.at(3):""));
+                                query.addBindValue(QVariant(list2.at(0)==("不限")?"":list2.at(0)));
+                                query.addBindValue(QVariant(list2.size()>1?list2.at(1):""));
+                                query.addBindValue(QVariant(list2.size()>2?list2.at(2):""));
+                                query.addBindValue(QVariant(list2.size()>3?list2.at(3):""));
+                                query.addBindValue(QVariant(false));
+                                qint32 count=0;
+                                qint32 sum=0;
+                                while(true){//循环获得记录，如果可以，必须要足20个
+                                    /*
 数据库中部分代码
 proc findFriends_pro
 --参数 @begin_id：号码的最小值 ,@containName：昵称包含的文本 @sex：性别  @begin_date和@end_date：生日范围   所在地及故乡
 @begin_id bigint,@containName varchar(24),@sex varchar(2),@begin_date date,@end_date datetime,@isConnected bit,
 @location1 varchar(20),@location2 varchar(20),@location3 varchar(20),@location4 varchar(20),@hometown1 varchar(20),
-@hometown2 varchar(20),@hometown3 varchar(20),@hometown4 varchar(20)
-select top 20 myqqName,myqq ,sex,birthday,headImgPath, --昵称 号码 性别 头像 所在地
+@hometown2 varchar(20),@hometown3 varchar(20),@hometown4 varchar(20),@isNumber
+select top 20 myqqName,myqq ,sex,birthday,headImgPath,personalizedSignature, --昵称 号码 性别 头像 所在地
 table1_1.name as location1,table1_2.name as location2,table1_3.name as location3,table1_4.name as location4--所在地
 */
-                                if(query.exec()){
-                                    qDebug()<<"exec successfully";
-                                    query.next();
-                                    if(!query.isValid()){
-                                        break;//可能出现意外问题导致死循环，强制结束循环
-                                    }
-                                    while (query.isValid()) {
-                                        bool ok=true;
-                                        for (QVariant v : friendList) {
-                                            //过滤好友
-                                            if(query.value("myqq").toLongLong()==v.toLongLong()){
-                                                ok=false;
-                                                break;
-                                            }
-                                        }
-                                        if(ok){//添加非好友信息
-                                            QJsonObject temp;
-                                            qint64 tempId=query.value("myqq").toLongLong();
-                                            if(tempId>beginId)beginId=tempId;//获取最大myqq
-                                            temp.insert("myqq",QJsonValue(tempId));
-                                            temp.insert("myqqName",QJsonValue(query.value("myqqName").toString()));
-                                            temp.insert("sex",QJsonValue(query.value("sex").toString()));
-                                            qint64 age=dateSubstraction(query.value("birthday").toDate(),QDate::currentDate());
-                                            temp.insert("age",QJsonValue(QString("%1").arg(age)));
-                                            temp.insert("imgpath",QJsonValue(query.value("headImgPath").toString()));
-                                            temp.insert("location1",QJsonValue(query.value("location1").toString()));
-                                            temp.insert("location2",QJsonValue(query.value("location2").toString()));
-                                            temp.insert("location3",QJsonValue(query.value("location3").toString()));
-                                            temp.insert("location4",QJsonValue(query.value("location4").toString()));
-                                            qDebug()<<temp;
-                                            list.append(temp);
-                                            ++count;
-                                        }
-                                        ++sum;
+                                    if(query.exec()){
+                                        qDebug()<<"exec successfully";
                                         query.next();
-                                    }
-                                    if(sum<20)
-                                        break;//不可再获取
-                                    else{
-                                        //继续获取
-                                        if(count<20){
-                                            query.prepare(" exec findFriends_pro :begin_id,:containName,:sex,:begin_date,"
-                                                          ":end_date,:isConnected,:location1,:location2,:location3,:location4,"
-                                                          ":hometown1,:hometown2,:hometown3,:hometown4 ");
-                                            query.bindValue(0,(QVariant(beginId)));//重新绑定
-                                        }else
-                                            break;//不需要再获取
+                                        if(!query.isValid()){
+                                            break;//可能出现意外问题导致死循环，强制结束循环
+                                        }
+                                        while (query.isValid()) {
+                                            bool ok=true;
+                                            for (QVariant v : friendList) {
+                                                //过滤好友
+                                                if(query.value("myqq").toLongLong()==v.toLongLong()){
+                                                    ok=false;
+                                                    break;
+                                                }
+                                            }
+                                            if(ok){//添加非好友信息
+                                                QJsonObject temp;
+                                                qint64 tempId=query.value("myqq").toLongLong();
+                                                if(tempId>beginId)beginId=tempId;//获取最大myqq
+                                                temp.insert("myqq",QJsonValue(tempId));
+                                                temp.insert("myqqName",QJsonValue(query.value("myqqName").toString()));
+                                                temp.insert("sex",QJsonValue(query.value("sex").toString()));
+                                                qint64 age=dateSubstraction(query.value("birthday").toDate(),QDate::currentDate());
+                                                temp.insert("age",QJsonValue(QString("%1").arg(age)));
+                                                temp.insert("imgpath",QJsonValue(query.value("headImgPath").toString()));
+                                                temp.insert("signature",QJsonValue(query.value("personalizedSignature").toString()));
+                                                temp.insert("location1",QJsonValue(query.value("location1").toString()));
+                                                temp.insert("location2",QJsonValue(query.value("location2").toString()));
+                                                temp.insert("location3",QJsonValue(query.value("location3").toString()));
+                                                temp.insert("location4",QJsonValue(query.value("location4").toString()));
+                                                qDebug()<<temp;
+                                                list.append(temp);
+                                                ++count;
+                                            }
+                                            ++sum;
+                                            query.next();
+                                        }
+                                        if(sum<20)
+                                            break;//不可再获取
+                                        else{
+                                            //继续获取
+                                            if(count<20){
+                                                query.prepare(" exec findFriends_pro :begin_id,:containName,:sex,:begin_date,"
+                                                              ":end_date,:isConnected,:location1,:location2,:location3,:location4,"
+                                                              ":hometown1,:hometown2,:hometown3,:hometown4,:isNumber ");
+                                                query.addBindValue((QVariant(beginId)));//重新绑定
+                                                query.addBindValue(QVariant(beginId));
+                                                query.addBindValue(QVariant(containName));
+                                                query.addBindValue(QVariant(sex));
+                                                query.addBindValue(QVariant(beginDate.toString("yyyy-MM-dd")));
+                                                query.addBindValue(QVariant(endDate.toString("yyyy-MM-dd")));
+                                                query.addBindValue(QVariant(online));
+                                                query.addBindValue(QVariant(list1.at(0)==("不限")?"":list1.at(0)));
+                                                query.addBindValue(QVariant(list1.size()>1?list1.at(1):""));
+                                                query.addBindValue(QVariant(list1.size()>2?list1.at(2):""));
+                                                query.addBindValue(QVariant(list1.size()>3?list1.at(3):""));
+                                                query.addBindValue(QVariant(list2.at(0)==("不限")?"":list2.at(0)));
+                                                query.addBindValue(QVariant(list2.size()>1?list2.at(1):""));
+                                                query.addBindValue(QVariant(list2.size()>2?list2.at(2):""));
+                                                query.addBindValue(QVariant(list2.size()>3?list2.at(3):""));
+                                                query.addBindValue(QVariant(false));
+                                            }else
+                                                break;//不需要再获取
+                                        }
                                     }
                                 }
-                            }
-                            QJsonDocument doc;
-                            QJsonArray array;
-                            for(int i=0;i<list.length()&&i<20;i++){//获取至多20个记录
-                                QJsonObject obj=list.at(i);
-                                array.append(obj);
-                            }
-                            doc.setArray(array);
-                            QJsonDocument userJson;//不通过赋值复用json就不会膨胀
-                            QJsonObject userObj;
-                            userObj.insert("instruct",QJsonValue("31"));
-                            userObj.insert("content",QJsonValue("find-person"));
-                            userObj.insert("size",QJsonValue(doc.toJson().size()));
-                            userObj.insert("begin-id",QJsonValue(QString("%1").arg(beginId)));//转为字符串 因为qjsonvalue不支持int64
-                            userJson.setObject(userObj);
-                            quint8 s=userJson.toJson().size();//仅仅标记json数据<256 bytes
-                            QByteArray size;
-                            QDataStream stream(&size,QIODevice::WriteOnly);
-                            stream.setVersion(QDataStream::Qt_4_0);
-                            stream<<s;
-                            tcpsocket->write(size+userJson.toJson());
-                            loop.exec();
-                            tcpsocket->write(doc.toJson());//写入搜索列表
-                            loop.exec();
-                            //传图片 myqq.png
-                            for (QJsonValue v : array) {
-                                QJsonObject obj=v.toObject();
-                                QString path=obj.value("imgpath").toString();
-                                QString number=QString("%1").arg(obj.value("myqq").toVariant().toLongLong());
-                                qDebug()<<number;
-                                QString fullpath="../userData/"+number+"/historyHeadImg/01.png";
-                                QFile img(fullpath);
-                                if(img.open(QIODevice::ReadOnly)){
-                                    byteSize=img.size();
-                                    QByteArray imgData;
-                                    imgData.resize(byteSize);
-                                    if(img.read(imgData.data(),byteSize)==-1){
-                                        qDebug()<<"read "<<fullpath+".png had failed";
+                                QJsonDocument doc;
+                                QJsonArray array;
+                                for(int i=0;i<list.length()&&i<20;i++){//获取至多20个记录
+                                    QJsonObject obj=list.at(i);
+                                    array.append(obj);
+                                }
+                                doc.setArray(array);
+                                QJsonDocument userJson;//不通过赋值复用json就不会膨胀
+                                QJsonObject userObj;
+                                userObj.insert("instruct",QJsonValue("31"));
+                                userObj.insert("content",QJsonValue("find-person"));
+                                userObj.insert("size",QJsonValue(doc.toJson().size()));
+                                userObj.insert("begin-id",QJsonValue(QString("%1").arg(beginId)));//转为字符串 因为qjsonvalue不支持int64
+                                userJson.setObject(userObj);
+                                quint8 s=userJson.toJson().size();//仅仅标记json数据<256 bytes
+                                QByteArray size;
+                                QDataStream stream(&size,QIODevice::WriteOnly);
+                                stream.setVersion(QDataStream::Qt_4_0);
+                                stream<<s;
+                                tcpsocket->write(size+userJson.toJson());
+                                loop.exec();
+                                tcpsocket->write(doc.toJson());//写入搜索列表
+                                loop.exec();
+                                //传图片 myqq.png
+                                for (QJsonValue v : array) {
+                                    QJsonObject obj=v.toObject();
+                                    QString path=obj.value("imgpath").toString();
+                                    QString number=QString("%1").arg(obj.value("myqq").toVariant().toLongLong());
+                                    qDebug()<<number;
+                                    QString fullpath="../userData/"+number+"/historyHeadImg/01.png";
+                                    QFile img(fullpath);
+                                    if(img.open(QIODevice::ReadOnly)){
+                                        byteSize=img.size();
+                                        QByteArray imgData;
+                                        imgData.resize(byteSize);
+                                        if(img.read(imgData.data(),byteSize)==-1){
+                                            qDebug()<<"read "<<fullpath+".png had failed";
+                                        }
+                                        //写入数据指令 32 传好友图像
+                                        QJsonDocument imgJson;//
+                                        QJsonObject imgObj;
+                                        imgObj.insert("instruct",QJsonValue("32"));
+                                        imgObj.insert("content",QJsonValue("find-person"));
+                                        imgObj.insert("imgname",QJsonValue(number+".png"));
+                                        imgObj.insert("size",QJsonValue(byteSize));
+                                        imgJson.setObject(imgObj);
+                                        s=imgJson.toJson().size();
+                                        QByteArray size1;//重写一个size头 不能复用size，每写入一次都会膨胀
+                                        QDataStream stream1(&size1,QIODevice::WriteOnly);
+                                        stream1.setVersion(QDataStream::Qt_4_0);
+                                        stream1<<s;
+                                        tcpsocket->write(size1+imgJson.toJson());
+                                        loop.exec();
+                                        tcpsocket->write(imgData);
+                                        loop.exec();
+                                        img.close();//关闭文件
+                                    }else qDebug()<<"opened image had failed";
+                                }
+
+                            }else{
+                                bool contain=false;
+                                for (QVariant mq : friendList) {
+                                    if(mq.toString()==containName){
+                                        contain=true;
                                     }
-                                    //写入数据指令 32 传好友图像
-                                    QJsonDocument imgJson;//
-                                    QJsonObject imgObj;
-                                    imgObj.insert("instruct",QJsonValue("32"));
-                                    imgObj.insert("content",QJsonValue("find-person"));
-                                    imgObj.insert("imgname",QJsonValue(number+".png"));
-                                    imgObj.insert("size",QJsonValue(byteSize));
-                                    imgJson.setObject(imgObj);
-                                    s=imgJson.toJson().size();
-                                    QByteArray size1;//重写一个size头 不能复用size，每写入一次都会膨胀
-                                    QDataStream stream1(&size1,QIODevice::WriteOnly);
-                                    stream1.setVersion(QDataStream::Qt_4_0);
-                                    stream1<<s;
-                                    tcpsocket->write(size1+imgJson.toJson());
-                                    loop.exec();
-                                    tcpsocket->write(imgData);
-                                    loop.exec();
-                                    img.close();//关闭文件
-                                }else qDebug()<<"opened image had failed";
+                                }
+                                if(!contain){
+                                    query.prepare(" exec findFriends_pro :begin_id,:containName ");
+                                    query.addBindValue(QVariant((qint64)10001));
+                                    query.addBindValue(QVariant(containName));
+                                    if(query.exec()){
+                                        query.next();
+                                        QJsonObject temp;
+                                        temp.insert("myqq",QJsonValue(query.value("myqq").toLongLong()));
+                                        temp.insert("myqqName",QJsonValue(query.value("myqqName").toString()));
+                                        temp.insert("sex",QJsonValue(query.value("sex").toString()));
+                                        qint64 age=dateSubstraction(query.value("birthday").toDate(),QDate::currentDate());
+                                        temp.insert("age",QJsonValue(QString("%1").arg(age)));
+                                        temp.insert("imgpath",QJsonValue(query.value("headImgPath").toString()));
+                                        temp.insert("signature",QJsonValue(query.value("personalizedSignature").toString()));
+                                        temp.insert("location1",QJsonValue(query.value("location1").toString()));
+                                        temp.insert("location2",QJsonValue(query.value("location2").toString()));
+                                        temp.insert("location3",QJsonValue(query.value("location3").toString()));
+                                        temp.insert("location4",QJsonValue(query.value("location4").toString()));
+                                        QJsonDocument doc;
+                                        QJsonArray array;
+                                        array.append(QJsonValue(temp));
+                                        doc.setArray(array);
+                                        QJsonDocument userJson;//不通过赋值复用json就不会膨胀
+                                        QJsonObject userObj;
+                                        userObj.insert("instruct",QJsonValue("31"));
+                                        userObj.insert("content",QJsonValue("find-person"));
+                                        userObj.insert("size",QJsonValue(doc.toJson().size()));
+                                        userObj.insert("begin-id",QJsonValue(QString("%1").arg(beginId)));//转为字符串 因为qjsonvalue不支持int64
+                                        userJson.setObject(userObj);
+                                        quint8 s=userJson.toJson().size();//仅仅标记json数据<256 bytes
+                                        QByteArray size;
+                                        QDataStream stream(&size,QIODevice::WriteOnly);
+                                        stream.setVersion(QDataStream::Qt_4_0);
+                                        stream<<s;
+                                        tcpsocket->write(size+userJson.toJson());
+                                        loop.exec();
+                                        tcpsocket->write(doc.toJson());//写入搜索列表
+                                        loop.exec();
+                                        //传图片 myqq.png
+                                        for (QJsonValue v : array) {
+                                            QJsonObject obj=v.toObject();
+                                            QString path=obj.value("imgpath").toString();
+                                            QString number=QString("%1").arg(obj.value("myqq").toVariant().toLongLong());
+                                            qDebug()<<number;
+                                            QString fullpath="../userData/"+number+"/historyHeadImg/01.png";
+                                            QFile img(fullpath);
+                                            if(img.open(QIODevice::ReadOnly)){
+                                                byteSize=img.size();
+                                                QByteArray imgData;
+                                                imgData.resize(byteSize);
+                                                if(img.read(imgData.data(),byteSize)==-1){
+                                                    qDebug()<<"read "<<fullpath+".png had failed";
+                                                }
+                                                //写入数据指令 32 传好友图像
+                                                QJsonDocument imgJson;//
+                                                QJsonObject imgObj;
+                                                imgObj.insert("instruct",QJsonValue("32"));
+                                                imgObj.insert("content",QJsonValue("find-person"));
+                                                imgObj.insert("imgname",QJsonValue(number+".png"));
+                                                imgObj.insert("size",QJsonValue(byteSize));
+                                                imgJson.setObject(imgObj);
+                                                s=imgJson.toJson().size();
+                                                QByteArray size1;//重写一个size头 不能复用size，每写入一次都会膨胀
+                                                QDataStream stream1(&size1,QIODevice::WriteOnly);
+                                                stream1.setVersion(QDataStream::Qt_4_0);
+                                                stream1<<s;
+                                                tcpsocket->write(size1+imgJson.toJson());
+                                                loop.exec();
+                                                tcpsocket->write(imgData);
+                                                loop.exec();
+                                                img.close();//关闭文件
+                                            }else qDebug()<<"opened image had failed";
+                                        }
+
+                                    }else{
+                                        qDebug()<<"q query sentence excuting is of failure";
+                                    }
+                                }else{
+                                    qDebug()<<"the number of serching is a friend number";
+                                }
                             }
                             //写入数据指令 30 结束
                             writeObj.insert("instruct",QJsonValue("30"));
@@ -1153,11 +1343,13 @@ table1_1.name as location1,table1_2.name as location2,table1_3.name as location3
                             writeObj.insert("result",QJsonValue("true"));
                             writeJson.setObject(writeObj);
                             QByteArray size1;//重写一个size头 不能复用size，每写入一次都会膨胀
+                            quint8 s=writeJson.toJson().size();
                             QDataStream stream1(&size1,QIODevice::WriteOnly);
                             stream1.setVersion(QDataStream::Qt_4_0);
                             stream1<<s;
                             tcpsocket->write(size1+writeJson.toJson());
                             loop.exec();
+
                             return;
                         }
                         //写入数据指令 30 结束
@@ -1241,6 +1433,7 @@ table1_1.name as location1,table1_2.name as location2,table1_3.name as location3
                         sizeStr<<l2;
                         tcpsocket->write(sizedata+ writeJson.toJson());
                         loop.exec();
+
                         return;
                     }
 
@@ -1359,15 +1552,18 @@ label:
                             if(dir.exists()){
                                 QStringList list=dir.entryList(QStringList("*.db"),QDir::Files);
                                 QJsonObject statusObj;//状态数据载体 number:status
+                                qDebug()<<"database size is "<<list.size();
                                 for (QString name :list ) {
-                                    QString number=name.mid(1,name.length()-3);//_(.*).db 号码
-                                    QSqlDatabase db1=QSqlDatabase::addDatabase("QSQLITE",number);
+                                    QString number=name.mid(1,name.length()-4);//_(.*).db 号码
+                                    QString cn1=number+QString("%1%2").arg(QDateTime::currentDateTime().toTime_t()).arg(count);
+                                    QSqlDatabase db1=QSqlDatabase::addDatabase("QSQLITE",cn1);
+                                     dbPool.append(cn1);
                                     db1.setDatabaseName(QString("../userData/%1/friendsInfo/chat/_%2.db").arg(myqq).arg(number));
                                     db1.setHostName("MyQQ");
                                     db1.setUserName("sa");
                                     db1.setPassword("@123456x");
                                     if(db1.open())
-                                        qDebug()<<("打开sqliite数据库成功！");
+                                        qDebug()<<("打开sqliite数据库成功！连接名是")<<db1.connectionName();
                                     else {
                                         qDebug()<<("打开sqliite数据库失败！名字:")<<(db1.databaseName());
                                         continue;//跳过
@@ -1376,25 +1572,25 @@ label:
                                     ok=  query1.exec(QString(" SELECT count(*) FROM sqlite_master WHERE type='table' AND name ='_%1status' ").arg(number));
                                     if(!ok){
                                         qDebug()<<"count of table query is of failure ";
-                                       continue;
+                                        continue;
                                     }
                                     query1.next();
                                     if(query1.value(0).toInt()!=0){
-                                       ok= query1.exec(QString(" select status from _%1status ").arg(number));
-                                       if(!ok){
-                                           qDebug()<<"select status from _%1status failure";
-                                           continue;
-                                       }
-                                       query1.next();
-                                       QString status=query1.value("status").toString();
-                                       statusObj.insert(number,status);//保存状态数据
-                                       //删除状态表
-                                       ok=query1.exec(QString(" drop table _%1status ").arg(number));
-                                       if(!ok){
-                                           qDebug()<<"warning: drop table _%1status sentence executing failure";
-                                       }
+                                        ok= query1.exec(QString(" select status from _%1status ").arg(number));
+                                        if(!ok){
+                                            qDebug()<<"select status from _%1status failure";
+                                            continue;
+                                        }
+                                        query1.next();
+                                        QString status=query1.value("status").toString();
+                                        statusObj.insert(number,status);//保存状态数据
+                                        //删除状态表
+                                        ok=query1.exec(QString(" drop table _%1status ").arg(number));
+                                        if(!ok){
+                                            qDebug()<<"warning: drop table _%1status sentence executing failure";
+                                        }
                                     }
-                                    db1.close();//记得关闭 好删除文件
+
                                 }
                                 //发送状态数据
                                 if(!statusObj.isEmpty()){
@@ -1416,8 +1612,211 @@ label:
                                     loop.exec();
                                 }
                             }
+
                         }else ok=false;
                         qDebug()<<"result is "<<ok;
+                        //更新在线时间 及活跃度 如果等级变化则写入好友路径文件 加全局锁控制
+                        if(query.exec(QString(" select liveTime,activeDays,myqqGrade from userInfo where myqq=%1 ").arg(myqq.toLongLong()))){
+                           query.next();//获取记录
+                            QString time;//当天在线时间
+                            QString lTime=query.value("liveTime").toString();
+                            qint64 activeDays=query.value("activeDays").toLongLong();
+                            int grade=query.value("myqqGrade").toInt();
+                            QStringList list=  lTime.split(";;",QString::SkipEmptyParts);
+                            if(list.size()>=2){
+                                QDate date=QDate::fromString(list.at(0),Qt::ISODate);
+                                if(date!=QDate::currentDate()){
+                                    time="0";//重置为0
+                                }else{
+                                    time=list.at(1);
+                                }
+                            }else{
+                                time="0";
+                            }
+                            int l =time.toInt();
+                            bool isNeesUpdate=false;
+                            if(l<120){
+                                l+=5;
+                                //大于2小时 活跃度升1
+                                if(l>=120){
+                                    activeDays+=1;
+                                    int temp=(grade+5)*(grade+1);
+                                    if(activeDays>=temp){
+                                        grade+=1;
+                                        activeDays=activeDays-temp;
+                                        isNeesUpdate=true;
+                                    }
+                                }
+                            }else{
+                                l+=5;
+                            }
+                            if(isNeesUpdate){
+                                query.prepare(" update userInfo set liveTime=?,activeDays=?,myqqGrade=? where myqq=? ");
+                                query.addBindValue(QVariant(QDate::currentDate().toString("yyyy-MM-dd")+QString(";;%1").arg(l)));
+                                query.addBindValue(QVariant(activeDays));
+                                query.addBindValue(QVariant(grade));
+                                query.addBindValue(QVariant(myqq.toLongLong()));
+                                if(query.exec()){
+                                    //写入各个好友json文件
+                                    QFile friendInfo("../userData/"+QString("%1").arg(myqq)+"/info.xml");
+                                    QStringList friendList;
+                                    if(friendInfo.open(QIODevice::ReadOnly)){
+                                        QXmlStreamReader reader;
+                                        reader.setDevice(&friendInfo);
+                                        friendInfo.close();
+                                        while (!reader.atEnd()) {
+                                            reader.readNextStartElement();
+                                            if(reader.name().toString()=="friend"){
+                                                friendList.append(reader.attributes().value("myqq").toString());
+                                            }
+                                        }
+                                    }
+                                    for (QString v : friendList) {
+                                        QDir dir("../userData/"+v+"/friendsInfo");
+                                        if(!dir.exists())dir.mkpath("./");
+                                        QMutex*muter;//锁对象
+                                        QSharedPointer<QMutex>smuter;//智能指针对象 复制体 引用计数加一 用来安全删除锁
+                                        if(gradeMuter.contains(v)){
+                                           smuter =gradeMuter.value(v);//获取复制的智能指针对象
+                                            muter=smuter.data();
+                                            muter->lock();
+                                        }else{
+                                            muter=new QMutex();
+                                            QSharedPointer<QMutex>tmuter(muter,[=](QMutex*m){
+                                                delete m,m=nullptr;
+                                            });//定义智能指针及删除函数
+                                            gradeMuter.insert(v,tmuter);
+                                            smuter=gradeMuter.value(v);//利用map获取一个复制体智能指针对象 引用计数加1
+                                            muter->lock();
+                                        }
+                                        QFile gtf(dir.filePath("grade.json"));
+                                        if(gtf.open(QIODevice::ReadWrite)){
+                                            QJsonDocument gtdoc=QJsonDocument::fromJson(gtf.readAll());
+                                            QJsonObject gtobj=gtdoc.object();
+                                            gtobj.insert(myqq,QJsonValue(grade));//插入、更新等级
+                                            gtdoc=QJsonDocument();
+                                            gtdoc.setObject(gtobj);
+                                            gtf.write(gtdoc.toJson());//写入文件
+                                            gtf.close();//关闭
+                                        }else{
+                                            qDebug()<<"opened a file failure";
+                                        }
+                                        muter->unlock();//解锁
+                                    }
+                                }else{
+                                    qDebug()<<"update the grade is of failure";
+                                }
+                            }else{//更新在线时间和活跃度
+                                query.prepare(" update userInfo set liveTime=?,activeDays=? where myqq=? ");
+                                query.addBindValue(QVariant(QDate::currentDate().toString("yyyy-MM-dd")+QString(";;%1").arg(l)));
+                                query.addBindValue(QVariant(activeDays));
+                                query.addBindValue(QVariant(myqq.toLongLong()));
+                                if(!query.exec()){
+                                    qDebug()<<"sentence 'update userInfo set liveTime=?,activeDays=? where myqq=?' executing failure";
+                                }
+                            }
+                            writeJson=QJsonDocument();
+                            writeObj=QJsonObject();
+                            writeObj.insert("content",QJsonValue("mygrade"));
+                            writeObj.insert("isNeedUpdate",QJsonValue(isNeesUpdate));
+                            if(isNeesUpdate){
+                            writeObj.insert("grade",QJsonValue(grade));
+                            }
+                              writeObj.insert("activeDays",QJsonValue(QString("%1").arg(activeDays)));//转为安全类型
+                            writeJson.setObject(writeObj);
+                            QByteArray sizedata;
+                            quint8 lt=writeJson.toJson().size();
+                            QDataStream sizeStr(&sizedata,QIODevice::WriteOnly);
+                            sizeStr.setVersion(QDataStream::Qt_4_0);
+                            sizeStr<<lt;
+                            tcpsocket->write(sizedata+ writeJson.toJson());
+                            loop.exec();
+                        }else{
+                            qDebug()<<"querying the grade is of failure";
+                        }
+
+                        //处理好友等级是否变化
+                        QFile gradeFile("../userData/"+myqq+"/friendsInfo/grade.json");
+                        if(gradeFile.exists()){
+                            qDebug()<<"it's need updating for friends grade";
+                            if(gradeMuter.contains(myqq)){
+                                QSharedPointer<QMutex>&smuter=gradeMuter[myqq];//引用对象
+                                QMutex*muter=smuter.data();
+                                muter->lock();
+                            if(gradeFile.open(QIODevice::ReadOnly)){
+                                QJsonDocument gjson=QJsonDocument::fromJson(gradeFile.readAll());
+                                QJsonObject gobj=gjson.object();
+                                if(gobj.isEmpty()){
+                                    qDebug()<<"warning:the grade.json file is empty";
+                                }else{
+                                    //迭代 获取数据
+                                    QJsonObject fobj;//数据载体
+                                   QJsonObject::const_iterator pos=gobj.constBegin();
+                                   QJsonObject::const_iterator end=gobj.constEnd();
+                                   while (pos!=end) {
+                                     fobj.insert(pos.key(),pos.value());
+                                     ++pos;
+                                   }
+                                   QJsonDocument fjson(fobj);
+                                   writeJson=QJsonDocument();
+                                   writeObj=QJsonObject();
+                                   writeObj.insert("content",QJsonValue("friendsgrade"));
+                                   writeObj.insert("size",QJsonValue(fjson.toJson().size()));
+                                   writeJson.setObject(writeObj);
+                                   QByteArray sizedata;
+                                   quint8 lt=writeJson.toJson().size();
+                                   QDataStream sizeStr(&sizedata,QIODevice::WriteOnly);
+                                   sizeStr.setVersion(QDataStream::Qt_4_0);
+                                   sizeStr<<lt;
+                                   tcpsocket->write(sizedata+ writeJson.toJson());
+                                   loop.exec();
+                                   tcpsocket->write(fjson.toJson());
+                                   loop.exec();
+                                }
+                                gradeFile.close();
+                            }
+                            gradeFile.remove();//先删除文件再解锁
+                            gradeMuter.remove(myqq);//移除
+                            muter->unlock();//解锁
+                            smuter.clear();//解除引用 但不一定删除管理的指针对象
+                            }else{//有可能是刚刚读文件删除出后，写入段重新写入文件 这里正常读取
+                                if(gradeFile.open(QIODevice::ReadOnly)){
+                                    QJsonDocument gjson=QJsonDocument::fromJson(gradeFile.readAll());
+                                    QJsonObject gobj=gjson.object();
+                                    if(gobj.isEmpty()){
+                                        qDebug()<<"warning:the grade.json file is empty";
+                                    }else{
+                                        //迭代 获取数据
+                                        QJsonObject fobj;//数据载体
+                                       QJsonObject::const_iterator pos=gobj.constBegin();
+                                       QJsonObject::const_iterator end=gobj.constEnd();
+                                       while (pos!=end) {
+                                         fobj.insert(pos.key(),pos.value());
+                                         ++pos;
+                                       }
+                                       QJsonDocument fjson(fobj);
+                                       writeJson=QJsonDocument();
+                                       writeObj=QJsonObject();
+                                       writeObj.insert("content",QJsonValue("friendsgrade"));
+                                       writeObj.insert("size",QJsonValue(fjson.toJson().size()));
+                                       writeJson.setObject(writeObj);
+                                       QByteArray sizedata;
+                                       quint8 lt=writeJson.toJson().size();
+                                       QDataStream sizeStr(&sizedata,QIODevice::WriteOnly);
+                                       sizeStr.setVersion(QDataStream::Qt_4_0);
+                                       sizeStr<<lt;
+                                       tcpsocket->write(sizedata+ writeJson.toJson());
+                                       loop.exec();
+                                       tcpsocket->write(fjson.toJson());
+                                       loop.exec();
+                                    }
+                                    gradeFile.close();
+                                    gradeFile.remove();
+                                }
+                                }
+                        }
+                        writeJson=QJsonDocument();//重置
+                        writeObj=QJsonObject();
                         if(ok){
                             //成功处理
                             writeObj.insert("content",QJsonValue("end"));
@@ -1457,6 +1856,7 @@ label:
                         loop.exec();
                         tcpsocket->disconnectFromHost();
                     }
+
                     return;
                     //个性资料发送
                 }else if(in.toString()=="8"){
@@ -1475,7 +1875,7 @@ label:
                                     writeObj.insert("signature",query.value("personalizedSignature").toString());
                                     writeObj.insert("name",query.value("myqqName").toString());
                                     writeObj.insert("sex",query.value("sex").toString());
-                                    writeObj.insert("myqqGrade",query.value("grade").toString());
+                                    writeObj.insert("myqqGrade",query.value("myqqGrade").toString());
                                 }
                                 writeObj.insert("birthday",query.value("birthday").toString());
                                 writeObj.insert("registerDateTime",query.value("registerDateTime").toString());
@@ -1627,6 +2027,7 @@ label:
                         loop.exec();
                         tcpsocket->disconnectFromHost();
                     }
+
                     return;
                     //好友添加验证消息
                 }else if(in.toString()=="12"){
@@ -1653,6 +2054,7 @@ label:
                         if(!file.open(QIODevice::WriteOnly)){
                             qDebug()<<dir.filePath(myqq+".json")<<" was opened unsuccessfully";
                             emit finished();
+
                             return;
                         }
                         QJsonDocument doc;
@@ -1682,6 +2084,7 @@ label:
 
                                 tempObj.insert("time",QJsonValue(time));
                                 writeInfoToOpposite(ip,port,tempObj,"friend-verify");
+
                                 return;
                             }
                         }
@@ -1849,7 +2252,7 @@ label:
                                         bool isCon=query.value("isConnected").toBool();
                                         QString log1=query.value("signLog").toString();
                                         query.prepare("  select myqqName,personalizedSignature,signlog,myqqGrade,userState from userInfo with(rowlock,holdlock) where myqq=? ");
-                                        query.addBindValue(QVariant(myqq));
+                                        query.addBindValue(QVariant(myqq.toLongLong()));
                                         if(!query.exec()){
                                             qDebug()<<"a query is of failure";
                                         }
@@ -1860,8 +2263,9 @@ label:
                                         QString status2=query.value("userState").toString();
                                         QString log2=query.value("signLog").toString();
 
-                                        QString ogn=tobj.value("groupName").toString();
-                                        QString gn=obj.value("groupName").toString();
+                                        QString ogn=tobj.value("groupName").toString();//对方添加组名
+                                        QString gn=obj.value("groupName").toString();//添加组名
+                                        qDebug()<<"my added group name:"<<gn<<";opposite part:"<<ogn;
                                         //修改对方的文件
                                         QFile opFile("../userData/"+number+"/info.xml");
                                         if(opFile.open(QIODevice::ReadWrite)){
@@ -2146,6 +2550,7 @@ label:
                                                     qDebug()<<"opposite party is online ";
                                                     QString ip =signList1.at(0);
                                                     signList1=ip.split(" ",QString::SkipEmptyParts);
+                                                    if(signList1.size()>2){//排除极端情况
                                                     ip=signList1.at(1);//ip
                                                     QString temp=signList1.at(2);//port
                                                     quint16 port=(quint16)temp.toUInt();
@@ -2165,49 +2570,25 @@ label:
                                                     tempObj.insert("time",QJsonValue(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")));
                                                     //写入对方地址端口
                                                     writeInfoToOpposite(ip,port,tempObj,"addFriend",pixData,false);
-                                                    //回复自己
-                                                    QStringList msignList=log2.split(";;",QString::SkipEmptyParts);
-                                                    QString mip =msignList.at(0);
-                                                    msignList=mip.split(" ",QString::SkipEmptyParts);
-                                                    mip=msignList.at(1);//ip
-                                                    temp=msignList.at(2);//port
-                                                    quint16 mport=(quint16)temp.toUInt();
-                                                    qDebug()<<"my ip and port:"<<mip<<" "<<mport;
-                                                    QJsonObject tempObj1;
-                                                    tempObj1.insert("name",QJsonValue(name1));
-                                                    tempObj1.insert("number",QJsonValue(number));
-                                                    tempObj1.insert("signature",QJsonValue(sig1));
-                                                    tempObj1.insert("grade",QJsonValue(query.value("myqqGrade").toString()));
-                                                    tempObj1.insert("imgPath",QJsonValue("../userData/"+number+"/historyHeadImg/01.png"));
-                                                    tempObj1.insert("status",QJsonValue(status1));
-                                                    tempObj1.insert("infoSet",QJsonValue("0"));
-                                                    tempObj1.insert("statusSet",QJsonValue("0"));
-                                                    tempObj1.insert("tag",QJsonValue(obj.value("tag").toString()));
-                                                    tempObj1.insert("groupName",QJsonValue(gn));
-                                                    tempObj1.insert("verify",QJsonValue(tobj.value("verify").toString()));
-                                                    //写入图像
-                                                    QFile file("../userData/"+myqq+"/historyHeadImg/01.png");
-                                                    if(!file.open(QIODevice::ReadOnly)){
-                                                        qDebug()<<"a file is of failure to open";
-                                                    }
-                                                    QByteArray mImg=file.readAll();
-                                                    if(mImg.isEmpty())qDebug()<<"a error:data of reading file is empty";
-                                                    writeInfoToOpposite(mip,mport,tempObj1,"addFriend",mImg);
+}
                                                 }else{
                                                     qDebug()<<"opposite is not online";
                                                     //记录离线添加信息
                                                     //创建目录
                                                     QDir dir1("../userData/"+number+"/friendsInfo/chat");
                                                     if(!dir1.exists())dir1.mkpath("./");
-                                                    QSqlDatabase db1=QSqlDatabase::addDatabase("QSQLITE",db.connectionName());
+                                                    QString cn1=QString("%1").arg(QDateTime::currentDateTime().toTime_t())+db.connectionName();
+                                                    QSqlDatabase db1=QSqlDatabase::addDatabase("QSQLITE",cn1);
+                                                     dbPool.append(cn1);
                                                     db1.setDatabaseName(QString("../userData/%1/friendsInfo/chat/_%2.db").arg(number).arg(myqq));
                                                     db1.setHostName("MyQQ");
                                                     db1.setUserName("sa");
                                                     db1.setPassword("@123456x");
                                                     if(db1.open())
-                                                        qDebug()<<("打开sqliite数据库成功！");
+                                                        qDebug()<<("打开sqliite数据库成功！连接名是：")<<db1.connectionName();
                                                     else {
                                                         qDebug()<<("打开sqliite数据库失败！");
+
                                                         return;
                                                     }
                                                     bool ok;
@@ -2215,7 +2596,7 @@ label:
                                                     ok=  query1.exec(QString(" SELECT count(*) FROM sqlite_master WHERE type='table' AND name ='_%1info' ").arg(myqq));
                                                     if(!ok){
                                                         qDebug()<<"count of table query is of failure ";
-                                                        db1.close();//记得关闭 好删除文件
+
                                                         return;
                                                     }
                                                     query1.next();
@@ -2230,8 +2611,7 @@ label:
                                                                                  )").arg(myqq) );
                                                                         if(!ok){
                                                                             qDebug()<<"table creation is of failure ,name ";
-                                                                            db1.close();//记得关闭 好删除文件
-                                                                            return;
+                                                                          return;
                                                                         }
                                                     }
                                                     QString  cur=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");//时间
@@ -2241,12 +2621,46 @@ label:
                                                     query1.addBindValue(QVariant(cur));
                                                     query1.addBindValue(QVariant("text"));
                                                     query1.addBindValue(QVariant(false));
-                                                    query1.addBindValue(QVariant(myqq));
+                                                    query1.addBindValue(QVariant(myqq.toLongLong()));
                                                     ok=query1.exec();
                                                     if(!ok)qDebug()<<"added information is of failure";
-                                                    db1.close();//记得关闭 好删除文件
-                                                }
 
+                                                }
+                                                //不管是否在线都让自己添加 回复自己
+                                                QStringList msignList=log2.split(";;",QString::SkipEmptyParts);
+                                              if(msignList.size()>0){
+                                                QString mip =msignList.at(0);
+                                                msignList=mip.split(" ",QString::SkipEmptyParts);
+                                                if(msignList.size()>2){//排除极端情况
+                                                mip=msignList.at(1);//ip
+                                                QString temp=msignList.at(2);//port
+                                                quint16 mport=(quint16)temp.toUInt();
+                                                qDebug()<<"my ip and port:"<<mip<<" "<<mport;
+                                                QJsonObject tempObj1;
+                                                tempObj1.insert("name",QJsonValue(name1));
+                                                tempObj1.insert("number",QJsonValue(number));
+                                                tempObj1.insert("signature",QJsonValue(sig1));
+                                                tempObj1.insert("grade",QJsonValue(query.value("myqqGrade").toString()));
+                                                tempObj1.insert("imgPath",QJsonValue("../userData/"+number+"/historyHeadImg/01.png"));
+                                                tempObj1.insert("status",QJsonValue(status1));
+                                                tempObj1.insert("infoSet",QJsonValue("0"));
+                                                tempObj1.insert("statusSet",QJsonValue("0"));
+                                                tempObj1.insert("tag",QJsonValue(obj.value("tag").toString()));
+                                                tempObj1.insert("groupName",QJsonValue(gn));
+                                                tempObj1.insert("verify",QJsonValue(tobj.value("verify").toString()));
+                                                //写入接收方图像
+                                                QFile file("../userData/"+number+"/historyHeadImg/01.png");
+                                                if(!file.open(QIODevice::ReadOnly)){
+                                                    qDebug()<<"a file is of failure to open";
+                                                }
+                                                QByteArray mImg=file.readAll();
+                                                if(mImg.isEmpty())qDebug()<<"a error:data of reading file is empty";
+                                                writeInfoToOpposite(mip,mport,tempObj1,"addFriend",mImg);
+                                                }
+                                              }else{
+                                                  qDebug()<<"log list is unexpected:"<<msignList;
+
+                                              }
                                             }
                                         }
                                     }
@@ -2297,49 +2711,8 @@ label:
                                 writeObj.insert("port",QJsonValue(port));
                                 //在线 获取udp信息 传ip信息
                                 if(live){
-                                    QTcpSocket*testSock=new QTcpSocket(this);
-                                    //连接
-                                    connect(testSock,&QTcpSocket::connected,testSock,[=]()mutable{
-                                        qDebug()<<"connection to opposite";
-                                        writeObj.insert("result",QJsonValue("true"));
-                                        writeObj.insert("online",QJsonValue(true));
-                                        writeObj.insert("status",QJsonValue(status));
-                                        writeJson.setObject(writeObj);
-                                        QByteArray size;
-                                        QDataStream s(&size,QIODevice::WriteOnly);
-                                        s.setVersion(QDataStream::Qt_4_0);
-                                        quint8 l=writeJson.toJson().size();
-                                        s<<l;
-                                        tcpsocket->write(size+writeJson.toJson());
-                                        loop.exec();
-                                        emit finished();
-                                    });
-                                    //连不上更新状态
-                                    connect(testSock,QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),[=]()mutable{
-                                        qDebug()<< "not connection to opposite";
-                                        writeObj.insert("result",QJsonValue("true"));
-                                        writeObj.insert("online",QJsonValue(false));
-                                        writeObj.insert("status",QJsonValue("0"));
-                                        writeJson.setObject(writeObj);
-                                        QByteArray size;
-                                        QDataStream s(&size,QIODevice::WriteOnly);
-                                        s.setVersion(QDataStream::Qt_4_0);
-                                        quint8 l=writeJson.toJson().size();
-                                        s<<l;
-                                        tcpsocket->write(size+writeJson.toJson());
-                                        loop.exec();
-                                        if(status!="0"){
-                                            ok=  query.exec(QString(" update userInfo set isConnected=0,userStatus='0'  where myqq=%1 ").arg(number.toLongLong()));
-                                            if(!ok){
-                                                qDebug()<<"the query is of failure for updating status";
-
-                                            }else{
-                                                statusChanged(QString("0"),number);
-                                            }
-                                        }
-                                        emit finished();
-                                    });
-                                    testSock->connectToHost(ip,port);
+                                    //用函数来避免lambda对数据库对象的引用，从而不会在数据库池里删除有多个对象持有的同名连接导致崩溃,注意不要对数据库对象进行复制 会导致多个对象持有同名连接 包括查询对象
+                                   onlineDispatchedIP(writeObj,number,ip,port,status);
                                     //不在线
                                 }else{
                                     qDebug()<<" opposite is offline";
@@ -2357,6 +2730,7 @@ label:
                                     emit finished();
                                 }
                             }
+
                             return;
                         }
                     }
@@ -2376,11 +2750,13 @@ notGetIp:
                     tcpsocket->write(size+writeJson.toJson());
                     loop.exec();
                     emit finished();
+
                     return;
                 }
             }
         }
     }
+
 }
 //客户端断开连接就删除线程及对象
 void LoginThread::disconnected()

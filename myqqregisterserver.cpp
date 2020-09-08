@@ -26,7 +26,7 @@ MyQQRegisterServer::~MyQQRegisterServer()
 }
 
 
-bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd, qint64 &myqq)
+bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd, qint64 &myqq,QString&cn)
 {
     qDebug()<<"register executing thread is "<<this->thread()->currentThread();
     qDebug()<<name<<passwd;
@@ -34,7 +34,8 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
     m.lock();//给count上锁
     if(count>=100)//理论上1秒内可以打开的数据库数 100
         count=0;
-    QSqlDatabase db=QSqlDatabase::addDatabase("QODBC",QDateTime::currentDateTime().toMSecsSinceEpoch()+QString("%1").arg(count++));
+    cn=QDateTime::currentDateTime().toMSecsSinceEpoch()+QString("%1").arg(count++);
+    QSqlDatabase db=QSqlDatabase::addDatabase("QODBC",cn);
     m.unlock();//释放count
     db.setDatabaseName("qtmanager");
     db.setHostName("127.0.0.1");
@@ -80,7 +81,7 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
                                 QDomDocument doc;
                                 QDomProcessingInstruction header=doc.createProcessingInstruction("xml","version="
                                                                                                        "\"1.0\" encoding=\"UTF-8\"");
-                              doc.appendChild(header);
+                                doc.appendChild(header);
                                 QDomElement root=doc.createElement("myqq");
                                 root.setAttribute("number",myqq);
                                 doc.appendChild(root);
@@ -151,7 +152,7 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
                                         meEle.appendChild(setEle);
                                         tempEle.appendChild(meEle);
                                     }else
-                                    tempEle.appendChild(value);
+                                        tempEle.appendChild(value);
                                     friends.appendChild(tempEle);
                                 }
                                 QDomElement groups=doc.createElement("groupChat");
@@ -165,6 +166,9 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
                                 QTextStream s(&infoFile);
                                 doc.save(s,4);
                                 infoFile.close();
+
+                                db.close();//记得关闭 好删除文件
+
                                 return sucessful;
                             }
                         }
@@ -176,7 +180,8 @@ bool MyQQRegisterServer::registerMyQQ(const QString& name, const QString&passwd,
         }
     }else
         qDebug()<<("sql 语句执行失败！");
-     db.close();//记得关闭 好删除文件
+
+    db.close();//记得关闭 好删除文件
     return sucessful;
 }
 
@@ -202,7 +207,8 @@ void MyQQRegisterServer::read(QTcpSocket *tcpsock,QThread*t)
             _1.remove(_1.length()-1,1);//获取昵称
             _2=strList.at(strList.length()-1);//获取passwd
             qint64 myqq=qint64();
-            if(registerMyQQ(_1,_2,myqq)){
+            QString cn=QString();
+            if(registerMyQQ(_1,_2,myqq,cn)){
 
                 QByteArray rigSuc;
                 QDataStream out(&rigSuc,QIODevice::WriteOnly);
@@ -215,6 +221,12 @@ void MyQQRegisterServer::read(QTcpSocket *tcpsock,QThread*t)
                 tcpsock->write(rigSuc);
                 tcpsock->disconnectFromHost();
                 if(tcpsock->state()!=QAbstractSocket::UnconnectedState)tcpsock->waitForDisconnected();
+            }
+            if(QSqlDatabase::contains(cn)){
+                {
+                    QSqlDatabase::database(cn,false);//作用域内关闭
+                }
+                QSqlDatabase::removeDatabase(cn);//作用域外移除连接 防止重复连接
             }
         }
         t->exit();

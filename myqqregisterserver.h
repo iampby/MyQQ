@@ -15,7 +15,7 @@ private slots:
 void read(QTcpSocket*tcpsock,QThread*t);
 private:
     void incomingConnection(qintptr socketDescriptor);
-    bool registerMyQQ(const QString& name,const QString&passwd,qint64&myqq);
+    bool registerMyQQ(const QString& name, const QString&passwd, qint64&myqq, QString &cn);
     qint64 count;//计数,用于数据库连接命名
 };
 

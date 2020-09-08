@@ -5,6 +5,8 @@
 #include<qtcpsocket.h>
 #include<QEventLoop>
 #include<qsqlquery.h>
+#include<qsqldatabase.h>
+#include<qqueue.h>
 class WriteThread:public QObject
 {
     Q_OBJECT
@@ -24,7 +26,7 @@ public:
     };
     WriteThread(qintptr socketDescriptor,qint64 count,QObject *parent = nullptr);
     ~WriteThread();
-    QSqlQuery openDB(bool &ok)const;
+    QSqlQuery openDB(bool &ok);
     bool userExit();//用户退出改变状态
     bool adjustHistoryImg(QByteArray&bytes,const QString&filePath,const QString&fileType);//更新历史头像
     bool updateSignature(QByteArray&bytes);//更新个性签名
@@ -61,6 +63,8 @@ private:
     QByteArray bytes;
     QString fileName;
     QString myqq;
+
+        QQueue<QString>dbPool;//数据库池
 };
 
 #endif // WRITETHREAD_H
