@@ -1,0 +1,2 @@
+city_table.sql里面是sqlserver的表结构
+city.db里面是中国城市数据，是一个sqlite的数据库，精确到县 结构与上面的类似，少了url路径,这个数据本来也是没用的，因为程序里已经用表记录了对应url，即可以把数据填充到上面的sqlserver里的各个城市表

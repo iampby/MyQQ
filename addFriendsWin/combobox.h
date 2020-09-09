@@ -1,6 +1,6 @@
 #ifndef COMBOBOX_H
 #define COMBOBOX_H
-
+//复合框 对于城市
 #include <QObject>
 #include<qcombobox.h>
 

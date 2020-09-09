@@ -1,6 +1,6 @@
 #ifndef FINDUSERMODEL_H
 #define FINDUSERMODEL_H
-
+//自定义查找好友列表模型
 #include <QObject>
 #include<qbytearray.h>
 #include<qabstractitemmodel.h>

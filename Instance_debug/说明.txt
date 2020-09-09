@@ -1,0 +1,1 @@
+SQLSERVER里建好表,填充好除userInfo表外的数据即可在windows下运行（里头用了个WINAPI用于检测网络状态）

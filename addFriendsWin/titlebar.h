@@ -1,6 +1,6 @@
 #ifndef TITLEBAR_H
 #define TITLEBAR_H
-
+//自定义标题栏
 #include <QWidget>
 #include<QMouseEvent>
 class QPushButton;

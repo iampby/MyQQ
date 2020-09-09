@@ -1,6 +1,6 @@
 #ifndef USERVIEW_H
 #define USERVIEW_H
-
+//自定义查找好友显示视图 非标准视图类
 #include <QObject>
 #include"findusermodel.h"
 #include"userwidget.h"

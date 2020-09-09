@@ -1,6 +1,6 @@
 #ifndef SUBCOMBOBOX_H
 #define SUBCOMBOBOX_H
-
+//自定义城市复合框
 #include <QObject>
 #include<qcombobox.h>
 #include<qlistview.h>
