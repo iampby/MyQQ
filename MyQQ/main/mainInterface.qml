@@ -4365,8 +4365,9 @@ ApplicationWindow {
         mainWin.width = qqMainWin.width
         mainWin.height = qqMainWin.height
         myqq = mainWin.myqq
+        //获取对应文件 如头像 消息
         funcc.connectGetFile("2 headImg " + myqq)
-        funcc.initWh()
-        funcc.mkDir(("../user/" + mainWin.myqq + "/weather"))
+        funcc.initWh()//爬取天气 因为网址原因 不能自动获取城市 故赋值了北京市
+        funcc.mkDir(("../user/" + mainWin.myqq + "/weather"))//制造对应目录
     }
 }

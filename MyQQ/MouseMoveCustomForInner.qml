@@ -1,5 +1,6 @@
 ﻿import QtQuick 2.11
 
+//loader部件的移动
 MouseArea {
     anchors.fill: parent
     property point startPoint: Qt.point(0, 0)
@@ -39,7 +40,7 @@ MouseArea {
     //公式：窗口位置+=鼠标位置-起始位置；实现移动效果
     onPositionChanged: {
         if (pressed) {
-           mainWin.x += mouseX - startPoint.x
+            mainWin.x += mouseX - startPoint.x
             mainWin.y += mouseY - startPoint.y
         }
     }

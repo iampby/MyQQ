@@ -1,11 +1,11 @@
 ﻿import QtQuick 2.11
 
 Item {
-    //注意，不知道是loader原因还是什么的  含有函数的部件属性容易异常,即最好不要设置任何属性
+    //注意，不知道是loader原因还是什么的  含有函数的mainWin属性容易异常,即最好不要设置任何属性
     signal makeRequestFinished
    // signal sizeChanged(int w, int h, point delta, int directX, int directY)
+    //调整main窗口大小
     function mainWinReSize(x, y, width, height) {
-        //调整main窗口大小
         mainWin.width = width
         mainWin.height = height
         mainWin.x = x
@@ -17,6 +17,7 @@ Item {
         isVisible = true
         console.log("timer->", xTip, yTip, isVisible)
     }
+    //根据分辨率调整大小
     function mainWinDpChanged() {
         if (mainWin.inf === Math.pow(2, 0)) {
             //调整登录界面,因为小于800*600,只调整位置

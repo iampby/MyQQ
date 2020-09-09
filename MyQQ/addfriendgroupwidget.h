@@ -1,10 +1,11 @@
 #ifndef ADDFRIENDGROUPWIDGET_H
 #define ADDFRIENDGROUPWIDGET_H
-
+//添加好友分组控件 用于验证消息接收时添加分组
 
 #include <QObject>
 #include <QWidget>
 #include<QMouseEvent>
+
 class AddFriendGroupWidget:public QWidget
 {
     Q_OBJECT

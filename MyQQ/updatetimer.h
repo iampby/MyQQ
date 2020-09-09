@@ -30,9 +30,9 @@ public:
     void setIp(const QString&);
     void setPort(const quint16&);
 private:
-    void splitSignatureAndName(QByteArray&data);
-    void makePixmap(const QByteArray&);
-    void handleStatus(const QByteArray&);
+    void splitSignatureAndName(QByteArray&data);//更新签名和昵称
+    void makePixmap(const QByteArray&);//保存图片数据
+    void handleStatus(const QByteArray&);//状态更新
     void handleFGrade(const QByteArray&);//对好友等级数据处理
 signals:
     void stopTimer();

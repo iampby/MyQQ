@@ -1,6 +1,6 @@
 #ifndef SENDSOCKET_H
 #define SENDSOCKET_H
-
+//发送消息套接字
 #include <QObject>
 #include<qtcpsocket.h>
 #include<qthread.h>
@@ -31,10 +31,10 @@ private:
     QString m_ip;
     quint16 m_port;
     QByteArray m_xml;
-    int m_timeout;
+    int m_timeout;//超时参数
     QString m_myqq;//发送方号码
     QString m_number;//接受方号码
-    qint64 size;
+    qint64 size;//接收数据头大小
     bool hasRead;//false代表对方没有反应
 
     QEventLoop loop;

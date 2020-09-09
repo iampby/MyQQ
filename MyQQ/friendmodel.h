@@ -1,6 +1,6 @@
 #ifndef FRIENDMODEL_H
 #define FRIENDMODEL_H
-
+//qml的好友模型
 #include <QObject>
 #include<QAbstractListModel>
 
@@ -70,8 +70,9 @@ public:
     Q_INVOKABLE void sort();//排序
     Q_INVOKABLE  void deletion();//谨慎使用，删除内存并永不使用对象
     void insert(int row, FriendData *value);
+//注意不要从列表删除并取出对象赋给另一个模型，这会导致qml代理可视变化时自动析构（有时）,这里是为了取出对象 获取属性添加到另一个模型
     Q_INVOKABLE FriendData* getItem(const int index);//返回删除项 不释放内存
-    Q_INVOKABLE  void remove(const int& row,const int&count=1);
+    Q_INVOKABLE  void remove(const int& row,const int&count=1);//删除一个对象
     Q_INVOKABLE  void setData(const int &row,const QString& value, int role=MyQQRole);
     Q_INVOKABLE  void append(FriendData*item);//末尾添加
     Q_INVOKABLE void append(const QString &myqq, const QString&name, const QString&signature, const QString&imgPath,

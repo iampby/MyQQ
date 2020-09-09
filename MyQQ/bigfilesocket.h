@@ -1,6 +1,6 @@
 #ifndef BIGFILESOCKET_H
 #define BIGFILESOCKET_H
-
+//接收大部分server返回的数据
 #include <QObject>
 #include<QTcpSocket>
 #include<QJsonDocument>

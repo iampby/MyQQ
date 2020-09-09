@@ -2,9 +2,9 @@
 import QtQuick.Controls 2.5
 import QtGraphicalEffects 1.0
 
-//baccd7
+//天气城市列表控件
 Button {
-    property alias img: img
+    property alias img: img//右边小图片
     property alias tex: backlab.text
     property alias color: backRec.color
     property bool isSelected: false
@@ -29,6 +29,7 @@ Button {
     onClicked: {
         isSelected = true
     }
+    //选择与否颜色变化
     onIsSelectedChanged: {
         if (!isSelected)
             backRec.color = "#4b7c97"

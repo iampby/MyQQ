@@ -233,17 +233,17 @@ private:
 
     AddFriendGroupWidget*addFGWidget;
 
-    WeatherHandle*wh;
+    WeatherHandle*wh;//爬取天气对象
     QString cityNameAboutWeather[3][2];
     QString cityList[50][2];
-    int cityCount;
-    QMap<QString,QString>allCitys;
+    int cityCount;//城市数
+    QMap<QString,QString>allCitys;//城市列表
 
 
-    void initSetInfo(QXmlStreamReader&);
-    void initFriendInfo(QXmlStreamReader&);
-    void initGroupChatInfo(QXmlStreamReader&);
-    void parseFriendInfo(QXmlStreamReader &reader, QString&, int &pos);
+    void initSetInfo(QXmlStreamReader&);//初始化设置信息 没有实现功能
+    void initFriendInfo(QXmlStreamReader&);//初始化好友信息
+    void initGroupChatInfo(QXmlStreamReader&);//初始化组信息 没有实现功能
+    void parseFriendInfo(QXmlStreamReader &reader, QString&, int &pos);//初获取好友信息
     void initAllCitys();//保存所有城市信息以用来查询天气
 };
 
