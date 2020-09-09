@@ -1,0 +1,26 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/QQTray.png</file>
+        <file>images/winIco.png</file>
+        <file>images/close.png</file>
+        <file>images/minimum.png</file>
+        <file>images/liveSelected.png</file>
+        <file>images/liveUnselected.png</file>
+        <file>images/findPersonInit.png</file>
+        <file>images/down-arrow.png</file>
+        <file>images/up-arrow.png</file>
+        <file>images/arrowForReturn.png</file>
+        <file>images/searchImg.png</file>
+        <file>images/findPersonPage3.png</file>
+        <file>MyQQ.ico</file>
+        <file>images/MyQQ.ico</file>
+        <file>images/addFriendClosePressed.png</file>
+        <file>images/addFriendMinHovered.png</file>
+        <file>images/addFriendMinPressed.png</file>
+        <file>images/addFriendsCloseHovered.png</file>
+        <file>images/addFriendTitle.png</file>
+        <file>images/exMark.png</file>
+        <file>images/finishTip.png</file>
+        <file>images/newGroupTitle.png</file>
+    </qresource>
+</RCC>
