@@ -506,6 +506,7 @@ Rectangle {
             btnR.action: actions.passwdRAct
             btnRMouse.shapeInside: Qt.PointingHandCursor
             Keys.onTabPressed: {
+
                 canvasRem.bw = 1
                 canvasRem.requestPaint()
                 rememberC.forceActiveFocus()

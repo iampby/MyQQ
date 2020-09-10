@@ -5,7 +5,6 @@
 #include <QObject>
 #include <QWidget>
 #include<QMouseEvent>
-
 class AddFriendGroupWidget:public QWidget
 {
     Q_OBJECT

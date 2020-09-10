@@ -1,3 +1,4 @@
+
 #ifndef GLOBAL_H
 #define GLOBAL_H
 #include<QMap>
@@ -13,3 +14,4 @@ extern QMap<QString,QMutex*>sigMuter;//每个文件的互斥锁
 extern QMap<QString, QSharedPointer<QMutex> >gradeMuter;//等级锁 用引用计数智能指针控制锁资源 读写等级文件时上锁 qstring是号码
 
 #endif // GLOBAL_H
+

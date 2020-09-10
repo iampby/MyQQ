@@ -3,7 +3,7 @@
 Item {
     //注意，不知道是loader原因还是什么的  含有函数的mainWin属性容易异常,即最好不要设置任何属性
     signal makeRequestFinished
-   // signal sizeChanged(int w, int h, point delta, int directX, int directY)
+    // signal sizeChanged(int w, int h, point delta, int directX, int directY)
     //调整main窗口大小
     function mainWinReSize(x, y, width, height) {
         mainWin.width = width
@@ -17,7 +17,8 @@ Item {
         isVisible = true
         console.log("timer->", xTip, yTip, isVisible)
     }
-    //根据分辨率调整大小
+
+    //根据分辨率调整大小r
     function mainWinDpChanged() {
         if (mainWin.inf === Math.pow(2, 0)) {
             //调整登录界面,因为小于800*600,只调整位置
@@ -177,7 +178,7 @@ Item {
         win.isPressed = false
     }
     //拖拽移动处理 sizechanged 是一个拖拽变化处理的回调函数
-    function positionChange(newPosition, directX, directY, win/*x轴方向*/ /*y轴方向*/,sizeChanged) {
+    function positionChange(newPosition, directX, directY, win, sizeChanged/*x轴方向*/ /*y轴方向*/ ) {
         if (!win.isPressed)
             return
         var delta = Qt.point(newPosition.x - win.customPoint.x,
@@ -266,39 +267,39 @@ Item {
         console.log("remain=", remain)
         return remain
     }
-   //参数1:listmodel对象 参数2:等级 对等级模型进行重置等级图标数据
-    function resetGradeModel(model,grade){
+    //参数1:listmodel对象 参数2:等级 对等级模型进行重置等级图标数据
+    function resetGradeModel(model, grade) {
         model.clear() //重置模型数据
-        try{
-        var crown = parseInt(grade / 64), cur //JS除法默认为浮点数运算，需显示认定为整型
-        cur = parseInt(grade - crown * 64)
-        var sun = parseInt(cur / 16) //显示认定为整型
-        cur = cur - sun * 16
-        var moon = parseInt(cur / 4)
-        var star = parseInt(cur - moon * 4)
-        console.log(crown, sun, moon, star)
-        //添加皇冠图像路径
-        for (var i = 0; i < crown; i++) {
-            model.append({
-                                  "img": "qrc:/images/mainInterface/crown.png"
-                              })
-        }
-        for (i = 0; i < sun; i++) {
-            model.append({
-                                  "img": "qrc:/images/mainInterface/sun.png"
-                              })
-        }
-        for (i = 0; i < moon; i++) {
-            model.append({
-                                  "img": "qrc:/images/mainInterface/moon.png"
-                              })
-        }
-        for (i = 0; i < star; i++) {
-            model.append({
-                                  "img": "qrc:/images/mainInterface/star.png"
-                              })
-        }
-        }catch(e){
+        try {
+            var crown = parseInt(grade / 64), cur //JS除法默认为浮点数运算，需显示认定为整型
+            cur = parseInt(grade - crown * 64)
+            var sun = parseInt(cur / 16) //显示认定为整型
+            cur = cur - sun * 16
+            var moon = parseInt(cur / 4)
+            var star = parseInt(cur - moon * 4)
+            console.log(crown, sun, moon, star)
+            //添加皇冠图像路径
+            for (var i = 0; i < crown; i++) {
+                model.append({
+                                 "img": "qrc:/images/mainInterface/crown.png"
+                             })
+            }
+            for (i = 0; i < sun; i++) {
+                model.append({
+                                 "img": "qrc:/images/mainInterface/sun.png"
+                             })
+            }
+            for (i = 0; i < moon; i++) {
+                model.append({
+                                 "img": "qrc:/images/mainInterface/moon.png"
+                             })
+            }
+            for (i = 0; i < star; i++) {
+                model.append({
+                                 "img": "qrc:/images/mainInterface/star.png"
+                             })
+            }
+        } catch (e) {
             console.log("grade model is of failure for reseting")
             console.log(e.message)
         }
@@ -415,5 +416,4 @@ Item {
         }
         return constellation
     }
-
 }

@@ -4,7 +4,7 @@ import QtGraphicalEffects 1.0
 
 //天气城市列表控件
 Button {
-    property alias img: img//右边小图片
+    property alias img: img //右边小图片
     property alias tex: backlab.text
     property alias color: backRec.color
     property bool isSelected: false

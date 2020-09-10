@@ -38,3 +38,4 @@ void WriteServer::incomingConnection(qintptr socketDescriptor)
 //注意 信号在死循环时不能执行
   emit  writeFileHandle->startTimer();//子线程开启计时
 }
+
