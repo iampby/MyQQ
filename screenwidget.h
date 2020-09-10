@@ -64,7 +64,6 @@ public:
     explicit ScreenWidget(QWidget *parent = 0);
     static ScreenWidget *Instance();
     static void  deletionInstance();
-    QPixmap getPixmap()const;
 ~ScreenWidget();
 private:
     static QScopedPointer<ScreenWidget> self;
@@ -74,7 +73,6 @@ private:
     QPixmap *bgScreen;      //模糊背景图
     QPoint movPos;          //坐标
 
-    QPixmap pix;//数据载体
 
 protected:
     void contextMenuEvent(QContextMenuEvent *);
@@ -83,17 +81,21 @@ protected:
     void mouseReleaseEvent(QMouseEvent *);
     void paintEvent(QPaintEvent *);
     void showEvent(QShowEvent *);
-    void keyPressEvent(QKeyEvent *event);//快捷键完成截图
- signals:
-    void finished();
 private slots:    
     void saveScreen();    
     void saveFullScreen();
     void saveScreenOther();
     void saveFullOther();
-
+//修改源代码段
+signals:
+   void finished();//完成获取数据信号
+public:
+   QPixmap getPixmap()const;//获取图片
+protected:
+   void keyPressEvent(QKeyEvent *event);//快捷键完成截图
     void savePixmap();//获取数据
     void showFull();//全屏显示截图范围
+    QPixmap pix;//数据载体
 };
 
 #endif // SCREENWIDGET_H

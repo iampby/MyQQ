@@ -45,7 +45,7 @@ Window {
             cityCbBox.currentIndex = 0
         }
     }
-
+//初始化3天的天气模型数据
     onIsFinishedToCrawChanged: {
         var index = cityCbBox.currentIndex
         if (2 === isFinishedToCraw) {
@@ -875,10 +875,10 @@ Window {
             }
         }
     }
-
     Component.onCompleted: {
         funcc.readWeatherFile("../user/" + mainWin.myqq + "/weather/city")
         assignValueAboutWeather(0)
+//初始化各个城市数据
         for (var i = 0; i < 3; i++) {
             var city = funcc.getCityData(i, 0)
             if (city !== "") {

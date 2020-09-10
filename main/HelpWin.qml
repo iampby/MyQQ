@@ -1,6 +1,6 @@
 ﻿import QtQuick 2.11
 import QtQuick.Window 2.11
-
+//帮助弹出小菜单
 Window {
     id: win
     property alias updgradeBtn: updgradeBtn

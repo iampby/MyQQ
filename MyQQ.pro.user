@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
+<<<<<<< HEAD
 <!-- Written by QtCreator 4.11.2, 2020-09-08T17:06:57. -->
+=======
+<!-- Written by QtCreator 4.11.2, 2020-09-09T21:29:14. -->
+>>>>>>> 同步到master
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -282,8 +286,14 @@
     </valuelist>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
+<<<<<<< HEAD
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:D:/QTpractice/MyQQ/MyQQ/MyQQ.pro</value>
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">D:/QTpractice/MyQQ/MyQQ/MyQQ.pro</value>
+=======
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">MyQQ2</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:C:/Users/Administrator/Desktop/MyQQ/MyQQ/MyQQ.pro</value>
+    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">C:/Users/Administrator/Desktop/MyQQ/MyQQ/MyQQ.pro</value>
+>>>>>>> 同步到master
     <value type="QString" key="RunConfiguration.Arguments"></value>
     <value type="bool" key="RunConfiguration.Arguments.multi">false</value>
     <value type="QString" key="RunConfiguration.OverrideDebuggerStartup"></value>

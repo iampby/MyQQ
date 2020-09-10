@@ -7,14 +7,13 @@ import FuncC 1.0
 import QtQuick.Particles 2.0
 import QtWinExtras 1.0
 import Model 1.0
-
+//加载 子路径资源
 import "qrc:/login"
 import "qrc:/register"
 import "qrc:/main"
 
-//本应用通过Qml开发界面，Qt C++开发底层逻辑
+
 ApplicationWindow {
-    property var list: []
     //公式：px=dp*(ppi/160) -> px/dp=ppi/160=Screen.devicePixelRatio(不固定),这个程序只是用来勘测分辨率变化，dp是用于安卓适配屏幕的
     property real dp: Screen.pixelDensity * 25.4 / 16 * 1.43 //初始化可变数值时会自动发送一次信号
     property real preDp: 0.0
@@ -53,9 +52,11 @@ ApplicationWindow {
     }
     title: qsTr("MyQQ")
     onDpChanged: func.mainWinDpChanged()
+    //js函数对象
     Func {
         id: func
     }
+    //c++对象
     FuncC {
         id: funcc
     }
@@ -63,6 +64,7 @@ ApplicationWindow {
     Actions {
         id: actions
     }
+    //一个字体对象
     FontLoader {
         id: song
         name: "宋体"

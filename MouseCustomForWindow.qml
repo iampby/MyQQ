@@ -1,5 +1,5 @@
 ﻿import QtQuick 2.11
-
+//窗口对象的移动
 MouseArea {
     width: parent.width
     height: parent.height

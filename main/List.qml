@@ -1,7 +1,7 @@
 ﻿import QtQuick 2.11
 import QtQuick.Controls 2.5
 import QtQuick.Layouts 1.3
-
+//消息列表控件或者好友控件
 Button {
     property alias arrow: arrow
     property alias name: name

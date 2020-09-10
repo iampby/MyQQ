@@ -14,6 +14,11 @@
 #include<qqmlcontext.h>
 #include <QTextCodec>
 #include<qmessagebox.h>
+/*
+本应用通过Qml开发界面，qwidget为辅 仅仅是一个学习借鉴作品
+主要涉及qqtcuick与qwidget交互（ui及数据）,qml基础部件使用，qobject基础类使用
+如qml模型视图，js原型方法等，qobject方面如共享内存，多线程，套接字（qtcpsocket、qlocalsocket），xml,json,数据库类的使用，模型视图，图元视图等
+*/
 
 int main(int argc, char *argv[])
 {
@@ -44,5 +49,4 @@ int main(int argc, char *argv[])
     if (engine.rootObjects().isEmpty())
         return -1;
     return app.exec();
-    qDebug()<<"end";
 }

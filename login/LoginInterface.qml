@@ -46,6 +46,7 @@ Rectangle {
         Keys.onReturnPressed: {
             actions.setAct.trigger()
         }
+        //是否显示边框线
         onActiveFocusChanged: {
             if (!activeFocus) {
                 if (canvasSet.bw != 0) {
@@ -54,7 +55,7 @@ Rectangle {
                 }
             }
         }
-
+//画不同图片
         onHoveredChanged: {
             if (hovered) {
                 canvasSet.f = 2
@@ -83,8 +84,8 @@ Rectangle {
         //帆布边框
         Canvas {
             property bool isready: false
-            property int f: 0
-            property int bw: 0
+            property int f: 0//图片选择
+            property int bw: 0//是否画tab事件选中状态
             property var img1
             property var img2
             property string url: "qrc:images/qqSet.png"
@@ -120,22 +121,24 @@ Rectangle {
                                  canvasSet.height, 50)
             }
             Component.onCompleted: {
-                loadImage(url)
+                loadImage(url)//加载图片
             }
             onImageLoaded: {
                 console.log("loaded set", f)
                 if (f == 0) {
+                    //先加载状态1图片
                     img1 = context.createImageData("qrc:images/qqSet.png")
                     f = 1
                     img1.height = canvasSet.height
                     img1.width = canvasSet.width
-                    requestPaint()
-                    unloadImage(url)
+                    requestPaint()//先显示图片
+                    unloadImage(url)//卸载后加载另一个图片，这样得到2个图片
                     loadImage("qrc:images/qqSetC.png")
                 } else {
                     img2 = context.createImageData("qrc:images/qqSetC.png")
                     img2.height = canvasSet.height
                     img2.width = canvasSet.width
+                    //清除资源
                     unloadImage("qrc:images/qqSetC.png")
                 }
             }
@@ -236,6 +239,7 @@ Rectangle {
                     ctx.strokeStyle = "gray"
                 else
                     ctx.strokeStyle = "#00000000"
+                //画边框断线
                 func.dottedLinTo(ctx, 0, 0, canvasMin.width,
                                  canvasMin.height, 50)
             }
@@ -905,7 +909,7 @@ Rectangle {
             delay: 500
         }
     }
-    //// 因为背景线程为异步画的原因，延迟一秒显示 ，出现空白的概率变为超小概率
+    //// 因为帆布背景线程为异步画的原因，延迟一秒显示 ，降低出现空白的概率
     Timer {
         id: timer1sForBgd
         interval: 1000

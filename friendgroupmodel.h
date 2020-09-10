@@ -1,6 +1,6 @@
 #ifndef FRIENDGROUPMODEL_H
 #define FRIENDGROUPMODEL_H
-
+//qml的好友组模型
 #include <QObject>
 #include<QQuickWindow>
 #include<QAbstractListModel>
