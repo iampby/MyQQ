@@ -5,14 +5,39 @@ MyQQ
 
 图形效果
 -
+
 注册图
 
-![](https://github.com/iampby/MyQQ/blob/master/img_storage/reg1.png)
-![](https://github.com/iampby/MyQQ/blob/master/img_storage/reg2.png)
+<img src="https://github.com/iampby/MyQQ/blob/master/img_storage/reg1.png" width="200" height="200" alt="注册图"/><br/>
+<img src="https://github.com/iampby/MyQQ/blob/master/img_storage/reg2.png" width="200" height="200" alt="注册结果图"/><br/>
 
 登录图
 
-![](https://github.com/iampby/MyQQ/blob/master/img_storage/login.png)
+<img src="https://github.com/iampby/MyQQ/blob/master/img_storage/login.png" width="200" height="200" alt="登录图"/><br/>
 
+天气图
+
+<img src="https://github.com/iampby/MyQQ/blob/master/img_storage/weather.png" width="200" height="200" alt="天气图"/><br/>
+
+用户图
+
+<img src="https://github.com/iampby/MyQQ/blob/master/img_storage/userInf.png" width="200" height="200" alt="用户界面图"/><br/>
+<img src="https://github.com/iampby/MyQQ/blob/master/img_storage/info.png" width="200" height="200" alt="资料图1"/><br/>
+<img src="https://github.com/iampby/MyQQ/blob/master/img_storage/info2.png" width="200" height="200" alt="资料图2"/><br/>
+<img src="https://github.com/iampby/MyQQ/blob/master/img_storage/editinfo.png" width="200" height="200" alt="修改资料图"/><br/>
+<img src="https://github.com/iampby/MyQQ/blob/master/img_storage/editimg.png" width="200" height="200" alt="修改图片图"/><br/>
+<img src="https://github.com/iampby/MyQQ/blob/master/img_storage/elist.png" width="200" height="200" alt="信息列表图"/><br/>
+
+聊天图
+
+<img src="https://github.com/iampby/MyQQ/blob/master/img_storage/chat.png" width="200" height="200" alt="聊天图"/><br/>
+
+查找用户图
+
+<img src="https://github.com/iampby/MyQQ/blob/master/img_storage/external.png" width="200" height="200" alt="查找用户图"/><br/>
+
+服务端图
+
+<img src="https://github.com/iampby/MyQQ/blob/master/img_storage/MyQQServer.png" width="200" height="200" alt="server图"/><br/>
 
  
