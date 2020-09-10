@@ -24,6 +24,10 @@ private slots:
 
     void on_pushButton3_clicked();
 private:
+<<<<<<< HEAD
+=======
+    //对应server ip及端口
+>>>>>>> 鍚屾master
     quint16 registerPort;
     quint16 loginPort;
     quint16 writePort;

@@ -68,3 +68,4 @@ private:
 };
 
 #endif // WRITETHREAD_H
+

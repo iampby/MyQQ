@@ -1718,3 +1718,4 @@ void WriteThread::disconnected()
     qDebug()<<"emit finished()";
     emit finished();
 }
+
